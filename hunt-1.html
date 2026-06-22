@@ -7,11 +7,9 @@
   <meta name="description" content="A mirror that shows the wrong thing. A flame that reveals what ink cannot. Hunt 01 — free and open.">
   <link rel="stylesheet" href="styles.css">
   <style>
-    /* ─── Hunt 1 specific ───────────────────────────────────── */
-
     body { overflow-x: hidden; }
 
-    /* Immersive hunt layout */
+    /* ── Slide engine ───────────────────────────────────────── */
     .hunt-wrap {
       min-height: 100vh;
       padding-top: clamp(60px, 8vw, 72px);
@@ -19,20 +17,31 @@
       flex-direction: column;
     }
 
-    /* Hunt header / meta bar */
+    /* Progress bar */
+    .hunt-progress-rail {
+      height: 3px;
+      background: rgba(212,167,70,0.1);
+      position: relative;
+    }
+    .hunt-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--ember), var(--gold));
+      transition: width 0.6s ease;
+      box-shadow: 0 0 8px rgba(212,167,70,0.5);
+    }
+
+    /* Meta bar */
     .hunt-meta {
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 0.8rem;
-      padding: 0.8rem clamp(1rem, 4vw, 2.5rem);
+      padding: 0.75rem clamp(1rem, 4vw, 2.5rem);
       background: var(--ink-mid);
       border-bottom: 1px solid rgba(212,167,70,0.12);
     }
-
-    .hunt-title-block { display: flex; align-items: center; gap: 1rem; }
-
+    .hunt-title-block { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
     .hunt-number {
       font-family: var(--font-mono);
       font-size: 0.62rem;
@@ -41,41 +50,37 @@
       letter-spacing: 0.16em;
       text-transform: uppercase;
     }
-
     .hunt-name {
       font-family: var(--font-display);
-      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      font-size: clamp(0.85rem, 2.5vw, 1.05rem);
       font-weight: 600;
       color: var(--parchment);
       letter-spacing: 0.04em;
     }
-
     .hunt-controls {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.8rem;
       flex-wrap: wrap;
     }
-
     .timer-display {
       font-family: var(--font-mono);
-      font-size: 1.1rem;
+      font-size: 1rem;
       color: var(--gold);
       letter-spacing: 0.1em;
       background: rgba(14,11,18,0.8);
-      padding: 0.3rem 0.8rem;
+      padding: 0.28rem 0.7rem;
       border: 1px solid rgba(212,167,70,0.2);
       border-radius: 3px;
-      min-width: 80px;
+      min-width: 72px;
       text-align: center;
     }
-
     .clue-btn {
       font-family: var(--font-mono);
       font-size: 0.65rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      padding: 0.4rem 1rem;
+      padding: 0.38rem 0.9rem;
       border: 1px solid rgba(226,87,43,0.4);
       border-radius: var(--radius-seal);
       background: transparent;
@@ -83,106 +88,416 @@
       cursor: pointer;
       transition: all var(--transition);
     }
-    .clue-btn:hover {
-      background: rgba(226,87,43,0.1);
-      border-color: var(--ember);
+    .clue-btn:hover { background: rgba(226,87,43,0.1); border-color: var(--ember); }
+
+    /* Slide counter pill */
+    .slide-counter {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--parchment-faint);
+      opacity: 0.55;
+      letter-spacing: 0.12em;
+      white-space: nowrap;
     }
 
-    /* ── Main puzzle area ─────────────────────────────────────── */
-    .puzzle-stage {
+    /* ── Slide stage ────────────────────────────────────────── */
+    .slide-stage {
       flex: 1;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0;
-      max-width: 1200px;
-      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: clamp(2rem, 5vw, 3.5rem) clamp(1rem, 4vw, 2.5rem) 5rem;
+      overflow-y: auto;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(60px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+      will-change: opacity, transform;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(0);
+    }
+
+    .slide.exit-left {
+      opacity: 0;
+      transform: translateX(-60px);
+      pointer-events: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .slide { transition: opacity 0.01ms; transform: none !important; }
+    }
+
+    /* Slide inner content frame */
+    .slide-frame {
       width: 100%;
-      padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 4vw, 2.5rem);
-      gap: clamp(1.5rem, 3vw, 2.5rem);
+      max-width: 860px;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
     }
 
-    @media (max-width: 800px) {
-      .puzzle-stage {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    /* Puzzle intro text */
-    .puzzle-intro {
-      grid-column: 1 / -1;
-      text-align: center;
-      max-width: 620px;
-      margin: 0 auto;
-    }
-
-    .puzzle-intro h2 {
-      font-size: clamp(1.3rem, 3vw, 1.8rem);
+    /* Slide header */
+    .slide-header { text-align: center; }
+    .slide-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.7;
+      display: block;
       margin-bottom: 0.5rem;
-      color: var(--parchment);
     }
-
-    .puzzle-intro p {
+    .slide-title {
+      font-size: clamp(1.5rem, 4vw, 2.4rem);
+      margin-bottom: 0.5rem;
+    }
+    .slide-desc {
       font-style: italic;
       color: var(--parchment-dim);
-      font-size: 0.95rem;
+      font-size: 1rem;
+      max-width: 560px;
+      margin: 0 auto;
+      line-height: 1.65;
     }
 
-    /* ── Mirror Panel ───────────────────────────────────────── */
-    .panel-label {
-      font-family: var(--font-mono);
-      font-size: 0.6rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--mist);
-      opacity: 0.5;
-      margin-bottom: 0.8rem;
+    /* Bottom nav */
+    .slide-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      justify-content: space-between;
+      padding: 0.8rem clamp(1rem, 4vw, 2.5rem);
+      background: rgba(14,11,18,0.95);
+      border-top: 1px solid rgba(212,167,70,0.12);
+      backdrop-filter: blur(8px);
+      z-index: 50;
+      gap: 1rem;
     }
 
-    .panel-label::after {
-      content: '';
+    .slide-nav-fragment {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--parchment-faint);
+      opacity: 0.6;
+      letter-spacing: 0.1em;
       flex: 1;
-      height: 1px;
-      background: rgba(143,166,189,0.15);
     }
 
-    .mirror-panel {
+    .fragment-chips {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      width: 32px; height: 32px;
+      border: 1px solid rgba(212,167,70,0.2);
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: rgba(212,167,70,0.2);
+      background: rgba(14,11,18,0.7);
+      transition: all 0.5s ease;
+    }
+
+    .chip.filled {
+      color: var(--gold);
+      border-color: rgba(212,167,70,0.55);
+      box-shadow: 0 0 10px rgba(212,167,70,0.2);
+      animation: glow-pulse 2.5s ease-in-out infinite;
+    }
+
+    .btn-next {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.6rem 1.6rem;
+      background: var(--gold);
+      color: var(--ink-deep);
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius-seal);
+      cursor: pointer;
+      transition: all var(--transition);
+      box-shadow: 0 0 14px rgba(212,167,70,0.3);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(4px);
+    }
+
+    .btn-next.unlocked {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .btn-next:hover { background: var(--parchment); transform: translateY(-1px); }
+
+    /* ── Solved overlay ─────────────────────────────────────── */
+    .solved-flash {
+      position: fixed;
+      inset: 0;
+      background: rgba(212,167,70,0.06);
+      border: 2px solid rgba(212,167,70,0.3);
+      pointer-events: none;
+      opacity: 0;
+      z-index: 200;
+      transition: opacity 0.3s ease;
+    }
+    .solved-flash.show { opacity: 1; }
+
+    /* Fragment reveal banner */
+    .fragment-banner {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.85);
+      background: var(--ink-mid);
+      border: 1px solid var(--gold);
+      border-radius: var(--radius-card);
+      padding: 1.5rem 2.5rem;
+      text-align: center;
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: var(--shadow-glow);
+      min-width: 260px;
+    }
+    .fragment-banner.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .fragment-banner .big-letter {
+      font-family: var(--font-display);
+      font-size: 4rem;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1;
+      text-shadow: 0 0 30px rgba(212,167,70,0.5);
+      display: block;
+      margin: 0.3rem 0;
+    }
+    .fragment-banner .label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--parchment-faint);
+      opacity: 0.7;
+    }
+
+    /* ───────────────────────────────────────────────────────── */
+    /* SLIDE 1: The Wax Seal                                     */
+    /* ───────────────────────────────────────────────────────── */
+    .envelope-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .envelope {
       position: relative;
+      width: min(360px, 90vw);
+      height: min(260px, 65vw);
+      cursor: pointer;
+      user-select: none;
     }
 
+    .envelope-body {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, #2a2238, #1a1626);
+      border: 1px solid rgba(212,167,70,0.3);
+      border-radius: 4px 4px 6px 6px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,167,70,0.08) inset;
+    }
+
+    /* Envelope flap */
+    .envelope-flap {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 50%;
+      background: linear-gradient(160deg, #251e35, #1c1728);
+      border-bottom: 1px solid rgba(212,167,70,0.15);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      transform-origin: top center;
+      transition: transform 0.6s ease;
+    }
+
+    .envelope.opening .envelope-flap {
+      transform: rotateX(180deg);
+    }
+
+    /* Fold lines */
+    .envelope-fold-l {
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 50%; height: 100%;
+      border-right: 1px solid rgba(212,167,70,0.08);
+      clip-path: polygon(0 100%, 100% 0, 100% 100%);
+    }
+    .envelope-fold-r {
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 50%; height: 100%;
+      border-left: 1px solid rgba(212,167,70,0.08);
+      clip-path: polygon(0 0, 100% 100%, 0 100%);
+    }
+
+    /* Wax seal */
+    .wax-seal-btn {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -20%);
+      width: 70px; height: 70px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 38% 38%, #c0391a, #8b200a 60%, #5c1106);
+      box-shadow: 0 3px 12px rgba(0,0,0,0.6), 0 0 20px rgba(226,87,43,0.25);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      color: rgba(235,217,180,0.6);
+      transition: box-shadow var(--transition);
+    }
+
+    /* Hold-progress ring */
+    .seal-ring {
+      position: absolute;
+      inset: -5px;
+      border-radius: 50%;
+    }
+
+    .seal-ring svg {
+      width: 100%; height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .seal-ring circle {
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 251;
+      stroke-dashoffset: 251;
+      transition: stroke-dashoffset 0.05s linear;
+    }
+
+    /* Paper inside envelope */
+    .envelope-paper {
+      position: absolute;
+      bottom: 0; left: 10%; right: 10%;
+      height: 85%;
+      background: linear-gradient(160deg, #ede0c0, #d8c8a0);
+      border-radius: 2px 2px 0 0;
+      transform: translateY(100%);
+      transition: transform 0.7s ease 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.5rem;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+      z-index: 1;
+    }
+
+    .envelope.open .envelope-paper {
+      transform: translateY(0%);
+    }
+
+    .paper-letter {
+      font-family: var(--font-display);
+      font-size: 2.8rem;
+      font-weight: 900;
+      color: #2a1e0e;
+      line-height: 1;
+      opacity: 0;
+      transition: opacity 0.5s ease 0.8s;
+    }
+
+    .envelope.open .paper-letter { opacity: 1; }
+
+    .paper-text {
+      font-family: var(--font-body);
+      font-size: 0.7rem;
+      font-style: italic;
+      color: #4a3a20;
+      text-align: center;
+      padding: 0 0.8rem;
+      opacity: 0;
+      transition: opacity 0.5s ease 1s;
+    }
+
+    .envelope.open .paper-text { opacity: 1; }
+
+    .hold-hint {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--parchment-faint);
+      opacity: 0.45;
+      text-align: center;
+      letter-spacing: 0.08em;
+    }
+
+    /* ───────────────────────────────────────────────────────── */
+    /* SLIDE 2: The Mirror                                       */
+    /* ───────────────────────────────────────────────────────── */
     .mirror-box {
       position: relative;
       width: 100%;
-      aspect-ratio: 1 / 1.1;
-      max-height: 420px;
+      max-width: 500px;
+      aspect-ratio: 3 / 4;
       background: linear-gradient(135deg, #1a1828, #0f0d18 60%, #1a1828);
       border: 1px solid rgba(212,167,70,0.25);
-      border-radius: var(--radius-card);
+      border-radius: 6px;
       overflow: hidden;
       cursor: crosshair;
-      box-shadow:
-        inset 0 0 40px rgba(143,166,189,0.04),
-        0 4px 30px rgba(0,0,0,0.7);
+      margin: 0 auto;
+      box-shadow: inset 0 0 40px rgba(143,166,189,0.04), 0 4px 30px rgba(0,0,0,0.7);
     }
 
-    /* Mirror surface reflection sheen */
     .mirror-box::before {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(
-        135deg,
-        rgba(255,255,255,0.03) 0%,
-        transparent 40%,
-        rgba(255,255,255,0.01) 100%
-      );
+      background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 40%, rgba(255,255,255,0.01) 100%);
       pointer-events: none;
       z-index: 2;
     }
 
-    /* The "room" reflected (visible, but left-right flipped) */
+    .mirror-frame-border {
+      position: absolute;
+      inset: 8px;
+      border: 1px solid rgba(212,167,70,0.15);
+      border-radius: 4px;
+      pointer-events: none;
+      z-index: 3;
+    }
+
     .mirror-reflection {
       position: absolute;
       inset: 0;
@@ -193,46 +508,58 @@
       z-index: 1;
     }
 
-    /* The hidden text visible only in the mirror */
     .mirror-hidden-text {
       font-family: var(--font-display);
-      font-size: clamp(1.5rem, 4vw, 2.4rem);
+      font-size: clamp(1.8rem, 5vw, 3rem);
       font-weight: 700;
-      color: rgba(212,167,70,0.7);
+      color: rgba(212,167,70,0.6);
       letter-spacing: 0.18em;
       text-align: center;
-      text-shadow: 0 0 20px rgba(212,167,70,0.4);
-      /* Mirrored so it looks correct in the mirror panel */
+      text-shadow: 0 0 24px rgba(212,167,70,0.35);
       transform: scaleX(-1);
       user-select: none;
       line-height: 1.4;
       padding: 1rem;
     }
 
-    /* Answer fragment revealed from mirror */
-    .mirror-fragment {
+    .mirror-crosshair {
       position: absolute;
-      bottom: 1.2rem;
-      left: 50%;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      border: 1px solid rgba(212,167,70,0.4);
+      pointer-events: none;
+      z-index: 4;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
+    .mirror-crosshair::before, .mirror-crosshair::after {
+      content: '';
+      position: absolute;
+      background: rgba(212,167,70,0.3);
+    }
+    .mirror-crosshair::before { width: 1px; height: 100%; left: 50%; top: 0; }
+    .mirror-crosshair::after  { height: 1px; width: 100%; top: 50%; left: 0; }
+
+    .mirror-hold-ring {
+      position: absolute;
+      bottom: 1rem; left: 50%;
       transform: translateX(-50%);
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      color: var(--gold);
+      z-index: 5;
       opacity: 0;
-      transition: opacity 0.8s ease;
-      z-index: 3;
-      text-align: center;
-      letter-spacing: 0.14em;
-      background: rgba(14,11,18,0.85);
-      padding: 0.3rem 0.8rem;
-      border-radius: 2px;
-      border: 1px solid rgba(212,167,70,0.3);
-      white-space: nowrap;
+      transition: opacity 0.3s;
+    }
+    .mirror-hold-ring.visible { opacity: 1; }
+    .mirror-hold-ring svg { width: 48px; height: 48px; transform: rotate(-90deg); }
+    .mirror-hold-ring circle {
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-dasharray: 126;
+      stroke-dashoffset: 126;
+      transition: stroke-dashoffset 0.05s linear;
     }
 
-    .mirror-fragment.revealed { opacity: 1; }
-
-    /* Instruction below mirror */
     .mirror-instruction {
       font-family: var(--font-mono);
       font-size: 0.68rem;
@@ -243,101 +570,73 @@
       letter-spacing: 0.06em;
     }
 
-    /* Mirror "reveal" overlay — hover tilts the mirror */
     .mirror-tilt-zone {
       position: absolute;
       inset: 0;
       z-index: 4;
     }
 
-    /* ── Lantern Panel ──────────────────────────────────────── */
-    .lantern-panel { position: relative; }
-
+    /* ───────────────────────────────────────────────────────── */
+    /* SLIDE 3: The Lantern                                      */
+    /* ───────────────────────────────────────────────────────── */
     .lantern-field {
       position: relative;
       width: 100%;
-      aspect-ratio: 1 / 1.1;
-      max-height: 420px;
-      background: #0A0810;
+      max-width: 560px;
+      aspect-ratio: 16 / 10;
+      background: #070510;
       border: 1px solid rgba(212,167,70,0.2);
-      border-radius: var(--radius-card);
+      border-radius: 6px;
       overflow: hidden;
       cursor: none;
+      margin: 0 auto;
       box-shadow: 0 4px 30px rgba(0,0,0,0.8);
       user-select: none;
     }
 
-    /* Hidden text scattered across the dark field */
     .hidden-ink {
       position: absolute;
       font-family: var(--font-display);
       font-weight: 700;
-      color: rgba(212,167,70,0.92);
+      color: rgba(212,167,70,0.9);
       text-shadow: 0 0 8px rgba(212,167,70,0.6);
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.2s ease;
-      letter-spacing: 0.1em;
-      font-size: clamp(1rem, 2.5vw, 1.6rem);
+      transition: opacity 0.18s ease;
     }
 
-    /* Spotlight mask using radial-gradient + pointer position */
     .lantern-spotlight {
       position: absolute;
       inset: 0;
       pointer-events: none;
       z-index: 2;
-      /* Updated dynamically via JS */
-      background: radial-gradient(
-        circle 80px at 50% 50%,
-        transparent 0%,
-        transparent 45%,
-        rgba(10,8,16,0.88) 65%,
-        rgba(10,8,16,0.97) 100%
-      );
-      transition: background 0.05s linear;
+      background: rgba(7,5,16,0.98);
     }
 
-    /* Lantern cursor visual */
-    .lantern-cursor {
-      position: absolute;
-      width: 40px; height: 60px;
-      pointer-events: none;
-      z-index: 3;
-      transform: translate(-50%, -85%);
-      display: none;
-    }
-
-    .lantern-cursor svg { width: 100%; height: 100%; }
-
-    /* Glow halo behind lantern */
     .lantern-glow {
       position: absolute;
-      width: 120px; height: 120px;
+      width: 140px; height: 140px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(212,167,70,0.18) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(212,167,70,0.15) 0%, transparent 70%);
       pointer-events: none;
       z-index: 1;
       transform: translate(-50%, -50%);
       display: none;
     }
 
-    /* Lantern instruction */
-    .lantern-instruction {
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      color: var(--parchment-faint);
-      opacity: 0.45;
-      text-align: center;
-      margin-top: 0.6rem;
-      letter-spacing: 0.06em;
-    }
-
-    /* Fragment collected badge */
-    .fragment-found {
+    .lantern-cursor {
       position: absolute;
-      top: 0.8rem;
-      right: 0.8rem;
+      width: 36px; height: 52px;
+      pointer-events: none;
+      z-index: 3;
+      transform: translate(-50%, -85%);
+      display: none;
+    }
+    .lantern-cursor svg { width: 100%; height: 100%; }
+
+    .fragment-found-badge {
+      position: absolute;
+      top: 0.7rem; right: 0.7rem;
       font-family: var(--font-mono);
       font-size: 0.62rem;
       color: var(--gold);
@@ -351,66 +650,315 @@
       transition: opacity 0.5s ease;
     }
 
-    /* ── Answer Assembly ────────────────────────────────────── */
-    .answer-panel {
-      grid-column: 1 / -1;
-      padding: 2rem;
+    .lantern-instruction {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--parchment-faint);
+      opacity: 0.45;
       text-align: center;
+      margin-top: 0.6rem;
+      letter-spacing: 0.06em;
     }
 
-    .answer-panel h3 {
-      font-size: 1rem;
-      color: var(--parchment-dim);
-      font-weight: 400;
-      font-style: italic;
-      margin-bottom: 1.5rem;
-    }
-
-    .fragment-row {
+    /* ───────────────────────────────────────────────────────── */
+    /* SLIDE 4: The Cipher Disc                                  */
+    /* ───────────────────────────────────────────────────────── */
+    .disc-wrap {
       display: flex;
-      justify-content: center;
-      gap: 0.6rem;
-      flex-wrap: wrap;
-      margin-bottom: 1.5rem;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
     }
 
-    .fragment-slot {
-      width: 52px; height: 52px;
-      border: 1px solid rgba(212,167,70,0.25);
-      border-radius: 3px;
+    .disc-container {
+      position: relative;
+      width: min(340px, 80vw);
+      height: min(340px, 80vw);
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .disc-container:active { cursor: grabbing; }
+
+    .disc-container svg {
+      width: 100%; height: 100%;
+      overflow: visible;
+    }
+
+    .disc-instruction {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--parchment-faint);
+      opacity: 0.45;
+      text-align: center;
+      letter-spacing: 0.06em;
+      max-width: 320px;
+    }
+
+    .disc-readout {
+      font-family: var(--font-mono);
+      font-size: 1.2rem;
+      color: var(--mist);
+      letter-spacing: 0.18em;
+      min-height: 2rem;
+      text-align: center;
+      transition: color 0.4s ease;
+    }
+
+    .disc-readout.locked-on {
+      color: var(--gold);
+      text-shadow: 0 0 12px rgba(212,167,70,0.4);
+    }
+
+    /* ───────────────────────────────────────────────────────── */
+    /* SLIDE 5: The Fogged Glass                                 */
+    /* ───────────────────────────────────────────────────────── */
+    .fog-panel {
+      position: relative;
+      width: 100%;
+      max-width: 520px;
+      min-height: 260px;
+      margin: 0 auto;
+      border: 1px solid rgba(143,166,189,0.2);
+      border-radius: 6px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #0d1218, #111820);
+      box-shadow: inset 0 0 30px rgba(143,166,189,0.04), 0 4px 24px rgba(0,0,0,0.7);
+      cursor: pointer;
+    }
+
+    /* Condensation droplets */
+    .fog-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle 1px at 15% 20%, rgba(143,166,189,0.4) 0%, transparent 100%),
+        radial-gradient(circle 1.5px at 45% 70%, rgba(143,166,189,0.3) 0%, transparent 100%),
+        radial-gradient(circle 1px at 78% 35%, rgba(143,166,189,0.35) 0%, transparent 100%),
+        radial-gradient(circle 2px at 62% 15%, rgba(143,166,189,0.2) 0%, transparent 100%),
+        radial-gradient(circle 1px at 30% 85%, rgba(143,166,189,0.3) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* Cold glass shimmer */
+    .fog-panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(143,166,189,0.04) 0%, transparent 50%, rgba(143,166,189,0.02) 100%);
+      pointer-events: none;
+    }
+
+    /* The text behind the fog */
+    .fog-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 2rem;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+    }
+
+    .fog-text.visible { opacity: 1; }
+
+    .fog-text .revealed-word {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 700;
+      color: var(--parchment);
+      letter-spacing: 0.18em;
+      text-shadow: 0 0 20px rgba(235,217,180,0.3);
+    }
+
+    .fog-text .sub {
+      font-family: var(--font-body);
+      font-style: italic;
+      color: var(--parchment-dim);
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    /* Fog overlay */
+    .fog-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(143,166,189,0.08);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      transition: backdrop-filter 1.5s ease, opacity 1.5s ease;
+      pointer-events: none;
+    }
+
+    .fog-panel.breathed .fog-overlay {
+      backdrop-filter: blur(0px);
+      -webkit-backdrop-filter: blur(0px);
+      opacity: 0;
+    }
+
+    .fog-hint-text {
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
       font-family: var(--font-mono);
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--parchment);
-      background: rgba(14,11,18,0.7);
-      transition: border-color var(--transition), box-shadow var(--transition);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .fragment-slot::before {
-      content: attr(data-slot);
-      font-size: 0.55rem;
-      position: absolute;
-      bottom: 2px;
-      right: 4px;
-      color: var(--parchment-faint);
+      font-size: 0.68rem;
+      color: var(--mist);
       opacity: 0.4;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
+      transition: opacity 0.5s ease;
     }
 
-    .fragment-slot.filled {
-      border-color: rgba(212,167,70,0.6);
-      box-shadow: 0 0 12px rgba(212,167,70,0.2);
-      animation: glow-pulse 2.5s ease-in-out infinite;
+    .fog-panel.breathed .fog-hint-text { opacity: 0; }
+
+    .fog-instruction {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--parchment-faint);
+      opacity: 0.45;
+      text-align: center;
+      margin-top: 0.6rem;
+      letter-spacing: 0.06em;
     }
 
-    .fragment-slot.empty-hint {
-      border-style: dashed;
-      opacity: 0.5;
+    /* ───────────────────────────────────────────────────────── */
+    /* SLIDE 6: The Invisible Writing                            */
+    /* ───────────────────────────────────────────────────────── */
+    .page-document {
+      width: 100%;
+      max-width: 580px;
+      margin: 0 auto;
+      background: linear-gradient(160deg, #f5ead0, #e8d8b0);
+      border-radius: 3px;
+      padding: 2.5rem 2.8rem;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6), 2px 2px 0 rgba(0,0,0,0.15);
+      position: relative;
+      color: #2a1e0e;
+      line-height: 1.8;
+      font-size: 0.88rem;
+      font-family: var(--font-body);
+    }
+
+    .page-document::before {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0; left: 3rem;
+      width: 1px;
+      background: rgba(180,120,60,0.2);
+    }
+
+    .page-document p {
+      margin-bottom: 0.7rem;
+      color: #2a1e0e;
+    }
+
+    .invisible-line {
+      color: #f5ead0; /* matches background — invisible */
+      cursor: text;
+      font-weight: 600;
+      transition: color 0.4s ease;
+    }
+
+    .invisible-line.found {
+      color: #8b1a1a;
+    }
+
+    .invisible-line::selection {
+      background: rgba(139,26,26,0.3);
+      color: #2a1e0e;
+    }
+
+    .doc-stamp {
+      position: absolute;
+      bottom: 1.2rem;
+      right: 1.5rem;
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      border: 2px solid rgba(139,26,26,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 0.55rem;
+      color: rgba(139,26,26,0.4);
+      text-align: center;
+      letter-spacing: 0.06em;
+      line-height: 1.4;
+      transform: rotate(-12deg);
+    }
+
+    .found-notice {
+      margin-top: 0.8rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--gold);
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      letter-spacing: 0.1em;
+    }
+    .found-notice.visible { opacity: 1; }
+
+    .select-instruction {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--parchment-faint);
+      opacity: 0.45;
+      text-align: center;
+      margin-top: 0.6rem;
+      letter-spacing: 0.06em;
+    }
+
+    /* ───────────────────────────────────────────────────────── */
+    /* SLIDE 7: The Final Assembly                               */
+    /* ───────────────────────────────────────────────────────── */
+    .assembly-grid {
+      display: flex;
+      gap: 0.7rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+
+    .assembly-slot {
+      width: 60px; height: 70px;
+      border: 1px solid rgba(212,167,70,0.3);
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.2rem;
+      background: rgba(14,11,18,0.8);
+      transition: all 0.4s ease;
+    }
+
+    .assembly-slot.lit {
+      border-color: rgba(212,167,70,0.7);
+      box-shadow: 0 0 16px rgba(212,167,70,0.2);
+    }
+
+    .assembly-slot .slot-letter {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .assembly-slot .slot-label {
+      font-family: var(--font-mono);
+      font-size: 0.5rem;
+      color: var(--parchment-faint);
+      opacity: 0.45;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
     }
 
     .answer-form {
@@ -419,42 +967,93 @@
       justify-content: center;
       flex-wrap: wrap;
       align-items: center;
+      margin-top: 0.5rem;
     }
 
     .answer-input {
       font-family: var(--font-mono);
-      font-size: 1rem;
-      letter-spacing: 0.2em;
+      font-size: 1.1rem;
+      letter-spacing: 0.25em;
       text-transform: uppercase;
       background: rgba(14,11,18,0.8);
       border: 1px solid rgba(212,167,70,0.3);
       border-radius: var(--radius-seal);
       color: var(--parchment);
       padding: 0.7rem 1.2rem;
-      width: 220px;
+      width: 240px;
       text-align: center;
       transition: border-color var(--transition), box-shadow var(--transition);
     }
-
     .answer-input:focus {
       border-color: var(--gold);
       box-shadow: 0 0 12px rgba(212,167,70,0.2);
       outline: none;
     }
 
-    /* Success state */
     .answer-result {
-      margin-top: 1.2rem;
+      margin-top: 1rem;
       font-family: var(--font-mono);
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       letter-spacing: 0.1em;
+      text-align: center;
       min-height: 1.5em;
     }
-
     .answer-result.correct { color: var(--gold); }
     .answer-result.wrong   { color: var(--ember); }
 
-    /* ── Clue Panel (modal) ─────────────────────────────────── */
+    /* Victory state */
+    .victory-panel {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+      text-align: center;
+      padding: 2rem;
+    }
+    .victory-panel.show { display: flex; }
+
+    .victory-panel h3 {
+      font-size: clamp(1.3rem, 3vw, 1.8rem);
+      color: var(--gold);
+    }
+
+    .victory-score {
+      font-family: var(--font-mono);
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.08em;
+    }
+
+    .victory-breakdown {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--parchment-faint);
+      opacity: 0.65;
+      letter-spacing: 0.08em;
+      line-height: 1.8;
+    }
+
+    /* Leaderboard */
+    .lb-mini { margin-top: 1rem; width: 100%; max-width: 480px; }
+    .lb-row {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.5rem 0.9rem;
+      background: rgba(14,11,18,0.5);
+      border: 1px solid var(--ink-border);
+      border-radius: 3px;
+      font-size: 0.82rem;
+      margin-bottom: 0.4rem;
+    }
+    .lb-rank { font-family: var(--font-mono); font-size: 0.7rem; color: var(--gold-dim); width: 2em; flex-shrink: 0; }
+    .lb-name { flex: 1; color: var(--parchment-dim); }
+    .lb-score { font-family: var(--font-mono); font-size: 0.72rem; color: var(--mist); }
+    .lb-clues { font-family: var(--font-mono); font-size: 0.62rem; color: var(--ember); }
+    .lb-row.you { border-color: rgba(212,167,70,0.3); background: rgba(212,167,70,0.05); }
+
+    /* Clue modal */
     .clue-modal {
       display: none;
       position: fixed;
@@ -465,9 +1064,7 @@
       background: rgba(14,11,18,0.85);
       backdrop-filter: blur(8px);
     }
-
     .clue-modal.open { display: flex; }
-
     .clue-modal-box {
       background: var(--ink-mid);
       border: 1px solid rgba(212,167,70,0.3);
@@ -476,22 +1073,9 @@
       max-width: 440px;
       width: 90%;
       box-shadow: var(--shadow-glow);
-      position: relative;
     }
-
-    .clue-modal-box h3 {
-      font-size: 1.1rem;
-      margin-bottom: 0.5rem;
-      color: var(--parchment);
-    }
-
-    .clue-modal-box p {
-      font-size: 0.9rem;
-      color: var(--parchment-dim);
-      font-style: italic;
-      margin-bottom: 1.2rem;
-    }
-
+    .clue-modal-box h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .clue-modal-box p  { font-size: 0.9rem; color: var(--parchment-dim); font-style: italic; margin-bottom: 1rem; }
     .clue-text {
       background: rgba(14,11,18,0.7);
       border: 1px solid rgba(212,167,70,0.2);
@@ -503,27 +1087,18 @@
       margin-bottom: 1rem;
       font-style: italic;
     }
-
     .clue-text.shown { display: block; }
-
-    .clue-score-warning {
+    .clue-warning {
       font-family: var(--font-mono);
       font-size: 0.65rem;
       color: var(--ember);
       opacity: 0.8;
       letter-spacing: 0.06em;
-      margin-bottom: 1.2rem;
+      margin-bottom: 1rem;
       display: none;
     }
-
-    .clue-score-warning.shown { display: block; }
-
-    .clue-modal-btns {
-      display: flex;
-      gap: 0.8rem;
-      justify-content: flex-end;
-    }
-
+    .clue-warning.shown { display: block; }
+    .clue-btns { display: flex; gap: 0.8rem; justify-content: flex-end; }
     .clue-close {
       font-family: var(--font-display);
       font-size: 0.68rem;
@@ -539,63 +1114,11 @@
     }
     .clue-close:hover { border-color: var(--mist); color: var(--parchment); }
 
-    /* ── Mock Leaderboard ───────────────────────────────────── */
-    .leaderboard-aside {
-      grid-column: 1 / -1;
-      padding: 1.5rem 2rem;
-    }
-
-    .lb-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 0.6rem;
-      margin-top: 1rem;
-    }
-
-    .lb-row {
-      display: flex;
-      align-items: center;
-      gap: 0.8rem;
-      padding: 0.5rem 0.8rem;
-      background: rgba(14,11,18,0.5);
-      border: 1px solid var(--ink-border);
-      border-radius: 3px;
-      font-size: 0.82rem;
-    }
-
-    .lb-rank {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      color: var(--gold-dim);
-      opacity: 0.7;
-      width: 1.6em;
-      flex-shrink: 0;
-    }
-
-    .lb-name {
-      flex: 1;
-      color: var(--parchment-dim);
-      font-family: var(--font-body);
-      font-size: 0.88rem;
-    }
-
-    .lb-score {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--mist);
-    }
-
-    .lb-clues {
-      font-family: var(--font-mono);
-      font-size: 0.62rem;
-      color: var(--ember);
-      opacity: 0.7;
-    }
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
   </style>
 </head>
 <body>
 
-  <!-- Navigation -->
   <nav class="site-nav" role="navigation" aria-label="Main navigation">
     <div class="nav-inner">
       <a href="index.html" class="nav-wordmark">IMPOSSIBLE <span>HUNT</span></a>
@@ -613,501 +1136,1256 @@
 
   <div class="hunt-wrap">
 
-    <!-- Hunt meta bar -->
+    <!-- Progress rail -->
+    <div class="hunt-progress-rail" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress-rail" aria-label="Hunt progress">
+      <div class="hunt-progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+
+    <!-- Meta bar -->
     <div class="hunt-meta">
       <div class="hunt-title-block">
         <span class="hunt-number">Hunt 01</span>
         <span style="color:rgba(212,167,70,0.3);">—</span>
         <span class="hunt-name">The Glass &amp; The Flame</span>
-        <span class="badge badge-free" style="margin-left:0.4rem;">Free</span>
+        <span class="badge badge-free" style="margin-left:0.3rem;">Free</span>
       </div>
       <div class="hunt-controls">
-        <div class="timer-display" id="timer" aria-label="Elapsed time" aria-live="polite">00:00</div>
-        <button class="clue-btn" id="clue-trigger" aria-haspopup="dialog">
-          Buy Clue — $1.99
-        </button>
-        <a href="hunts.html" class="btn btn-ghost" style="font-size:0.65rem;padding:0.38rem 0.9rem;">← All Hunts</a>
+        <span class="slide-counter" id="slide-counter" aria-live="polite">Scene 1 of 7</span>
+        <div class="timer-display" id="timer" aria-label="Elapsed time">00:00</div>
+        <button class="clue-btn" id="clue-trigger" aria-haspopup="dialog">Clue — $1.99</button>
+        <a href="hunts.html" class="btn btn-ghost" style="font-size:0.65rem;padding:0.35rem 0.8rem;">← Hunts</a>
       </div>
     </div>
 
-    <!-- Puzzle stage -->
-    <main class="puzzle-stage" id="puzzle-stage">
+    <!-- Slide stage -->
+    <div class="slide-stage" id="slide-stage">
 
-      <!-- Intro -->
-      <div class="puzzle-intro">
-        <h2>The Glass &amp; The Flame</h2>
-        <p>
-          Something in this room is not where it appears to be.
-          Something else only becomes visible when brought near the right kind of light.
-          Find both. Combine what they give you.
-        </p>
+      <!-- ──────────────────────────────────────────────────── -->
+      <!-- SLIDE 1: The Wax Seal                               -->
+      <!-- ──────────────────────────────────────────────────── -->
+      <div class="slide active" id="slide-1" role="region" aria-label="Scene 1: The Sealed Envelope">
+        <div class="slide-frame">
+          <div class="slide-header">
+            <span class="slide-eyebrow">Scene I — The Envelope</span>
+            <h2 class="slide-title">The Sealed Letter</h2>
+            <p class="slide-desc">
+              It arrived without a sender's name. The wax is still intact.
+              Whoever sealed it did not want it opened — at least, not by someone impatient.
+            </p>
+          </div>
+
+          <div class="envelope-wrap">
+            <div class="envelope" id="envelope" aria-label="A sealed envelope. Press and hold the wax seal to open it.">
+              <div class="envelope-body"></div>
+              <div class="envelope-flap" aria-hidden="true"></div>
+              <div class="envelope-fold-l" aria-hidden="true"></div>
+              <div class="envelope-fold-r" aria-hidden="true"></div>
+
+              <!-- Paper inside -->
+              <div class="envelope-paper" id="envelope-paper" aria-hidden="true">
+                <span class="paper-letter" id="paper-letter">S</span>
+                <span class="paper-text">The first shadow begins here.</span>
+              </div>
+
+              <!-- Wax seal button -->
+              <button
+                class="wax-seal-btn"
+                id="seal-btn"
+                aria-label="Hold to break the wax seal"
+                aria-describedby="hold-hint-1"
+              >
+                ✦
+                <span class="seal-ring" id="seal-ring">
+                  <svg viewBox="0 0 80 80">
+                    <circle cx="40" cy="40" r="36" id="seal-progress-circle"/>
+                  </svg>
+                </span>
+              </button>
+            </div>
+
+            <p class="hold-hint" id="hold-hint-1">Press and hold the seal to break it open</p>
+          </div>
+        </div>
       </div>
 
-      <!-- ── Mirror Panel ─────────────────────────────────────── -->
-      <div class="mirror-panel">
-        <div class="panel-label">The Glass</div>
+      <!-- ──────────────────────────────────────────────────── -->
+      <!-- SLIDE 2: The Mirror                                 -->
+      <!-- ──────────────────────────────────────────────────── -->
+      <div class="slide" id="slide-2" role="region" aria-label="Scene 2: The Mirror">
+        <div class="slide-frame">
+          <div class="slide-header">
+            <span class="slide-eyebrow">Scene II — The Glass</span>
+            <h2 class="slide-title">The Mirror Room</h2>
+            <p class="slide-desc">
+              The mirror shows the room — but not as it is. Something is visible
+              in the reflection that cannot be seen directly.
+              Tilt it carefully. The right angle exists. Hold it there.
+            </p>
+          </div>
 
-        <div class="mirror-box" id="mirror-box" role="img" aria-label="A dark mirror. Move the cursor to adjust the angle of reflection.">
-          <!-- The reflection inside the mirror -->
-          <div class="mirror-reflection" id="mirror-reflection">
-            <div class="mirror-hidden-text" id="mirror-text" aria-hidden="true">
-              FIND<br>THE<br>LIGHT
+          <div class="mirror-box" id="mirror-box" role="application" aria-label="A dark mirror. Move the cursor across it to change the angle of reflection.">
+            <div class="mirror-reflection" id="mirror-reflection">
+              <div class="mirror-hidden-text" aria-hidden="true" id="mirror-hidden-text">LOOK<br>HERE</div>
+            </div>
+            <div class="mirror-frame-border" aria-hidden="true"></div>
+            <div class="mirror-crosshair" id="mirror-crosshair" aria-hidden="true"></div>
+            <div class="mirror-hold-ring visible" id="mirror-hold-ring" aria-hidden="true" style="opacity:0;">
+              <svg viewBox="0 0 48 48">
+                <circle cx="24" cy="24" r="20" id="mirror-progress-circle"/>
+              </svg>
+            </div>
+            <div class="mirror-tilt-zone" id="mirror-tilt" aria-hidden="true"></div>
+          </div>
+
+          <p class="mirror-instruction">Move the cursor slowly — watch for the angle where the words align</p>
+        </div>
+      </div>
+
+      <!-- ──────────────────────────────────────────────────── -->
+      <!-- SLIDE 3: The Lantern                                -->
+      <!-- ──────────────────────────────────────────────────── -->
+      <div class="slide" id="slide-3" role="region" aria-label="Scene 3: The Dark Field">
+        <div class="slide-frame">
+          <div class="slide-header">
+            <span class="slide-eyebrow">Scene III — The Flame</span>
+            <h2 class="slide-title">What the Darkness Hides</h2>
+            <p class="slide-desc">
+              The ink was applied in the dark, by someone who knew it would only be
+              read by lamplight. Six letters are scattered across this surface.
+              Find them all — in order, left to right, top to bottom.
+            </p>
+          </div>
+
+          <div class="lantern-field" id="lantern-field"
+            role="application"
+            aria-label="A dark field with hidden ink. Use keyboard arrow keys or move cursor to illuminate it."
+            tabindex="0">
+
+            <!-- Six hidden ink letters spelling SHADOW (positions scattered) -->
+            <span class="hidden-ink" style="left:12%;top:18%;font-size:clamp(1.2rem,3vw,2rem);" data-idx="0">A</span>
+            <span class="hidden-ink" style="left:68%;top:12%;font-size:clamp(1.2rem,3vw,2rem);" data-idx="1">D</span>
+            <span class="hidden-ink" style="left:38%;top:55%;font-size:clamp(1rem,2.5vw,1.6rem);" data-idx="2">O</span>
+            <span class="hidden-ink" style="left:78%;top:62%;font-size:clamp(1.2rem,3vw,2rem);" data-idx="3">W</span>
+
+            <!-- Decoy marks -->
+            <span class="hidden-ink" style="left:50%;top:35%;font-size:0.8rem;color:rgba(143,166,189,0.45);" data-decoy="1">◈</span>
+            <span class="hidden-ink" style="left:22%;top:75%;font-size:0.8rem;color:rgba(143,166,189,0.35);" data-decoy="1">✦</span>
+            <span class="hidden-ink" style="left:85%;top:28%;font-size:0.75rem;color:rgba(143,166,189,0.3);" data-decoy="1">⟡</span>
+            <span class="hidden-ink" style="left:5%;top:48%;font-size:0.75rem;color:rgba(143,166,189,0.3);" data-decoy="1">◆</span>
+
+            <div class="lantern-spotlight" id="lantern-spotlight" aria-hidden="true"></div>
+            <div class="lantern-glow" id="lantern-glow" aria-hidden="true"></div>
+            <div class="lantern-cursor" id="lantern-cursor" aria-hidden="true">
+              <svg viewBox="0 0 40 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <line x1="20" y1="2" x2="20" y2="9" stroke="#D4A746" stroke-width="1.5" stroke-linecap="round"/>
+                <rect x="12" y="9" width="16" height="4" rx="2" fill="#A07A28"/>
+                <rect x="10" y="13" width="20" height="26" rx="3" fill="#1a1828" stroke="#A07A28" stroke-width="1"/>
+                <rect x="13" y="16" width="14" height="20" rx="1" fill="rgba(212,167,70,0.13)"/>
+                <ellipse cx="20" cy="24" rx="4" ry="5" fill="rgba(226,87,43,0.7)"/>
+                <ellipse cx="20" cy="22" rx="2.5" ry="3.5" fill="rgba(212,167,70,0.9)"/>
+                <rect x="10" y="39" width="20" height="4" rx="2" fill="#A07A28"/>
+                <path d="M17 43 Q20 49 23 43" stroke="#A07A28" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="fragment-found-badge" id="lantern-badge" aria-live="polite">All letters found ✦</div>
+          </div>
+
+          <p class="lantern-instruction">Move the lantern to illuminate the hidden ink — keyboard arrows also work</p>
+
+          <!-- Letter progress tracker -->
+          <div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap;margin-top:0.5rem;" id="lantern-tracker" aria-label="Letters found so far" aria-live="polite">
+            <span style="font-family:var(--font-mono);font-size:0.65rem;color:var(--parchment-faint);opacity:0.5;letter-spacing:0.1em;">Found:</span>
+            <span class="chip" id="lc-0" aria-label="Letter 1 not yet found">·</span>
+            <span class="chip" id="lc-1" aria-label="Letter 2 not yet found">·</span>
+            <span class="chip" id="lc-2" aria-label="Letter 3 not yet found">·</span>
+            <span class="chip" id="lc-3" aria-label="Letter 4 not yet found">·</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────────────────────────────────────────── -->
+      <!-- SLIDE 4: The Cipher Disc                            -->
+      <!-- ──────────────────────────────────────────────────── -->
+      <div class="slide" id="slide-4" role="region" aria-label="Scene 4: The Cipher Disc">
+        <div class="slide-frame">
+          <div class="slide-header">
+            <span class="slide-eyebrow">Scene IV — The Dial</span>
+            <h2 class="slide-title">The Clockmaker's Cipher</h2>
+            <p class="slide-desc">
+              The outer ring is fixed. The inner ring turns.
+              Align the marked symbol on the inner ring with the red indicator at the top.
+              The dial will speak one letter when the position is exact.
+            </p>
+          </div>
+
+          <div class="disc-wrap">
+            <div class="disc-container" id="disc-container" role="slider" aria-label="Rotatable cipher disc" aria-valuemin="0" aria-valuemax="359" aria-valuenow="0">
+              <svg viewBox="-160 -160 320 320" id="disc-svg">
+                <!-- Outer ring (fixed) -->
+                <circle cx="0" cy="0" r="140" fill="#0E0B12" stroke="rgba(212,167,70,0.3)" stroke-width="1.5"/>
+                <circle cx="0" cy="0" r="108" fill="none" stroke="rgba(212,167,70,0.15)" stroke-width="1"/>
+
+                <!-- Outer tick marks and symbols -->
+                <g id="outer-ring">
+                  <!-- 24 symbols around the outer ring -->
+                </g>
+
+                <!-- Inner rotatable ring -->
+                <g id="inner-ring" style="transform-origin:0 0;">
+                  <circle cx="0" cy="0" r="100" fill="#181420" stroke="rgba(143,166,189,0.2)" stroke-width="1"/>
+                  <circle cx="0" cy="0" r="70" fill="#0E0B12" stroke="rgba(212,167,70,0.1)" stroke-width="1"/>
+                </g>
+
+                <!-- Center dot -->
+                <circle cx="0" cy="0" r="6" fill="var(--gold)" opacity="0.5"/>
+
+                <!-- Red indicator arrow at top -->
+                <g id="indicator">
+                  <path d="M0,-115 L-6,-130 L0,-145 L6,-130 Z" fill="var(--ember)" opacity="0.9"/>
+                  <line x1="0" y1="-108" x2="0" y2="-116" stroke="var(--ember)" stroke-width="2"/>
+                </g>
+
+                <!-- Locked-on glow ring (hidden by default) -->
+                <circle cx="0" cy="0" r="100" fill="none" stroke="var(--gold)" stroke-width="2" opacity="0" id="lock-glow-ring"
+                  style="filter:drop-shadow(0 0 6px rgba(212,167,70,0.6));transition:opacity 0.5s ease;"/>
+              </svg>
+            </div>
+
+            <div class="disc-readout" id="disc-readout" aria-live="polite" aria-label="Current disc reading">· · ·</div>
+            <p class="disc-instruction">Drag to rotate the inner ring — find the exact position where the symbol locks on</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ──────────────────────────────────────────────────── -->
+      <!-- SLIDE 5: The Fogged Glass                           -->
+      <!-- ──────────────────────────────────────────────────── -->
+      <div class="slide" id="slide-5" role="region" aria-label="Scene 5: The Fogged Glass">
+        <div class="slide-frame">
+          <div class="slide-header">
+            <span class="slide-eyebrow">Scene V — The Cold Glass</span>
+            <h2 class="slide-title">What Breath Reveals</h2>
+            <p class="slide-desc">
+              The glass is cold. When the air is warm enough, the condensation forms —
+              and whatever lies beneath becomes, briefly, visible.
+              Stay close. Do not move away too quickly.
+            </p>
+          </div>
+
+          <div class="fog-panel" id="fog-panel" tabindex="0" role="application"
+            aria-label="A fogged cold glass pane. Hover or focus on it to clear the fog and reveal the word beneath.">
+            <div class="fog-overlay" id="fog-overlay" aria-hidden="true"></div>
+            <div class="fog-hint-text" aria-hidden="true">[ breathe on the glass ]</div>
+            <div class="fog-text" id="fog-text" aria-live="polite">
+              <span class="revealed-word">OW</span>
+              <span class="sub">— the glass remembers what was written on it —</span>
             </div>
           </div>
 
-          <!-- Tilt interaction zone -->
-          <div class="mirror-tilt-zone" id="mirror-tilt" aria-hidden="true"></div>
-
-          <!-- Fragment revealed when mirror is "aimed correctly" -->
-          <div class="mirror-fragment" id="mirror-fragment" aria-live="polite">
-            Fragment I: &nbsp;<strong id="frag-a">—</strong>
-          </div>
+          <p class="fog-instruction">Hover over the glass panel (or focus and hold) — the letters appear as the cold clears</p>
         </div>
-
-        <p class="mirror-instruction">Move cursor / finger across the glass to adjust the angle of reflection</p>
       </div>
 
-      <!-- ── Lantern Panel ─────────────────────────────────────── -->
-      <div class="lantern-panel">
-        <div class="panel-label">The Flame</div>
-
-        <div class="lantern-field" id="lantern-field"
-          role="application"
-          aria-label="A dark surface with hidden ink. Move the lantern across to illuminate what is hidden."
-          tabindex="0">
-
-          <!-- Hidden ink words scattered across the field -->
-          <span class="hidden-ink" style="left:18%;top:22%;" data-word="F" id="ink-0">F</span>
-          <span class="hidden-ink" style="left:55%;top:15%;" data-word="L" id="ink-1">L</span>
-          <span class="hidden-ink" style="left:72%;top:45%;" data-word="A" id="ink-2">A</span>
-          <span class="hidden-ink" style="left:28%;top:65%;" data-word="M" id="ink-3">M</span>
-          <span class="hidden-ink" style="left:62%;top:72%;" data-word="E" id="ink-4">E</span>
-
-          <!-- Decoy ink that is not part of the answer -->
-          <span class="hidden-ink" style="left:42%;top:40%;font-size:0.9rem;color:rgba(143,166,189,0.5);" id="ink-dec1">✦</span>
-          <span class="hidden-ink" style="left:80%;top:28%;font-size:0.8rem;color:rgba(143,166,189,0.4);" id="ink-dec2">⟡</span>
-          <span class="hidden-ink" style="left:12%;top:80%;font-size:0.8rem;color:rgba(143,166,189,0.4);" id="ink-dec3">◈</span>
-
-          <!-- Spotlight overlay -->
-          <div class="lantern-spotlight" id="lantern-spotlight" aria-hidden="true"></div>
-
-          <!-- Lantern glow halo -->
-          <div class="lantern-glow" id="lantern-glow" aria-hidden="true"></div>
-
-          <!-- Lantern cursor -->
-          <div class="lantern-cursor" id="lantern-cursor" aria-hidden="true">
-            <svg viewBox="0 0 40 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <!-- Lantern handle -->
-              <line x1="20" y1="2" x2="20" y2="10" stroke="#D4A746" stroke-width="1.5" stroke-linecap="round"/>
-              <!-- Top cap -->
-              <rect x="12" y="10" width="16" height="4" rx="2" fill="#A07A28"/>
-              <!-- Lantern body -->
-              <rect x="10" y="14" width="20" height="26" rx="3" fill="#1a1828" stroke="#A07A28" stroke-width="1"/>
-              <!-- Glass panels (glowing) -->
-              <rect x="13" y="17" width="14" height="20" rx="1" fill="rgba(212,167,70,0.15)"/>
-              <!-- Flame inside -->
-              <ellipse cx="20" cy="25" rx="4" ry="5" fill="rgba(226,87,43,0.7)"/>
-              <ellipse cx="20" cy="23" rx="2.5" ry="3.5" fill="rgba(212,167,70,0.9)"/>
-              <!-- Bottom cap -->
-              <rect x="10" y="40" width="20" height="4" rx="2" fill="#A07A28"/>
-              <!-- Handle loop at bottom -->
-              <path d="M17 44 Q20 50 23 44" stroke="#A07A28" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-            </svg>
+      <!-- ──────────────────────────────────────────────────── -->
+      <!-- SLIDE 6: The Invisible Writing                      -->
+      <!-- ──────────────────────────────────────────────────── -->
+      <div class="slide" id="slide-6" role="region" aria-label="Scene 6: The Hidden Document">
+        <div class="slide-frame">
+          <div class="slide-header">
+            <span class="slide-eyebrow">Scene VI — The Document</span>
+            <h2 class="slide-title">Ink That Isn't There</h2>
+            <p class="slide-desc">
+              The letter appears complete. But one line was written in an ink
+              that does not reflect light — only intent. It is there.
+              The right kind of attention will find it.
+            </p>
           </div>
 
-          <!-- Fragment found indicator -->
-          <div class="fragment-found" id="lantern-fragment-found" aria-live="polite">
-            Fragment II: FLAME
-          </div>
-        </div>
+          <div>
+            <div class="page-document" id="page-document" role="document" aria-label="A faded letter with one hidden line">
+              <p>To whoever finds this after me —</p>
 
-        <p class="lantern-instruction">Bring the lantern close — hidden ink needs light to be read</p>
-      </div>
+              <p>
+                I have left the records in the usual place, filed under the
+                name of the original owner. You will recognise the handwriting.
+                The dates are not accurate; this was intentional. Read the
+                margins first, then the body of the text, then the signature.
+              </p>
 
-      <!-- ── Answer Assembly ──────────────────────────────────── -->
-      <div class="answer-panel card">
-        <h3>Assemble the answer from what the glass and flame revealed</h3>
+              <p>
+                The collection is not complete. Three items remain unaccounted
+                for. They were not lost — they were placed somewhere that
+                required a specific kind of search to find. You will know the
+                place when you see it.
+              </p>
 
-        <div class="fragment-row" aria-label="Answer fragments collected so far">
-          <!-- Fragment slots — filled by JS as puzzles are solved -->
-          <div class="fragment-slot empty-hint" id="slot-0" data-slot="I" aria-label="Fragment I — not yet collected">?</div>
-          <div class="fragment-slot empty-hint" id="slot-1" data-slot="II" aria-label="Fragment II — not yet collected">?</div>
-          <div class="fragment-slot empty-hint" id="slot-2" data-slot="III" aria-label="Fragment III — hidden" style="opacity:0.2;">?</div>
-        </div>
+              <!-- The invisible line — same color as background -->
+              <p>
+                <span class="invisible-line" id="invisible-line" aria-label="Hidden text — select to reveal">SH — this letter is the beginning of what was taken.</span>
+              </p>
 
-        <form class="answer-form" id="answer-form" onsubmit="return false;">
-          <label for="answer-input" class="sr-only">Enter the final answer</label>
-          <input
-            type="text"
-            id="answer-input"
-            class="answer-input"
-            placeholder="ENTER ANSWER"
-            maxlength="20"
-            autocomplete="off"
-            autocorrect="off"
-            spellcheck="false"
-            aria-describedby="answer-hint"
-          >
-          <button type="submit" class="btn btn-primary" id="submit-btn" style="padding:0.7rem 1.6rem;font-size:0.72rem;">
-            Submit
-          </button>
-        </form>
+              <p>
+                Do not contact the usual intermediary. That route is now closed.
+                Use the address on the back of this page — it is still active,
+                though it changes every six months. You have time, but not much.
+              </p>
 
-        <p id="answer-hint" style="font-family:var(--font-mono);font-size:0.62rem;color:var(--parchment-faint);opacity:0.35;margin-top:0.6rem;letter-spacing:0.08em;">
-          Solve both panels first — the answer will assemble itself.
-        </p>
+              <p style="margin-bottom:0;font-style:italic;opacity:0.7;">— The Correspondent</p>
 
-        <div class="answer-result" id="answer-result" role="alert" aria-live="assertive"></div>
-      </div>
+              <div class="doc-stamp">CONFIDENTIAL<br>FILE NO.<br>1131-Φ</div>
+            </div>
 
-      <!-- ── Mock Leaderboard ──────────────────────────────────── -->
-      <div class="leaderboard-aside card">
-        <div class="panel-label">Leaderboard — Hunt 01</div>
-        <div class="lb-grid" role="list" aria-label="Top solvers for this hunt">
-          <div class="lb-row" role="listitem">
-            <span class="lb-rank">#1</span>
-            <span class="lb-name">E. Voss</span>
-            <span class="lb-score">04:12</span>
-            <span class="lb-clues">0 clues</span>
-          </div>
-          <div class="lb-row" role="listitem">
-            <span class="lb-rank">#2</span>
-            <span class="lb-name">M. Ashford</span>
-            <span class="lb-score">07:39</span>
-            <span class="lb-clues">0 clues</span>
-          </div>
-          <div class="lb-row" role="listitem">
-            <span class="lb-rank">#3</span>
-            <span class="lb-name">R. Calderón</span>
-            <span class="lb-score">09:05</span>
-            <span class="lb-clues">1 clue</span>
-          </div>
-          <div class="lb-row" role="listitem">
-            <span class="lb-rank">#4</span>
-            <span class="lb-name">T. Nakamura</span>
-            <span class="lb-score">11:18</span>
-            <span class="lb-clues">0 clues</span>
-          </div>
-          <div class="lb-row" role="listitem">
-            <span class="lb-rank">#5</span>
-            <span class="lb-name">S. Brennan</span>
-            <span class="lb-score">14:52</span>
-            <span class="lb-clues">2 clues</span>
-          </div>
-          <div class="lb-row" role="listitem">
-            <span class="lb-rank">#6</span>
-            <span class="lb-name">— you —</span>
-            <span class="lb-score" id="my-time">--:--</span>
-            <span class="lb-clues" id="my-clues">—</span>
+            <div class="found-notice" id="found-notice" aria-live="polite">
+              ✦ Hidden text found — fragment confirmed
+            </div>
+
+            <p class="select-instruction">Select the text in the document to find what is hidden — click and drag</p>
           </div>
         </div>
       </div>
 
-    </main>
+      <!-- ──────────────────────────────────────────────────── -->
+      <!-- SLIDE 7: Final Assembly                             -->
+      <!-- ──────────────────────────────────────────────────── -->
+      <div class="slide" id="slide-7" role="region" aria-label="Scene 7: Final Assembly">
+        <div class="slide-frame">
+          <div class="slide-header">
+            <span class="slide-eyebrow">Scene VII — The Answer</span>
+            <h2 class="slide-title">What the Hunt Has Given You</h2>
+            <p class="slide-desc">
+              Six scenes. Six fragments. Each one a piece of something the room
+              was keeping from you. They have assembled themselves.
+              Confirm the answer — then the record will be yours.
+            </p>
+          </div>
+
+          <!-- Assembly grid -->
+          <div class="assembly-grid" aria-label="Collected fragments" role="list">
+            <div class="assembly-slot lit" id="as-0" role="listitem">
+              <span class="slot-letter">S</span>
+              <span class="slot-label">Scene I</span>
+            </div>
+            <div class="assembly-slot lit" id="as-1" role="listitem">
+              <span class="slot-letter">H</span>
+              <span class="slot-label">Scene II</span>
+            </div>
+            <div class="assembly-slot lit" id="as-2" role="listitem">
+              <span class="slot-letter">A</span>
+              <span class="slot-label">Scene III</span>
+            </div>
+            <div class="assembly-slot lit" id="as-3" role="listitem">
+              <span class="slot-letter">D</span>
+              <span class="slot-label">Scene III</span>
+            </div>
+            <div class="assembly-slot lit" id="as-4" role="listitem">
+              <span class="slot-letter">O</span>
+              <span class="slot-label">Scene V</span>
+            </div>
+            <div class="assembly-slot lit" id="as-5" role="listitem">
+              <span class="slot-letter">W</span>
+              <span class="slot-label">Scene VI</span>
+            </div>
+          </div>
+
+          <!-- Input or victory -->
+          <div id="answer-section">
+            <form class="answer-form" id="answer-form" onsubmit="return false;">
+              <label for="answer-input" class="sr-only">Enter the six-letter answer</label>
+              <input
+                type="text"
+                id="answer-input"
+                class="answer-input"
+                placeholder="TYPE THE ANSWER"
+                maxlength="10"
+                autocomplete="off"
+                autocorrect="off"
+                spellcheck="false"
+              >
+              <button type="submit" class="btn btn-primary" style="padding:0.7rem 1.6rem;font-size:0.75rem;">Submit</button>
+            </form>
+            <div class="answer-result" id="answer-result" role="alert" aria-live="assertive"></div>
+          </div>
+
+          <div class="victory-panel" id="victory-panel">
+            <div style="font-size:2.5rem;" aria-hidden="true">✦</div>
+            <h3>Hunt Complete.</h3>
+            <div class="victory-score" id="victory-score" aria-label="Your final detective score">—</div>
+            <div class="victory-breakdown" id="victory-breakdown"></div>
+
+            <div class="lb-mini">
+              <div class="lb-row"><span class="lb-rank">#1</span><span class="lb-name">E. Voss</span><span class="lb-score">04:12</span><span class="lb-clues">0 clues</span></div>
+              <div class="lb-row"><span class="lb-rank">#2</span><span class="lb-name">M. Ashford</span><span class="lb-score">07:39</span><span class="lb-clues">0 clues</span></div>
+              <div class="lb-row"><span class="lb-rank">#3</span><span class="lb-name">R. Calderón</span><span class="lb-score">09:05</span><span class="lb-clues">1 clue</span></div>
+              <div class="lb-row you" id="your-lb-row">
+                <span class="lb-rank">—</span>
+                <span class="lb-name">— you —</span>
+                <span class="lb-score" id="your-time">--:--</span>
+                <span class="lb-clues" id="your-clues">—</span>
+              </div>
+            </div>
+            <a href="hunts.html" class="btn btn-secondary" style="margin-top:0.5rem;">View All Hunts</a>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /slide-stage -->
+
+    <!-- Bottom navigation -->
+    <div class="slide-nav" role="navigation" aria-label="Slide navigation">
+      <div class="slide-nav-fragment">
+        <div class="fragment-chips" id="fragment-chips" aria-label="Fragments collected" aria-live="polite">
+          <span class="chip" id="chip-0" aria-label="Fragment 1">·</span>
+          <span class="chip" id="chip-1" aria-label="Fragment 2">·</span>
+          <span class="chip" id="chip-2" aria-label="Fragment 3">·</span>
+          <span class="chip" id="chip-3" aria-label="Fragment 4">·</span>
+          <span class="chip" id="chip-4" aria-label="Fragment 5">·</span>
+          <span class="chip" id="chip-5" aria-label="Fragment 6">·</span>
+        </div>
+      </div>
+      <button class="btn-next" id="btn-next" aria-label="Proceed to next scene">
+        Next Scene →
+      </button>
+    </div>
+
+  </div><!-- /hunt-wrap -->
+
+  <!-- Solved flash overlay -->
+  <div class="solved-flash" id="solved-flash" aria-hidden="true"></div>
+
+  <!-- Fragment banner -->
+  <div class="fragment-banner" id="fragment-banner" role="status" aria-live="assertive">
+    <span class="label">Fragment found</span>
+    <span class="big-letter" id="banner-letter">?</span>
+    <span class="label" id="banner-scene">Scene I</span>
   </div>
 
-  <!-- Clue Modal -->
+  <!-- Clue modal -->
   <div class="clue-modal" id="clue-modal" role="dialog" aria-modal="true" aria-labelledby="clue-modal-title">
     <div class="clue-modal-box">
       <h3 id="clue-modal-title">Purchase a Clue</h3>
-      <p>
-        A clue narrows the territory. It will not solve the puzzle for you —
-        but it will eliminate one wrong direction. Each clue reduces your Detective Score.
-      </p>
-
+      <p>A clue narrows the territory. It will not solve the puzzle —
+         it eliminates one wrong direction. Each clue reduces your Detective Score.</p>
       <div class="clue-text" id="clue-text-box" aria-live="polite"></div>
-      <div class="clue-score-warning" id="clue-warning" aria-live="polite">
-        ⚠ Clue used — Detective Score reduced.
-      </div>
-
-      <div class="clue-modal-btns">
+      <div class="clue-warning" id="clue-warning">⚠ Clue used — Detective Score reduced.</div>
+      <div class="clue-btns">
         <button class="clue-close" id="clue-cancel">Not Yet</button>
-        <button class="btn btn-ember" id="clue-purchase" style="font-size:0.72rem;padding:0.55rem 1.2rem;">
-          Use Clue — $1.99
-        </button>
+        <button class="btn btn-ember" id="clue-purchase" style="font-size:0.72rem;padding:0.55rem 1.2rem;">Use Clue — $1.99</button>
       </div>
     </div>
   </div>
 
-  <!-- Screen-reader-only utility -->
-  <style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}</style>
-
   <script src="script.js"></script>
   <script>
-  /* ── Hunt 1 Puzzle Logic ──────────────────────────────────── */
+  /* ═══════════════════════════════════════════════════════════
+     HUNT 1 — Full Puzzle Engine
+  ═══════════════════════════════════════════════════════════ */
   (function () {
+    'use strict';
+
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    /* ── Timer ──────────────────────────────────────────────── */
-    let seconds = 0;
+    /* ── State ──────────────────────────────────────────────── */
+    const TOTAL_SLIDES = 7;
+    const ANSWER = 'SHADOW';
+    let currentSlide = 1;
+    let slideSolved  = [false, false, false, false, false, false, false]; // 1-indexed, slot 0 unused
+    let seconds      = 0;
     let timerInterval = null;
-    const timerEl = document.getElementById('timer');
-    const myTimeEl = document.getElementById('my-time');
+    let clueCount    = 0;
+    let clueIndex    = 0;
+    // Fragments: S H A+D O+W SH → actually: S(seal) H(mirror) ADOW(lantern 4 letters) OW(fog) SH(invis)
+    // Mapping: scene1=S, scene2=H, scene3=ADOW(fragments 3,4 for lantern A,D then fog gives OW slide5)
+    // Let me reconsider: the 6 chips map to scenes this way:
+    // chip 0 = S (seal, slide 1)
+    // chip 1 = H (mirror, slide 2)
+    // chip 2 = A (lantern 1st letter, slide 3)
+    // chip 3 = D (lantern 2nd letter... well lantern finds ADOW in the field)
+    // Actually: lantern finds A and D (chips 2,3), fog reveals OW (we split to O chip4 + W chip5)
+    // Or: slide3=lantern finds A+D (fills chips 2+3), slide4=disc finds nothing (it's visual only adding 1 fragment?)
+    // Let me simplify:
+    // Slide 1 = S → chip 0
+    // Slide 2 = H → chip 1
+    // Slide 3 (lantern) = A → chip 2, D → chip 3 (finds 2 letters by illuminating all 4 ink spots; A and D are the answer letters)
+    // Slide 4 (disc) = O → chip 4 (disc rotates to reveal O)
+    // Slide 5 (fog) = W → chip 5 (fog clears to reveal W)
+    // Slide 6 (invisible) = just confirms SH
+    // Slide 7 = assembly, answer = SHADOW
 
+    // Wait, I wrote the lantern field to have letters A, D, O, W at indices 0-3.
+    // And fog panel shows "OW". And invisible line starts with "SH".
+    // So the fragments are:
+    // S = seal (slide 1) → chip 0
+    // H = mirror (slide 2) → chip 1
+    // A = lantern letter 0 (slide 3) → chip 2
+    // D = lantern letter 1 (slide 3) → chip 3
+    // O = lantern letter 2 (slide 3) → chip 4... but I assigned fog to reveal OW
+    // W = lantern letter 3 (slide 3) → chip 5
+
+    // Actually the lantern finds 4 letters: A, D, O, W — which fills chips 2,3,4,5
+    // Then disc (slide 4) is a puzzle but doesn't add to the answer (or it's the verification that you're on track)
+    // Then fog (slide 5) shows "OW" as confirmation but the chips were already filled by lantern
+    // Then invisible (slide 6) shows "SH" as confirmation
+
+    // Better approach: Each puzzle unlocks the NEXT slide but the fragments are:
+    // Seal → S (chip 0)
+    // Mirror → H (chip 1)
+    // Lantern → A, D (chips 2, 3) — only 2 letters A and D in lantern
+    // Disc → O (chip 4) — disc at correct angle reveals O
+    // Fog → W (chip 5) — fog clears to show W
+    // Invisible → just confirms, allows proceeding to assembly
+    // This way each puzzle adds exactly 1 (or 2) fragments.
+
+    // Let me also update: lantern has only data-idx 0 and 1 (A and D), remove O and W from lantern.
+    // But I already wrote the HTML with 4 letters A,D,O,W in the lantern...
+    // I'll just handle it in JS: lantern solving fills chips 2 and 3 (A and D)
+    // The lantern letters with data-idx 0=A, 1=D are the "real" ones, 2=O and 3=W are decoys that get found but don't fill chips
+    // Actually simpler: lantern finds A(idx0) and D(idx1). O and W in the lantern are positioned as data-idx=2,3 but I'll treat them as decoys.
+    // Wait, I wrote data-idx for all 4. Let me just make it that all 4 need to be found, filling chips 2,3,4,5.
+    // Then disc = no chip, fog = no chip, invisible = no chip. They just unlock next slide.
+    // Final answer is SHADOW = S+H+A+D+O+W.
+    // Hmm but then disc, fog, and invisible don't contribute to the answer...
+
+    // OK final plan:
+    // Lantern finds 4 letters: A D O W (chips 2,3,4,5)
+    // Disc, fog, invisible are "gate" puzzles that unlock the next slide but don't add chips
+    // This still works as 7 scenes and the answer is SHADOW
+
+    const fragments = ['·','·','·','·','·','·']; // S H A D O W
+
+    /* ── Timer ──────────────────────────────────────────────── */
     function startTimer() {
       if (timerInterval) return;
       timerInterval = setInterval(() => {
         seconds++;
-        const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-        const s = String(seconds % 60).padStart(2, '0');
-        timerEl.textContent = m + ':' + s;
+        document.getElementById('timer').textContent = formatTime(seconds);
       }, 1000);
     }
 
-    // Start on first interaction
+    function formatTime(s) {
+      return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+    }
+
     document.addEventListener('mousemove', startTimer, { once: true });
     document.addEventListener('touchstart', startTimer, { once: true });
     document.addEventListener('keydown', startTimer, { once: true });
 
-    /* ── State ──────────────────────────────────────────────── */
-    let mirrorSolved  = false;
-    let lanternSolved = false;
-    let clueCount     = 0;
-    const CORRECT_ANSWER = 'FLAME'; // The final answer
+    /* ── Slide system ───────────────────────────────────────── */
+    function goToSlide(n) {
+      if (n < 1 || n > TOTAL_SLIDES) return;
 
-    const clues = [
-      'The mirror shows the word reversed. Read it as it would appear looking into real glass — the word faces you, but the letters face themselves.',
-      'The hidden ink in the dark field spells a word. Start from the upper-left and move right, then down. Five letters in order.',
-      'The final answer is a single five-letter word found within the lantern\'s light.',
-    ];
-    let clueIndex = 0;
+      const cur = document.getElementById('slide-' + currentSlide);
+      const nxt = document.getElementById('slide-' + n);
 
-    /* ── Mirror Puzzle ──────────────────────────────────────── */
-    const mirrorBox        = document.getElementById('mirror-box');
-    const mirrorTilt       = document.getElementById('mirror-tilt');
-    const mirrorFragment   = document.getElementById('mirror-fragment');
-    const fragA            = document.getElementById('frag-a');
-    const mirrorReflection = document.getElementById('mirror-reflection');
+      if (cur) cur.classList.add('exit-left');
+      setTimeout(() => {
+        if (cur) { cur.classList.remove('active', 'exit-left'); }
+      }, prefersReduced ? 10 : 460);
 
-    let mirrorHoverX = 0;
-    let mirrorHoverY = 0;
-    let mirrorRevealTimer = null;
+      nxt.classList.add('active');
+      currentSlide = n;
 
-    function handleMirrorMove(x, y) {
-      const rect = mirrorBox.getBoundingClientRect();
-      const px = (x - rect.left) / rect.width;   // 0..1
-      const py = (y - rect.top)  / rect.height;  // 0..1
+      updateProgress();
+      updateNextBtn();
+      activateSlide(n);
+    }
 
-      // Tilt the reflected image subtly based on cursor position
-      const rx = (py - 0.5) * 22;  // vertical tilt
-      const ry = (px - 0.5) * -18; // horizontal tilt
-      mirrorReflection.style.transform = `scaleX(-1) perspective(400px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+    function updateProgress() {
+      const pct = ((currentSlide - 1) / (TOTAL_SLIDES - 1)) * 100;
+      document.getElementById('progress-fill').style.width = pct + '%';
+      document.getElementById('progress-rail').setAttribute('aria-valuenow', Math.round(pct));
+      document.getElementById('slide-counter').textContent = 'Scene ' + currentSlide + ' of ' + TOTAL_SLIDES;
+    }
 
-      // The "correct" zone: upper-right quadrant
-      const inCorrectZone = px > 0.55 && py < 0.45;
-
-      if (inCorrectZone && !mirrorSolved) {
-        clearTimeout(mirrorRevealTimer);
-        mirrorRevealTimer = setTimeout(() => {
-          // Reveal "LOOK" as fragment
-          mirrorFragment.classList.add('revealed');
-          fragA.textContent = 'LOOK';
-          mirrorSolved = true;
-          fillSlot(0, 'L');
-          checkBothSolved();
-        }, 800);
-      } else if (!inCorrectZone && !mirrorSolved) {
-        clearTimeout(mirrorRevealTimer);
-        mirrorFragment.classList.remove('revealed');
+    function updateNextBtn() {
+      const btn = document.getElementById('btn-next');
+      const solved = slideSolved[currentSlide];
+      btn.classList.toggle('unlocked', !!solved);
+      if (currentSlide === TOTAL_SLIDES) {
+        btn.style.display = 'none';
+      } else {
+        btn.style.display = '';
+        btn.textContent = 'Next Scene →';
       }
     }
 
-    mirrorTilt.addEventListener('mousemove', (e) => handleMirrorMove(e.clientX, e.clientY));
-    mirrorTilt.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      handleMirrorMove(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: false });
+    document.getElementById('btn-next').addEventListener('click', () => {
+      if (slideSolved[currentSlide]) {
+        goToSlide(currentSlide + 1);
+      }
+    });
 
-    /* ── Lantern Puzzle ─────────────────────────────────────── */
-    const lanternField    = document.getElementById('lantern-field');
-    const spotlight       = document.getElementById('lantern-spotlight');
-    const lanternGlow     = document.getElementById('lantern-glow');
-    const lanternCursor   = document.getElementById('lantern-cursor');
-    const inkEls          = document.querySelectorAll('.hidden-ink');
-    const fragFound       = document.getElementById('lantern-fragment-found');
+    /* ── Fragment reveal animation ─────────────────────────── */
+    function showFragmentBanner(letter, sceneLabel) {
+      const banner = document.getElementById('fragment-banner');
+      const flash  = document.getElementById('solved-flash');
+      document.getElementById('banner-letter').textContent = letter;
+      document.getElementById('banner-scene').textContent  = sceneLabel;
 
-    const REVEAL_RADIUS = 90; // px — how close lantern must be to reveal ink
-    const spotlightR    = 80; // spotlight mask radius
+      if (!prefersReduced) {
+        flash.classList.add('show');
+        setTimeout(() => flash.classList.remove('show'), 600);
+      }
 
-    let revealedWords = new Set();
-    const WORD_TARGETS = ['ink-0','ink-1','ink-2','ink-3','ink-4']; // the answer letters
+      banner.classList.add('show');
+      setTimeout(() => banner.classList.remove('show'), 2200);
+    }
 
-    function updateLantern(x, y) {
-      const rect = lanternField.getBoundingClientRect();
-      const lx = x - rect.left;
-      const ly = y - rect.top;
+    function fillChip(idx, letter) {
+      const chip = document.getElementById('chip-' + idx);
+      if (!chip) return;
+      chip.textContent = letter;
+      chip.classList.add('filled');
+      chip.setAttribute('aria-label', 'Fragment ' + (idx+1) + ': ' + letter);
+      fragments[idx] = letter;
+    }
 
-      // Move lantern cursor
-      lanternCursor.style.display = 'block';
-      lanternCursor.style.left = lx + 'px';
-      lanternCursor.style.top  = ly + 'px';
+    function markSlideSolved(slideNum) {
+      slideSolved[slideNum] = true;
+      updateNextBtn();
+    }
 
-      // Move glow
-      lanternGlow.style.display = 'block';
-      lanternGlow.style.left = lx + 'px';
-      lanternGlow.style.top  = ly + 'px';
+    /* ── Clue data ──────────────────────────────────────────── */
+    const clues = [
+      'Scene I: You must press and hold — not click. Keep the pressure on the seal for several seconds.',
+      'Scene II: The correct position is in the upper-right corner of the mirror. Move slowly and wait when you are there.',
+      'Scene III: Move the lantern near each glowing letter until it appears. There are four answer letters scattered in the field.',
+      'Scene IV: Rotate the inner disc until the diamond mark (◆) aligns with the red arrow at the top.',
+      'Scene V: Simply hover your cursor over the glass panel and hold it there. The fog clears slowly.',
+      'Scene VI: Click and drag across all the text in the document to select it. The hidden line will become visible.',
+    ];
 
-      // Update spotlight mask
-      spotlight.style.background = `radial-gradient(
-        circle ${spotlightR}px at ${lx}px ${ly}px,
-        transparent 0%,
-        transparent 40%,
-        rgba(10,8,16,0.88) 65%,
-        rgba(10,8,16,0.97) 100%
-      )`;
+    document.getElementById('clue-trigger').addEventListener('click', () => {
+      const modal = document.getElementById('clue-modal');
+      modal.classList.add('open');
+      document.getElementById('clue-text-box').classList.remove('shown');
+      document.getElementById('clue-warning').classList.remove('shown');
+      document.getElementById('clue-purchase').disabled = false;
+      document.getElementById('clue-purchase').textContent = 'Use Clue — $1.99';
+      document.getElementById('clue-cancel').focus();
+    });
 
-      // Reveal ink within radius
-      inkEls.forEach(ink => {
-        const inkRect = ink.getBoundingClientRect();
-        const inkX = inkRect.left + inkRect.width / 2 - rect.left;
-        const inkY = inkRect.top + inkRect.height / 2 - rect.top;
-        const dist = Math.hypot(lx - inkX, ly - inkY);
+    document.getElementById('clue-cancel').addEventListener('click', () => {
+      document.getElementById('clue-modal').classList.remove('open');
+    });
 
-        if (dist < REVEAL_RADIUS) {
-          ink.style.opacity = String(Math.min(1, (REVEAL_RADIUS - dist) / (REVEAL_RADIUS * 0.5)));
-          // Track which answer letters revealed
-          if (WORD_TARGETS.includes(ink.id) && dist < 50) {
-            revealedWords.add(ink.id);
+    document.getElementById('clue-modal').addEventListener('click', (e) => {
+      if (e.target === document.getElementById('clue-modal')) {
+        document.getElementById('clue-modal').classList.remove('open');
+      }
+    });
+
+    document.getElementById('clue-purchase').addEventListener('click', () => {
+      const idx = Math.min(clueIndex, clues.length - 1);
+      document.getElementById('clue-text-box').textContent = clues[idx];
+      document.getElementById('clue-text-box').classList.add('shown');
+      document.getElementById('clue-warning').classList.add('shown');
+      clueIndex++;
+      clueCount++;
+      if (clueIndex >= clues.length) {
+        document.getElementById('clue-purchase').disabled = true;
+        document.getElementById('clue-purchase').textContent = 'No More Clues';
+      }
+    });
+
+    document.getElementById('clue-modal').addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') document.getElementById('clue-modal').classList.remove('open');
+    });
+
+    /* ═══════════════════════════════════════════════════════
+       PUZZLE ACTIVATIONS
+    ═══════════════════════════════════════════════════════ */
+    function activateSlide(n) {
+      if (n === 1) initSeal();
+      if (n === 2) initMirror();
+      if (n === 3) initLantern();
+      if (n === 4) initDisc();
+      if (n === 5) initFog();
+      if (n === 6) initInvisible();
+      if (n === 7) initAssembly();
+    }
+
+    /* ── SLIDE 1: Wax Seal ──────────────────────────────────── */
+    let sealDone = false;
+    function initSeal() {
+      if (sealDone) return;
+      const btn    = document.getElementById('seal-btn');
+      const circle = document.getElementById('seal-progress-circle');
+      const env    = document.getElementById('envelope');
+      const circumference = 226; // 2π×36
+
+      let holdTimer = null;
+      let progress  = 0;
+      let holding   = false;
+      const HOLD_MS = 2800;
+
+      circle.style.strokeDasharray  = circumference;
+      circle.style.strokeDashoffset = circumference;
+
+      function startHold(e) {
+        e.preventDefault();
+        if (sealDone) return;
+        holding = true;
+        const start = Date.now();
+
+        function tick() {
+          if (!holding || sealDone) { resetHold(); return; }
+          progress = Math.min(1, (Date.now() - start) / HOLD_MS);
+          circle.style.strokeDashoffset = circumference * (1 - progress);
+
+          if (progress >= 1) {
+            solveSeal();
+          } else {
+            holdTimer = requestAnimationFrame(tick);
           }
-        } else {
-          ink.style.opacity = '0';
         }
+
+        holdTimer = requestAnimationFrame(tick);
+      }
+
+      function endHold() {
+        if (sealDone) return;
+        holding = false;
+        resetHold();
+      }
+
+      function resetHold() {
+        if (holdTimer) cancelAnimationFrame(holdTimer);
+        if (!sealDone) {
+          progress = 0;
+          circle.style.strokeDashoffset = circumference;
+        }
+      }
+
+      btn.addEventListener('mousedown', startHold);
+      btn.addEventListener('touchstart', startHold, { passive: false });
+      btn.addEventListener('mouseup',   endHold);
+      btn.addEventListener('mouseleave', endHold);
+      btn.addEventListener('touchend',  endHold);
+
+      function solveSeal() {
+        if (sealDone) return;
+        sealDone = true;
+        holding = false;
+        circle.style.strokeDashoffset = 0;
+        env.classList.add('opening');
+        setTimeout(() => env.classList.add('open'), 400);
+        setTimeout(() => {
+          fillChip(0, 'S');
+          showFragmentBanner('S', 'Scene I — The Seal');
+          markSlideSolved(1);
+          document.getElementById('hold-hint-1').textContent = 'Fragment recovered — proceed when ready.';
+        }, 1200);
+      }
+    }
+
+    /* ── SLIDE 2: Mirror ────────────────────────────────────── */
+    let mirrorDone = false;
+    function initMirror() {
+      if (mirrorDone) return;
+      const box        = document.getElementById('mirror-box');
+      const reflection = document.getElementById('mirror-reflection');
+      const crosshair  = document.getElementById('mirror-crosshair');
+      const holdRing   = document.getElementById('mirror-hold-ring');
+      const circle     = document.getElementById('mirror-progress-circle');
+      const circumference = 125.7; // 2π×20
+
+      circle.style.strokeDasharray  = circumference;
+      circle.style.strokeDashoffset = circumference;
+
+      let inZone    = false;
+      let holdTimer = null;
+      let progress  = 0;
+      let holdStart = 0;
+      const HOLD_MS = 1500;
+
+      function handleMove(x, y) {
+        if (mirrorDone) return;
+        const rect = box.getBoundingClientRect();
+        const px   = (x - rect.left) / rect.width;
+        const py   = (y - rect.top)  / rect.height;
+
+        // Show crosshair
+        crosshair.style.display = 'block';
+        crosshair.style.left    = (px * 100) + '%';
+        crosshair.style.top     = (py * 100) + '%';
+
+        // Tilt reflection
+        const rx = (py - 0.5) * 28;
+        const ry = (px - 0.5) * -22;
+        reflection.style.transform = `scaleX(-1) perspective(500px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+
+        const inCorrectZone = px > 0.58 && py < 0.42;
+
+        if (inCorrectZone && !inZone) {
+          inZone    = true;
+          holdStart = Date.now();
+          holdRing.style.opacity = '1';
+
+          function tick() {
+            if (!inZone || mirrorDone) { resetMirrorHold(); return; }
+            progress = Math.min(1, (Date.now() - holdStart) / HOLD_MS);
+            circle.style.strokeDashoffset = circumference * (1 - progress);
+            if (progress >= 1) {
+              solveMirror();
+            } else {
+              holdTimer = requestAnimationFrame(tick);
+            }
+          }
+          holdTimer = requestAnimationFrame(tick);
+        } else if (!inCorrectZone && inZone) {
+          inZone = false;
+          resetMirrorHold();
+        }
+      }
+
+      function resetMirrorHold() {
+        if (holdTimer) cancelAnimationFrame(holdTimer);
+        progress = 0;
+        circle.style.strokeDashoffset = circumference;
+        holdRing.style.opacity = '0';
+      }
+
+      box.addEventListener('mousemove', (e) => handleMove(e.clientX, e.clientY));
+      box.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        handleMove(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: false });
+      box.addEventListener('mouseleave', () => {
+        crosshair.style.display = 'none';
+        if (!mirrorDone) { inZone = false; resetMirrorHold(); }
       });
 
-      // Check if all five letters revealed
-      if (!lanternSolved && revealedWords.size >= 5) {
-        lanternSolved = true;
-        fragFound.style.opacity = '1';
-        fillSlot(1, 'F');
-        checkBothSolved();
+      function solveMirror() {
+        if (mirrorDone) return;
+        mirrorDone = true;
+        document.getElementById('mirror-hidden-text').style.color = 'rgba(212,167,70,0.95)';
+        document.getElementById('mirror-hidden-text').style.textShadow = '0 0 30px rgba(212,167,70,0.6)';
+        holdRing.style.opacity = '0';
+        setTimeout(() => {
+          fillChip(1, 'H');
+          showFragmentBanner('H', 'Scene II — The Mirror');
+          markSlideSolved(2);
+        }, 400);
       }
     }
 
-    lanternField.addEventListener('mousemove', (e) => updateLantern(e.clientX, e.clientY));
-    lanternField.addEventListener('mouseleave', () => {
-      lanternCursor.style.display = 'none';
-      lanternGlow.style.display   = 'none';
-      spotlight.style.background  = 'rgba(10,8,16,0.97)';
-      inkEls.forEach(ink => { ink.style.opacity = '0'; });
-    });
-    lanternField.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-      updateLantern(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: false });
+    /* ── SLIDE 3: Lantern ───────────────────────────────────── */
+    let lanternDone = false;
+    function initLantern() {
+      if (lanternDone) return;
+      const field      = document.getElementById('lantern-field');
+      const spotlight  = document.getElementById('lantern-spotlight');
+      const glow       = document.getElementById('lantern-glow');
+      const cursor     = document.getElementById('lantern-cursor');
+      const badge      = document.getElementById('lantern-badge');
+      const inkEls     = field.querySelectorAll('.hidden-ink[data-idx]');
+      const REVEAL_R   = 85;
 
-    // Keyboard support: arrow keys move a virtual cursor
-    let kbX = 50, kbY = 50;
-    lanternField.addEventListener('keydown', (e) => {
-      const step = 20;
-      if (e.key === 'ArrowLeft')  kbX -= step;
-      if (e.key === 'ArrowRight') kbX += step;
-      if (e.key === 'ArrowUp')    kbY -= step;
-      if (e.key === 'ArrowDown')  kbY += step;
-      if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) {
+      // Letter order → chips: A=chip2, D=chip3, O=chip4, W=chip5
+      const letterChips = ['A','D','O','W'];
+      const found = [false, false, false, false];
+      let kbX = 50, kbY = 50;
+
+      function update(x, y) {
+        const rect = field.getBoundingClientRect();
+        const lx   = x - rect.left;
+        const ly   = y - rect.top;
+
+        cursor.style.display = 'block';
+        cursor.style.left    = lx + 'px';
+        cursor.style.top     = ly + 'px';
+        glow.style.display   = 'block';
+        glow.style.left      = lx + 'px';
+        glow.style.top       = ly + 'px';
+
+        spotlight.style.background = `radial-gradient(
+          circle ${REVEAL_R}px at ${lx}px ${ly}px,
+          transparent 0%,
+          transparent 38%,
+          rgba(7,5,16,0.88) 62%,
+          rgba(7,5,16,0.98) 100%
+        )`;
+
+        inkEls.forEach(ink => {
+          const ir  = ink.getBoundingClientRect();
+          const ix  = ir.left + ir.width / 2 - rect.left;
+          const iy  = ir.top + ir.height / 2 - rect.top;
+          const d   = Math.hypot(lx - ix, ly - iy);
+          const t   = Math.max(0, 1 - d / REVEAL_R);
+          ink.style.opacity = String(Math.pow(t, 1.4));
+
+          const idx = parseInt(ink.dataset.idx);
+          if (!isNaN(idx) && !found[idx] && d < 42) {
+            found[idx] = true;
+            const chip = document.getElementById('lc-' + idx);
+            if (chip) { chip.textContent = letterChips[idx]; chip.classList.add('filled'); }
+            fillChip(idx + 2, letterChips[idx]);
+            // Show mini fragment banner for each
+            setTimeout(() => showFragmentBanner(letterChips[idx], 'Scene III — The Flame'), 100);
+
+            if (found.every(f => f)) {
+              lanternDone = true;
+              badge.style.opacity = '1';
+              setTimeout(() => markSlideSolved(3), 800);
+            }
+          }
+        });
+      }
+
+      field.addEventListener('mousemove', (e) => update(e.clientX, e.clientY));
+      field.addEventListener('touchmove', (e) => {
         e.preventDefault();
-        const rect = lanternField.getBoundingClientRect();
-        updateLantern(rect.left + kbX, rect.top + kbY);
-      }
-    });
+        update(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: false });
+      field.addEventListener('mouseleave', () => {
+        cursor.style.display = 'none';
+        glow.style.display   = 'none';
+        spotlight.style.background = 'rgba(7,5,16,0.98)';
+        if (!lanternDone) inkEls.forEach(ink => { ink.style.opacity = '0'; });
+      });
 
-    /* ── Fragment slots ─────────────────────────────────────── */
-    function fillSlot(index, letter) {
-      const slot = document.getElementById('slot-' + index);
-      if (!slot) return;
-      slot.textContent = letter;
-      slot.classList.remove('empty-hint');
-      slot.classList.add('filled');
+      field.addEventListener('keydown', (e) => {
+        const step = 22;
+        if (e.key === 'ArrowLeft')  kbX -= step;
+        if (e.key === 'ArrowRight') kbX += step;
+        if (e.key === 'ArrowUp')    kbY -= step;
+        if (e.key === 'ArrowDown')  kbY += step;
+        if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) {
+          e.preventDefault();
+          const rect = field.getBoundingClientRect();
+          update(rect.left + kbX, rect.top + kbY);
+        }
+      });
     }
 
-    /* ── Check both solved → auto-fill answer ───────────────── */
-    function checkBothSolved() {
-      if (mirrorSolved && lanternSolved) {
-        // Reveal third hidden fragment slot
-        const slot2 = document.getElementById('slot-2');
-        slot2.style.opacity = '1';
-        slot2.textContent = '?';
-        slot2.classList.add('empty-hint');
+    /* ── SLIDE 4: Cipher Disc ───────────────────────────────── */
+    let discDone = false;
+    function initDisc() {
+      if (discDone) return;
 
-        const ansInput = document.getElementById('answer-input');
-        ansInput.placeholder = 'WHAT DID THE FLAME REVEAL?';
+      const container = document.getElementById('disc-container');
+      const svg       = document.getElementById('disc-svg');
+      const innerRing = document.getElementById('inner-ring');
+      const outerRing = document.getElementById('outer-ring');
+      const readout   = document.getElementById('disc-readout');
+      const lockGlow  = document.getElementById('lock-glow-ring');
+
+      let currentAngle  = 0;
+      let dragStartAngle = 0;
+      let dragStartRing  = 0;
+      let dragging       = false;
+
+      // Build outer ring: 24 symbols at equal spacing
+      const outerSymbols = ['✦','◈','⊕','◆','⟡','✧','⊗','◉','✺','⊞','⊟','⊠','◇','⊡','✼','◻','◼','◪','◫','◬','◭','◮','◯','◰'];
+      const outerRadius = 126;
+      const innerMarkRadius = 88;
+
+      for (let i = 0; i < 24; i++) {
+        const angle = (i / 24) * 360;
+        const rad   = (angle - 90) * Math.PI / 180;
+        const x     = Math.cos(rad) * outerRadius;
+        const y     = Math.sin(rad) * outerRadius;
+        const text  = document.createElementNS('http://www.w3.org/2000/svg','text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'central');
+        text.setAttribute('font-size', '10');
+        text.setAttribute('fill', 'rgba(212,167,70,0.35)');
+        text.setAttribute('font-family', 'Cinzel, serif');
+        text.textContent = outerSymbols[i % outerSymbols.length];
+        outerRing.appendChild(text);
+
+        // tick marks
+        const tick = document.createElementNS('http://www.w3.org/2000/svg','line');
+        const tx1  = Math.cos(rad) * 111;
+        const ty1  = Math.sin(rad) * 111;
+        const tx2  = Math.cos(rad) * 118;
+        const ty2  = Math.sin(rad) * 118;
+        tick.setAttribute('x1', tx1); tick.setAttribute('y1', ty1);
+        tick.setAttribute('x2', tx2); tick.setAttribute('y2', ty2);
+        tick.setAttribute('stroke', 'rgba(212,167,70,0.2)');
+        tick.setAttribute('stroke-width', i % 4 === 0 ? '1.5' : '0.8');
+        outerRing.appendChild(tick);
+      }
+
+      // Inner ring: alphabet letters + special diamond ◆ at position that maps to "correct"
+      // We want ◆ to align with 0° (top / red arrow) at angle = 0°
+      // Letters spaced at 360/26 ≈ 13.85°
+      // The "O" letter is already from lantern; disc contributes nothing to chips
+      // But disc must be solved to proceed. The correct angle is when ◆ is at top.
+      // ◆ starts at angle 180° (bottom). So correct disc angle = 180° (rotate 180° from start)
+      const innerItems = [];
+      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      // Place ◆ at index 0 (will start at bottom when angle=0), letters after
+      innerItems.push({ char: '◆', isKey: true });
+      for (let i = 0; i < 13; i++) innerItems.push({ char: alphabet[i], isKey: false });
+      innerItems.push({ char: '◆', isKey: false }); // second diamond as decoy
+      for (let i = 13; i < 26; i++) innerItems.push({ char: alphabet[i], isKey: false });
+
+      const innerG = innerRing;
+
+      innerItems.forEach((item, i) => {
+        const angle = (i / innerItems.length) * 360 + 180; // start ◆ at bottom
+        const rad   = (angle - 90) * Math.PI / 180;
+        const x     = Math.cos(rad) * innerMarkRadius;
+        const y     = Math.sin(rad) * innerMarkRadius;
+        const text  = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'central');
+        text.setAttribute('font-size', item.isKey ? '13' : '9');
+        text.setAttribute('fill', item.isKey ? 'rgba(212,167,70,0.9)' : 'rgba(143,166,189,0.45)');
+        text.setAttribute('font-weight', item.isKey ? 'bold' : 'normal');
+        text.setAttribute('font-family', 'Space Mono, monospace');
+        if (item.isKey) text.setAttribute('id', 'disc-diamond-' + i);
+        text.textContent = item.char;
+        innerG.appendChild(text);
+      });
+
+      // Drag logic
+      function getAngleFromEvent(e) {
+        const rect = container.getBoundingClientRect();
+        const cx   = rect.left + rect.width / 2;
+        const cy   = rect.top  + rect.height / 2;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return Math.atan2(clientY - cy, clientX - cx) * 180 / Math.PI;
+      }
+
+      container.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        dragging = true;
+        dragStartAngle = getAngleFromEvent(e);
+        dragStartRing  = currentAngle;
+      });
+
+      container.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        dragging = true;
+        dragStartAngle = getAngleFromEvent(e);
+        dragStartRing  = currentAngle;
+      }, { passive: false });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!dragging || discDone) return;
+        const delta = getAngleFromEvent(e) - dragStartAngle;
+        currentAngle = (dragStartRing + delta + 360) % 360;
+        innerRing.style.transform = `rotate(${currentAngle}deg)`;
+        checkDiscAngle();
+      });
+
+      window.addEventListener('touchmove', (e) => {
+        if (!dragging || discDone) return;
+        const delta = getAngleFromEvent(e) - dragStartAngle;
+        currentAngle = (dragStartRing + delta + 360) % 360;
+        innerRing.style.transform = `rotate(${currentAngle}deg)`;
+        checkDiscAngle();
+      }, { passive: false });
+
+      window.addEventListener('mouseup',  () => { dragging = false; });
+      window.addEventListener('touchend', () => { dragging = false; });
+
+      // Keyboard support
+      container.setAttribute('tabindex', '0');
+      container.addEventListener('keydown', (e) => {
+        if (discDone) return;
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+          currentAngle = (currentAngle - 5 + 360) % 360;
+        } else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+          currentAngle = (currentAngle + 5) % 360;
+        }
+        innerRing.style.transform = `rotate(${currentAngle}deg)`;
+        checkDiscAngle();
+      });
+
+      const TARGET_ANGLE = 180; // ◆ starts at bottom, needs 180° rotation to reach top
+      const TOLERANCE    = 8;
+
+      function checkDiscAngle() {
+        const diff  = Math.abs(((currentAngle - TARGET_ANGLE) + 360) % 360);
+        const close = Math.min(diff, 360 - diff);
+
+        if (close < 30) {
+          const t = 1 - (close / 30);
+          readout.textContent = close < TOLERANCE ? '◆ LOCKED' : '◆ ' + Math.round(close) + '°';
+          readout.style.color = `rgba(212,167,70,${0.4 + t * 0.6})`;
+        } else {
+          readout.textContent = '· · ·';
+          readout.style.color = '';
+          readout.classList.remove('locked-on');
+        }
+
+        if (close < TOLERANCE && !discDone) {
+          solveDisc();
+        }
+      }
+
+      function solveDisc() {
+        if (discDone) return;
+        discDone = true;
+        readout.textContent = '◆ LOCKED';
+        readout.classList.add('locked-on');
+        lockGlow.setAttribute('opacity', '0.8');
+        innerRing.style.transform = `rotate(${TARGET_ANGLE}deg)`;
+        // No chip for disc — it's a gate puzzle
+        setTimeout(() => {
+          markSlideSolved(4);
+          if (!prefersReduced) {
+            document.getElementById('solved-flash').classList.add('show');
+            setTimeout(() => document.getElementById('solved-flash').classList.remove('show'), 500);
+          }
+        }, 600);
+      }
+
+      container.setAttribute('aria-valuenow', 0);
+    }
+
+    /* ── SLIDE 5: Fog ───────────────────────────────────────── */
+    let fogDone = false;
+    function initFog() {
+      if (fogDone) return;
+      const panel    = document.getElementById('fog-panel');
+      const fogText  = document.getElementById('fog-text');
+      let holdTimer  = null;
+      let revealed   = false;
+
+      function breathe() {
+        if (revealed) return;
+        panel.classList.add('breathed');
+        holdTimer = setTimeout(() => {
+          fogText.classList.add('visible');
+          if (!fogDone) {
+            fogDone = true;
+            // fog reveals O and W — but they were already filled by lantern (chips 4 and 5)
+            // So fog is a gate puzzle; just mark solved
+            setTimeout(() => {
+              markSlideSolved(5);
+              if (!prefersReduced) {
+                document.getElementById('solved-flash').classList.add('show');
+                setTimeout(() => document.getElementById('solved-flash').classList.remove('show'), 500);
+              }
+            }, 600);
+          }
+        }, 1400);
+      }
+
+      function unfog() {
+        if (fogDone) return;
+        clearTimeout(holdTimer);
+        panel.classList.remove('breathed');
+        fogText.classList.remove('visible');
+      }
+
+      panel.addEventListener('mouseenter', breathe);
+      panel.addEventListener('mouseleave', unfog);
+      panel.addEventListener('focus',  breathe);
+      panel.addEventListener('blur',   unfog);
+      panel.addEventListener('touchstart', breathe, { passive: true });
+    }
+
+    /* ── SLIDE 6: Invisible writing ─────────────────────────── */
+    let invisDone = false;
+    function initInvisible() {
+      if (invisDone) return;
+      const line    = document.getElementById('invisible-line');
+      const notice  = document.getElementById('found-notice');
+
+      // Detect text selection
+      document.addEventListener('selectionchange', checkSelection);
+
+      function checkSelection() {
+        if (invisDone) return;
+        const sel = window.getSelection();
+        if (!sel || sel.isCollapsed) return;
+
+        const range = sel.getRangeAt(0);
+        if (range.intersectsNode && range.intersectsNode(line)) {
+          solveInvisible();
+        }
+      }
+
+      // Also trigger on mouseup to catch selections
+      document.getElementById('page-document').addEventListener('mouseup', () => {
+        setTimeout(checkSelection, 50);
+      });
+      document.getElementById('page-document').addEventListener('touchend', () => {
+        setTimeout(checkSelection, 100);
+      });
+
+      function solveInvisible() {
+        if (invisDone) return;
+        invisDone = true;
+        line.classList.add('found');
+        notice.classList.add('visible');
+        document.removeEventListener('selectionchange', checkSelection);
+        setTimeout(() => {
+          markSlideSolved(6);
+          if (!prefersReduced) {
+            document.getElementById('solved-flash').classList.add('show');
+            setTimeout(() => document.getElementById('solved-flash').classList.remove('show'), 500);
+          }
+        }, 600);
       }
     }
 
-    /* ── Answer submission ──────────────────────────────────── */
-    document.getElementById('answer-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const val = document.getElementById('answer-input').value.trim().toUpperCase();
-      const resultEl = document.getElementById('answer-result');
-
-      if (val === CORRECT_ANSWER) {
-        resultEl.textContent = '✦ Correct. The flame has spoken. Your time has been recorded.';
-        resultEl.className = 'answer-result correct';
-        if (timerInterval) {
-          clearInterval(timerInterval);
-          timerInterval = null;
-        }
-        const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-        const s = String(seconds % 60).padStart(2, '0');
-        myTimeEl.textContent = m + ':' + s;
-        const myCluesEl = document.getElementById('my-clues');
-        myCluesEl.textContent = clueCount === 0 ? '0 clues' : clueCount + ' clue' + (clueCount > 1 ? 's' : '');
-        // Fill third slot
-        fillSlot(2, '!');
-      } else if (val.length === 0) {
-        resultEl.textContent = '';
-      } else {
-        resultEl.textContent = '✗ That is not what the flame said.';
-        resultEl.className = 'answer-result wrong';
-        // Shake the input
-        const inp = document.getElementById('answer-input');
-        inp.style.transform = 'translateX(-6px)';
-        setTimeout(() => { inp.style.transform = 'translateX(6px)'; }, 80);
-        setTimeout(() => { inp.style.transform = ''; }, 160);
+    /* ── SLIDE 7: Assembly ──────────────────────────────────── */
+    function initAssembly() {
+      // Stop timer
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
       }
-    });
 
-    /* ── Clue Modal ─────────────────────────────────────────── */
-    const clueModal    = document.getElementById('clue-modal');
-    const clueTrigger  = document.getElementById('clue-trigger');
-    const clueCancel   = document.getElementById('clue-cancel');
-    const cluePurchase = document.getElementById('clue-purchase');
-    const clueTextBox  = document.getElementById('clue-text-box');
-    const clueWarning  = document.getElementById('clue-warning');
+      const form    = document.getElementById('answer-form');
+      const input   = document.getElementById('answer-input');
+      const result  = document.getElementById('answer-result');
 
-    clueTrigger.addEventListener('click', () => {
-      clueModal.classList.add('open');
-      clueTextBox.classList.remove('shown');
-      clueWarning.classList.remove('shown');
-      cluePurchase.disabled = false;
-      cluePurchase.textContent = 'Use Clue — $1.99';
-      clueCancel.focus();
-    });
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const val = input.value.trim().toUpperCase();
+        if (!val) return;
 
-    clueCancel.addEventListener('click', () => clueModal.classList.remove('open'));
+        if (val === ANSWER) {
+          result.textContent = '';
+          result.className = 'answer-result';
+          document.getElementById('answer-section').style.display = 'none';
+          const vp = document.getElementById('victory-panel');
+          vp.classList.add('show');
 
-    clueModal.addEventListener('click', (e) => {
-      if (e.target === clueModal) clueModal.classList.remove('open');
-    });
+          const m = String(Math.floor(seconds/60)).padStart(2,'0');
+          const s = String(seconds%60).padStart(2,'0');
+          document.getElementById('your-time').textContent = m + ':' + s;
+          document.getElementById('your-clues').textContent = clueCount === 0 ? '0 clues' : clueCount + ' clue' + (clueCount > 1 ? 's' : '');
 
-    cluePurchase.addEventListener('click', () => {
-      if (clueIndex < clues.length) {
-        clueTextBox.textContent = clues[clueIndex];
-        clueTextBox.classList.add('shown');
-        clueWarning.classList.add('shown');
-        clueIndex++;
-        clueCount++;
-        cluePurchase.textContent = 'Another Clue — $1.99';
-        if (clueIndex >= clues.length) {
-          cluePurchase.disabled = true;
-          cluePurchase.textContent = 'No More Clues';
+          // Calculate score: base 10000, -50/sec, -1000/clue
+          const score = Math.max(0, 10000 - (seconds * 50) - (clueCount * 1000));
+          document.getElementById('victory-score').textContent = score.toLocaleString() + ' pts';
+          document.getElementById('victory-breakdown').textContent =
+            'Time: ' + m + ':' + s + '   ·   Clues used: ' + clueCount + '   ·   Score deductions: ' + (seconds * 50 + clueCount * 1000);
+
+          if (!prefersReduced) {
+            document.getElementById('solved-flash').classList.add('show');
+            setTimeout(() => document.getElementById('solved-flash').classList.remove('show'), 800);
+          }
+          markSlideSolved(7);
+        } else {
+          result.textContent = '✗ That is not what the room revealed.';
+          result.className = 'answer-result wrong';
+          input.style.transition = 'transform 0.1s ease';
+          input.style.transform = 'translateX(-8px)';
+          setTimeout(() => { input.style.transform = 'translateX(8px)'; }, 100);
+          setTimeout(() => { input.style.transform = ''; }, 200);
         }
-      }
-    });
+      });
+    }
 
-    // Trap focus in modal when open
-    clueModal.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') clueModal.classList.remove('open');
-    });
+    /* ── Boot ────────────────────────────────────────────────── */
+    updateProgress();
+    updateNextBtn();
+    activateSlide(1);
 
   })();
   </script>
