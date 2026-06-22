@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Impossible Forms — You Will Not Guess What's Waiting</title>
+  <meta name="description" content="An online puzzle hunt disguised as an ordinary form. Solve what you cannot see. Every element is a trap.">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Page-specific styles ─────────────────────────────── */
+
+    /* Hero */
+    .hero {
+      position: relative;
+      min-height: 100svh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      padding: clamp(4rem, 10vw, 7rem) 1.5rem clamp(3rem, 7vw, 5rem);
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 60% at 50% 40%, rgba(212,167,70,0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 50% at 20% 70%, rgba(226,87,43,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* Floating ember particles */
+    .embers {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .ember {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--gold);
+      animation: ember-drift 4s ease-out infinite;
+      opacity: 0;
+    }
+
+    .hero-content { position: relative; z-index: 1; max-width: 820px; }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.8;
+      display: block;
+      margin-bottom: 1.4rem;
+    }
+
+    .hero-title {
+      font-size: clamp(2.4rem, 6vw, 4.2rem);
+      font-weight: 900;
+      color: var(--parchment);
+      margin-bottom: 1rem;
+      text-shadow: 0 2px 40px rgba(212,167,70,0.2);
+      line-height: 1.1;
+    }
+
+    .hero-title .gold-word { color: var(--gold); }
+
+    .hero-subtitle {
+      font-family: var(--font-body);
+      font-size: clamp(1.05rem, 2.5vw, 1.3rem);
+      font-style: italic;
+      color: var(--parchment-dim);
+      max-width: 580px;
+      margin: 0 auto 1.6rem;
+      line-height: 1.65;
+    }
+
+    .hero-value {
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      color: var(--mist);
+      max-width: 500px;
+      margin: 0 auto 2.5rem;
+      opacity: 0.85;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* Scroll indicator */
+    .scroll-hint {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      opacity: 0.35;
+      animation: float-up 2s ease-in-out infinite alternate;
+    }
+    .scroll-hint span {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--parchment-faint);
+    }
+    .scroll-hint svg { color: var(--gold); }
+
+    /* How it works */
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      counter-reset: steps;
+    }
+
+    .step-card {
+      counter-increment: steps;
+      position: relative;
+    }
+
+    .step-card::before {
+      content: counter(steps, decimal-leading-zero);
+      font-family: var(--font-mono);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--ink-raised);
+      position: absolute;
+      top: 1.2rem;
+      right: 1.5rem;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .step-icon {
+      font-size: 1.8rem;
+      margin-bottom: 0.8rem;
+      display: block;
+      line-height: 1;
+    }
+
+    .step-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.06em;
+    }
+
+    .step-desc {
+      font-size: 0.93rem;
+      color: var(--parchment-dim);
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* Teaser strip */
+    .teaser-strip {
+      background: var(--ink-mid);
+      border-top: 1px solid rgba(212,167,70,0.12);
+      border-bottom: 1px solid rgba(212,167,70,0.12);
+      padding: clamp(2.5rem, 6vw, 4rem) 0;
+    }
+
+    .teaser-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .teaser-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.2rem 1.4rem;
+      background: rgba(14,11,18,0.6);
+      border: 1px solid var(--ink-border);
+      border-radius: var(--radius-card);
+      text-decoration: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .teaser-card:hover {
+      border-color: rgba(212,167,70,0.3);
+      box-shadow: 0 0 20px rgba(212,167,70,0.08);
+    }
+
+    .teaser-card.locked {
+      opacity: 0.65;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .teaser-num {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--gold-dim);
+      opacity: 0.7;
+      flex-shrink: 0;
+      padding-top: 0.15rem;
+    }
+
+    .teaser-info { flex: 1; }
+
+    .teaser-title {
+      font-family: var(--font-display);
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--parchment);
+      margin-bottom: 0.25rem;
+      letter-spacing: 0.04em;
+    }
+
+    .teaser-sub {
+      font-size: 0.8rem;
+      font-style: italic;
+      color: var(--parchment-faint);
+      opacity: 0.7;
+    }
+
+    .teaser-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.5rem;
+    }
+
+    .teaser-cta {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--mist);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .strip-cta {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    /* Value prop section */
+    .value-section {
+      background: linear-gradient(180deg, var(--ink-deep) 0%, var(--ink-mid) 50%, var(--ink-deep) 100%);
+    }
+
+    .value-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .value-inner blockquote {
+      font-family: var(--font-body);
+      font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+      font-style: italic;
+      color: var(--parchment-dim);
+      line-height: 1.7;
+      position: relative;
+      padding: 1.5rem 2rem;
+    }
+
+    .value-inner blockquote::before {
+      content: '\201C';
+      font-size: 5rem;
+      line-height: 0;
+      position: absolute;
+      top: 2.5rem;
+      left: -0.2rem;
+      color: var(--gold);
+      opacity: 0.18;
+      font-family: var(--font-display);
+    }
+
+    /* Hint about easter egg */
+    .hint-note {
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--parchment-faint);
+      opacity: 0.3;
+      letter-spacing: 0.1em;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body data-page="home">
+
+  <!-- Navigation -->
+  <nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-wordmark" aria-label="Impossible Forms — Home">
+        IMPOSSIBLE <span>FORMS</span>
+      </a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="hunts.html">All Hunts</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="leaderboard.html">Leaderboard</a></li>
+        <li><a href="hunt-1.html" class="nav-cta">Begin Free Hunt</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="page-main">
+
+    <!-- ── Hero ─────────────────────────────────────────────── -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="hero-bg" aria-hidden="true"></div>
+
+      <!-- Ember particles -->
+      <div class="embers" aria-hidden="true" id="embers"></div>
+
+      <div class="hero-content">
+        <span class="hero-eyebrow">A puzzle disguised as a page</span>
+
+        <h1 class="hero-title" id="hero-heading">
+          This is not a<br><span class="gold-word">form</span>.
+        </h1>
+
+        <p class="hero-subtitle">
+          You are standing at the edge of something you cannot yet see.
+          Everything on the next page looks familiar. A field. A button.
+          A simple instruction. <em>None of it works the way you think it does.</em>
+        </p>
+
+        <p class="hero-value">
+          Each hunt quietly sharpens what you already have — the patience to look
+          twice, the instinct to test what shouldn't be tested, the satisfaction
+          of a door that finally opens.
+        </p>
+
+        <div class="hero-ctas">
+          <a href="hunt-1.html" class="btn btn-primary">Begin the First Hunt — Free</a>
+          <a href="pricing.html" class="btn btn-secondary">View Pricing</a>
+        </div>
+      </div>
+
+      <div class="scroll-hint" aria-hidden="true">
+        <span>Continue</span>
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      </div>
+    </section>
+
+    <!-- ── How a Hunt Works ──────────────────────────────────── -->
+    <section class="section" aria-labelledby="how-heading">
+      <div class="container">
+        <div class="section-heading reveal">
+          <span class="eyebrow">The method</span>
+          <h2 id="how-heading">How a Hunt Works</h2>
+          <p>Three movements. No manual provided.</p>
+        </div>
+
+        <div class="how-grid">
+          <div class="card reveal">
+            <span class="step-icon" aria-hidden="true">🕯</span>
+            <div class="step-title">Find the trick</div>
+            <p class="step-desc">
+              Every element on the page is a puzzle in disguise. A button
+              that won't press, a field that won't accept text, a reflection
+              that seems wrong. The mechanism is always there — waiting
+              to be noticed by someone paying close attention.
+            </p>
+          </div>
+          <div class="card reveal">
+            <span class="step-icon" aria-hidden="true">🔍</span>
+            <div class="step-title">Use it correctly</div>
+            <p class="step-desc">
+              Once the trick reveals itself, you must operate it
+              precisely. Drag the lantern to the exact spot. Hold the glass at
+              the right angle. Type the sequence in the right order.
+              Approximation will not do. Neither will guessing.
+            </p>
+          </div>
+          <div class="card reveal">
+            <span class="step-icon" aria-hidden="true">📜</span>
+            <div class="step-title">Assemble the answer</div>
+            <p class="step-desc">
+              Each solved element yields a fragment — a letter, a symbol,
+              a number. The fragments combine into a final answer you submit
+              to claim your place on the leaderboard. Speed matters.
+              Paid clues cost you rank. Pride is its own reward.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Teaser Strip ──────────────────────────────────────── -->
+    <section class="teaser-strip" aria-labelledby="teaser-heading">
+      <div class="container">
+        <div class="section-heading reveal">
+          <span class="eyebrow">The case files</span>
+          <h2 id="teaser-heading">Ten Hunts. Two Open. Eight Waiting.</h2>
+          <p>The door is already unlocked. The question is whether you'll know what to do with it.</p>
+        </div>
+
+        <div class="teaser-grid">
+          <!-- Free hunts -->
+          <a href="hunt-1.html" class="teaser-card reveal" aria-label="Hunt 1: The Glass & The Flame — Free, unlocked">
+            <span class="teaser-num">01</span>
+            <div class="teaser-info">
+              <div class="teaser-title">The Glass &amp; The Flame</div>
+              <div class="teaser-sub">Something hides in the reflection. Something else requires light to find it.</div>
+              <div class="teaser-meta">
+                <span class="badge badge-free">Free</span>
+                <span class="teaser-cta">Enter →</span>
+              </div>
+            </div>
+          </a>
+          <a href="hunts.html#hunt-2" class="teaser-card reveal" aria-label="Hunt 2: The Whispering Page — Free, unlocked">
+            <span class="teaser-num">02</span>
+            <div class="teaser-info">
+              <div class="teaser-title">The Whispering Page</div>
+              <div class="teaser-sub">You cannot read what is not yet willing to be read. Breathe. Wait.</div>
+              <div class="teaser-meta">
+                <span class="badge badge-free">Free</span>
+                <span class="teaser-cta">Enter →</span>
+              </div>
+            </div>
+          </a>
+          <!-- Locked previews -->
+          <div class="teaser-card locked reveal" aria-label="Hunt 3: The Clockmaker's Riddle — Locked">
+            <span class="teaser-num">03</span>
+            <div class="teaser-info">
+              <div class="teaser-title">The Clockmaker's Riddle</div>
+              <div class="teaser-sub">Time is the answer. So is knowing exactly where to stop it.</div>
+              <div class="teaser-meta">
+                <span class="badge badge-locked">🔒 $3.99</span>
+              </div>
+            </div>
+          </div>
+          <div class="teaser-card locked reveal" aria-label="Locked hunts — see All Hunts page">
+            <span class="teaser-num">04–10</span>
+            <div class="teaser-info">
+              <div class="teaser-title">Seven more cases</div>
+              <div class="teaser-sub">Soot, wax, echoes, invisible ink, a door with no number. They are all waiting.</div>
+              <div class="teaser-meta">
+                <span class="badge badge-locked">🔒 Locked</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="strip-cta reveal">
+          <a href="hunts.html" class="btn btn-secondary">View All Ten Hunts</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Value / Philosophy ────────────────────────────────── -->
+    <section class="section value-section" aria-labelledby="value-heading">
+      <div class="container">
+        <div class="value-inner reveal">
+          <span class="eyebrow" style="font-family: var(--font-mono); font-size:0.68rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); opacity:0.8; display:block; margin-bottom:0.6rem;">What you are actually doing</span>
+          <h2 id="value-heading" style="margin-bottom:1.5rem;">A hunt is a way of thinking.</h2>
+          <blockquote>
+            The solvers who finish fastest are not the ones who know the most.
+            They are the ones who hold their first assumption lightly — who glance
+            twice at what looks obvious, who try the thing that shouldn't work.
+            The puzzles will teach you this, if you let them.
+          </blockquote>
+          <div class="divider"><span class="divider-symbol">✦</span></div>
+          <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+            <a href="hunt-1.html" class="btn btn-primary">Begin Hunt One — Free</a>
+            <a href="hunts.html" class="btn btn-ghost">Browse All Hunts</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Footer ─────────────────────────────────────────────── -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">IMPOSSIBLE FORMS</div>
+        <div class="footer-tagline">Ten puzzles. No instructions. One leaderboard.</div>
+      </div>
+
+      <ul class="footer-nav" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="hunts.html">All Hunts</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="leaderboard.html">Leaderboard</a></li>
+      </ul>
+
+      <div class="footer-easter">
+        <span
+          class="mirror-text"
+          title="Look closer"
+          aria-label="Reveal hidden message"
+        >·noitseuq gnorw eht gniksa era uoY·</span>
+        <span class="mirror-text-label">[ look closer ]</span>
+        <p class="hint-note" aria-hidden="true">click the text above</p>
+      </div>
+
+      <p class="footer-copy" aria-hidden="true">
+        © IMPOSSIBLE FORMS — All hunts protected. All tricks intentional.
+      </p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    // Ember particle generator
+    (function () {
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) return;
+
+      const container = document.getElementById('embers');
+      if (!container) return;
+
+      const colors = ['#D4A746', '#E2572B', '#EBD9B4'];
+
+      function spawnEmber() {
+        const ember = document.createElement('div');
+        ember.className = 'ember';
+        ember.style.left  = Math.random() * 100 + '%';
+        ember.style.bottom = Math.random() * 30 + '%';
+        ember.style.width  = (Math.random() * 3 + 1) + 'px';
+        ember.style.height = ember.style.width;
+        ember.style.background = colors[Math.floor(Math.random() * colors.length)];
+        ember.style.animationDuration = (Math.random() * 3 + 2.5) + 's';
+        ember.style.animationDelay   = (Math.random() * 2) + 's';
+        container.appendChild(ember);
+        setTimeout(() => ember.remove(), 6000);
+      }
+
+      setInterval(spawnEmber, 600);
+      for (let i = 0; i < 6; i++) spawnEmber();
+    })();
+  </script>
+
+</body>
+</html>

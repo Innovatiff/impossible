@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing — Impossible Forms</title>
+  <meta name="description" content="Posted rates for Impossible Forms. Two hunts free, individual unlocks at $3.99, full membership at $9.99/month.">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Pricing page styles ──────────────────────────────── */
+
+    .pricing-hero {
+      padding: clamp(4rem, 10vw, 6rem) 0 clamp(2rem, 5vw, 3rem);
+      text-align: center;
+    }
+
+    .pricing-hero p {
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--parchment-dim);
+      max-width: 560px;
+      margin: 1rem auto 0;
+    }
+
+    /* Ledger header ornament */
+    .ledger-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .ledger-header__rule {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.2rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .ledger-header__rule::before,
+    .ledger-header__rule::after {
+      content: '';
+      flex: 1;
+      max-width: 200px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim));
+    }
+
+    .ledger-header__rule::after {
+      background: linear-gradient(90deg, var(--gold-dim), transparent);
+    }
+
+    .ledger-title {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.75;
+    }
+
+    .ledger-date {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--parchment-faint);
+      opacity: 0.4;
+      letter-spacing: 0.1em;
+    }
+
+    /* Pricing tiers */
+    .pricing-section { padding: clamp(2rem, 5vw, 4rem) 0; }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.2rem;
+      align-items: start;
+    }
+
+    .tier-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tier-card--featured {
+      border-color: rgba(212,167,70,0.45);
+      box-shadow: var(--shadow-card), 0 0 40px rgba(212,167,70,0.12);
+    }
+
+    .tier-card--featured::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      border-radius: var(--radius-card) var(--radius-card) 0 0;
+    }
+
+    .tier-recommended {
+      position: absolute;
+      top: -1px;
+      right: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: var(--gold);
+      color: var(--ink-deep);
+      padding: 0.25rem 0.7rem;
+      border-radius: 0 0 3px 3px;
+      font-weight: 700;
+    }
+
+    .tier-entry {
+      font-family: var(--font-display);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--parchment-faint);
+      opacity: 0.6;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+
+    .tier-name {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--parchment);
+      margin-bottom: 0.2rem;
+      letter-spacing: 0.04em;
+    }
+
+    .tier-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.3rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .tier-price {
+      font-family: var(--font-mono);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .tier-price-cents {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      color: var(--gold);
+      opacity: 0.7;
+    }
+
+    .tier-cadence {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--parchment-faint);
+      opacity: 0.55;
+    }
+
+    .tier-desc {
+      font-size: 0.88rem;
+      font-style: italic;
+      color: var(--parchment-dim);
+      margin-bottom: 1.5rem;
+      line-height: 1.55;
+    }
+
+    hr.tier-rule {
+      border: none;
+      border-top: 1px solid var(--ink-border);
+      margin: 1rem 0 1.2rem;
+    }
+
+    .tier-features {
+      list-style: none;
+      flex: 1;
+      margin-bottom: 1.8rem;
+    }
+
+    .tier-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.7rem;
+      font-size: 0.88rem;
+      color: var(--parchment-dim);
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(46,40,64,0.5);
+      line-height: 1.4;
+    }
+
+    .tier-features li:last-child { border-bottom: none; }
+
+    .feat-icon {
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+      font-size: 0.85rem;
+    }
+
+    .feat-icon--check { color: var(--gold); }
+    .feat-icon--dot   { color: var(--mist); opacity: 0.6; }
+
+    .tier-cta {
+      display: block;
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 0.9rem 1.5rem;
+      border-radius: var(--radius-seal);
+      transition: all var(--transition);
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .tier-cta--free {
+      background: transparent;
+      border: 1px solid rgba(143,166,189,0.25);
+      color: var(--mist);
+    }
+    .tier-cta--free:hover {
+      border-color: var(--mist);
+      color: var(--parchment);
+    }
+
+    .tier-cta--single {
+      background: transparent;
+      border: 1px solid rgba(212,167,70,0.35);
+      color: var(--gold);
+    }
+    .tier-cta--single:hover {
+      background: var(--gold-glow);
+      color: var(--parchment);
+      border-color: var(--gold);
+    }
+
+    .tier-cta--member {
+      background: var(--gold);
+      border: 1px solid var(--gold);
+      color: var(--ink-deep);
+      font-weight: 700;
+      box-shadow: 0 0 20px rgba(212,167,70,0.3);
+    }
+    .tier-cta--member:hover {
+      background: var(--parchment);
+      border-color: var(--parchment);
+      box-shadow: 0 0 32px rgba(212,167,70,0.5);
+      transform: translateY(-1px);
+    }
+
+    /* Clue economy section */
+    .clue-section {
+      padding: clamp(3rem, 6vw, 5rem) 0;
+      background: var(--ink-mid);
+      border-top: 1px solid rgba(212,167,70,0.1);
+      border-bottom: 1px solid rgba(212,167,70,0.1);
+    }
+
+    .clue-inner {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .clue-rule-box {
+      background: rgba(14,11,18,0.7);
+      border: 1px solid rgba(212,167,70,0.2);
+      border-radius: var(--radius-card);
+      padding: 2rem 2.2rem;
+      position: relative;
+    }
+
+    .clue-rule-box::before {
+      content: '§ THE CLUE ECONOMY';
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      opacity: 0.6;
+      position: absolute;
+      top: -0.55rem;
+      left: 1.5rem;
+      background: var(--ink-mid);
+      padding: 0 0.6rem;
+    }
+
+    .clue-rule-box h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.8rem;
+      color: var(--parchment);
+    }
+
+    .clue-rule-box p {
+      font-size: 0.92rem;
+      color: var(--parchment-dim);
+      margin-bottom: 0.8rem;
+    }
+
+    .clue-cost {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      color: var(--ember);
+      font-weight: 700;
+    }
+
+    .clue-impact {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: rgba(226,87,43,0.08);
+      border: 1px solid rgba(226,87,43,0.2);
+      border-radius: 3px;
+      padding: 0.8rem 1rem;
+      margin-top: 1rem;
+    }
+
+    .clue-impact p {
+      font-size: 0.85rem;
+      color: var(--parchment-dim);
+      margin: 0;
+      font-style: italic;
+    }
+
+    /* FAQ section */
+    .faq-section {
+      padding: clamp(3rem, 6vw, 5rem) 0;
+    }
+
+    .faq-inner {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .faq-list { list-style: none; }
+
+    .faq-item {
+      border-bottom: 1px solid var(--ink-border);
+    }
+
+    .faq-question {
+      width: 100%;
+      background: none;
+      border: none;
+      text-align: left;
+      cursor: pointer;
+      padding: 1.2rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--parchment-dim);
+      letter-spacing: 0.03em;
+      transition: color var(--transition);
+    }
+
+    .faq-question:hover { color: var(--parchment); }
+
+    .faq-question[aria-expanded="true"] {
+      color: var(--gold);
+    }
+
+    .faq-chevron {
+      flex-shrink: 0;
+      width: 18px; height: 18px;
+      border: 1px solid rgba(212,167,70,0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--transition), border-color var(--transition);
+    }
+
+    .faq-question[aria-expanded="true"] .faq-chevron {
+      transform: rotate(180deg);
+      border-color: var(--gold-dim);
+    }
+
+    .faq-answer {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.35s ease;
+    }
+
+    .faq-answer.open { max-height: 400px; }
+
+    .faq-answer p {
+      font-size: 0.9rem;
+      color: var(--parchment-dim);
+      line-height: 1.7;
+      padding: 0 0 1.2rem;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-wordmark">IMPOSSIBLE <span>FORMS</span></a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="hunts.html">All Hunts</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="leaderboard.html">Leaderboard</a></li>
+        <li><a href="hunt-1.html" class="nav-cta">Begin Free Hunt</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="page-main">
+
+    <!-- Hero -->
+    <section class="pricing-hero section">
+      <div class="container">
+        <span style="font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);opacity:0.8;display:block;margin-bottom:0.6rem;">The posted rates</span>
+        <h1>What This Costs</h1>
+        <p>
+          Two hunts ask nothing of you. Eight others have a price — paid once,
+          or covered by membership. The ledger below contains everything you need.
+        </p>
+      </div>
+    </section>
+
+    <!-- Pricing Tiers -->
+    <section class="pricing-section">
+      <div class="container">
+
+        <div class="ledger-header reveal">
+          <div class="ledger-header__rule">
+            <span class="ledger-title">The Establishment's Posted Rates</span>
+          </div>
+          <div class="ledger-date">Effective until further notice — subject to the proprietor's discretion</div>
+        </div>
+
+        <div class="pricing-grid">
+
+          <!-- Free Tier -->
+          <div class="card tier-card reveal">
+            <span class="tier-entry">Entry — No Charge</span>
+            <div class="tier-name">The Uninitiated</div>
+            <div class="tier-price-row">
+              <span class="tier-price">$0</span>
+            </div>
+            <div class="tier-cadence">— gratis, always —</div>
+            <p class="tier-desc">
+              Two hunts, fully open. No account required to begin.
+              A public name on the leaderboard. Proof you were here.
+            </p>
+            <hr class="tier-rule">
+            <ul class="tier-features">
+              <li>
+                <span class="feat-icon feat-icon--check" aria-hidden="true">✦</span>
+                <span>Hunt 01 — The Glass &amp; The Flame, unlocked in full</span>
+              </li>
+              <li>
+                <span class="feat-icon feat-icon--check" aria-hidden="true">✦</span>
+                <span>Hunt 02 — The Whispering Page, unlocked in full</span>
+              </li>
+              <li>
+                <span class="feat-icon feat-icon--check" aria-hidden="true">✦</span>
+                <span>Public leaderboard — your Detective Score displayed</span>
+              </li>
+              <li>
+                <span class="feat-icon feat-icon--check" aria-hidden="true">✦</span>
+                <span>Basic solver profile</span>
+              </li>
+              <li>
+                <span class="feat-icon feat-icon--dot" aria-hidden="true">·</span>
+                <span style="opacity:0.5;">No access to paid hunts</span>
+              </li>
+              <li>
+                <span class="feat-icon feat-icon--dot" aria-hidden="true">·</span>
+                <span style="opacity:0.5;">No membership badge</span>
+              </li>
+            </ul>
+            <a href="hunt-1.html" class="tier-cta tier-cta--free">Begin Free Hunt</a>
+          </div>
+
+          <!-- Single Hunt -->
+          <div class="card tier-card reveal">
+            <span class="tier-entry">Per Case — One Time</span>
+            <div class="tier-name">The Single File</div>
+            <div class="tier-price-row">
+              <span class="tier-price">$3</span>
+              <span class="tier-price-cents">.99</span>
+            </div>
+            <div class="tier-cadence">— per hunt, one-time charge —</div>
+            <p class="tier-desc">
+              Choose any one locked hunt and unlock it permanently.
+              No subscription. No monthly obligation. Pay once, play whenever.
+            </p>
+            <hr class="tier-rule">
+            <ul class="tier-features">
+              <li>
+                <span class="feat-icon feat-icon--check" aria-hidden="true">✦</span>
+                <span>Any one locked hunt of your choosing — permanently unlocked</span>
+              </li>
+              <li>
+                <span class="feat-icon feat-icon--check" aria-hidden="true">✦</span>
+                <span>Leaderboard entry for that hunt</span>
+              </li>
+              <li>
+                <span class="feat-icon feat-icon--check" aria-hidden="true">✦</span>
+                <span>Access survives subscription cancellation (yours to keep)</span>
+              </li>
+              <li>
+                <span class="feat-icon feat-icon--dot" aria-hidden="true">·</span>
+                <span style="opacity:0.5;">One hunt only — additional hunts billed separately</span>
+              </li>
+              <li>
+                <span class="feat-icon feat-icon--dot" aria-hidden="true">·</span>
+                <span style="opacity:0.5;">No monthly clue credit</span>
+              </li>
+            </ul>
+            <a href="hunts.html" class="tier-cta tier-cta--single">Choose a Hunt</a>
+          </div>
+
+          <!-- Full Access -->
+          <div class="card tier-card tier-card--featured reveal">
+            <span class="tier-recommended" aria-label="Recommended">Most Complete</span>
+            <span class="tier-entry">Full Access — Monthly</span>
+            <div class="tier-name">The Full Dossier</div>
+            <div class="tier-price-row">
+              <span class="tier-price">$9</span>
+              <span class="tier-price-cents">.99</span>
+              <span class="tier-cadence">/ month</span>
+            </div>
+            <div class="tier-cadence">— cancel any time —</div>
+            <p class="tier-desc">
+              Every current hunt, every hunt added this month, one clue credit
+              monthly, and a members-only badge on the leaderboard.
+              The complete case file.
+            </p>
+            <hr class="tier-rule">
+            <ul class="tier-features">
+              <li>
+                <span class="feat-icon feat-icon--check" aria-hidden="true">✦</span>
+                <span>All 8 locked hunts — immediately unlocked</span>
+              </li>
+              <li>
+                <span class="feat-icon feat-icon--check" aria-hidden="true">✦</span>
+                <span>Any new hunt added during your membership — unlocked automatically</span>
+              </li>
+              <li>
+                <span class="feat-icon feat-icon--check" aria-hidden="true">✦</span>
+                <span>1 free clue credit per month (does not carry over)</span>
+              </li>
+              <li>
+                <span class="feat-icon feat-icon--check" aria-hidden="true">✦</span>
+                <span>Members-only leaderboard badge — visible to all solvers</span>
+              </li>
+              <li>
+                <span class="feat-icon feat-icon--check" aria-hidden="true">✦</span>
+                <span>Priority access to new hunts before public release</span>
+              </li>
+              <li>
+                <span class="feat-icon feat-icon--check" aria-hidden="true">✦</span>
+                <span>Hunts purchased individually — kept permanently regardless of membership status</span>
+              </li>
+            </ul>
+            <a href="#" class="tier-cta tier-cta--member">Join the Membership</a>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Clue Economy -->
+    <section class="clue-section" aria-labelledby="clue-heading">
+      <div class="container">
+        <div class="clue-inner reveal">
+          <div class="clue-rule-box">
+            <h3 id="clue-heading">On the Matter of Purchased Clues</h3>
+            <p>
+              A clue is available at any point during any hunt, to any solver —
+              free or paying alike. Each one costs <span class="clue-cost">$1.99</span>,
+              charged at the moment you choose to use it.
+            </p>
+            <p>
+              A clue does not solve the puzzle for you. It narrows the territory —
+              confirms a direction, eliminates a wrong path, hints at the mechanism
+              without demonstrating it. The work remains yours.
+            </p>
+            <p>
+              What you should know before purchasing one:
+            </p>
+            <div class="clue-impact" role="note">
+              <span style="font-size:1.4rem;" aria-hidden="true">⚠</span>
+              <p>
+                Every clue you use is recorded. Your <strong>Detective Score</strong>
+                on the leaderboard is calculated from time elapsed <em>and</em> clues
+                purchased. Using a clue does not disqualify you — but it costs you rank.
+                Solving without a single clue is the highest demonstration of the craft.
+                Paying to progress is always an option. Being remembered for it is not.
+              </p>
+            </div>
+            <p style="margin-top:1rem;">
+              Members receive <strong>one free clue credit per month</strong>.
+              It expires at the end of each billing cycle and does not accumulate.
+              Free credits carry the same leaderboard weight as purchased ones —
+              a clue is a clue, however it was obtained.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq-section" aria-labelledby="faq-heading">
+      <div class="container">
+        <div class="faq-inner">
+          <div class="section-heading reveal" style="text-align:left;">
+            <span class="eyebrow" style="font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);opacity:0.8;display:block;margin-bottom:0.6rem;">Questions of record</span>
+            <h2 id="faq-heading" style="margin-bottom:0.5rem;">Frequently Raised</h2>
+          </div>
+
+          <ul class="faq-list reveal" role="list">
+
+            <li class="faq-item">
+              <button class="faq-question" aria-expanded="false" aria-controls="faq-1">
+                Do clues expire?
+                <span class="faq-chevron" aria-hidden="true">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </span>
+              </button>
+              <div class="faq-answer" id="faq-1" role="region">
+                <p>
+                  Purchased clues (<span style="color:var(--ember);font-family:var(--font-mono);">$1.99</span> each) do not expire.
+                  Once bought, they remain available for use in the hunt you purchased them for,
+                  for as long as that hunt is active on the platform. They are not transferable
+                  between hunts. The free monthly clue credit available to Full Dossier members
+                  expires at the end of each billing cycle and does not carry forward to the next month.
+                </p>
+              </div>
+            </li>
+
+            <li class="faq-item">
+              <button class="faq-question" aria-expanded="false" aria-controls="faq-2">
+                Can I cancel my membership?
+                <span class="faq-chevron" aria-hidden="true">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </span>
+              </button>
+              <div class="faq-answer" id="faq-2" role="region">
+                <p>
+                  Yes, at any time. Cancellation takes effect at the end of your current billing
+                  period — you retain full access to all eight locked hunts until then.
+                  After cancellation, access to hunts covered only by membership is removed.
+                  Any hunt you purchased individually (at $3.99 per hunt) before or during
+                  your membership remains yours permanently, regardless of subscription status.
+                </p>
+              </div>
+            </li>
+
+            <li class="faq-item">
+              <button class="faq-question" aria-expanded="false" aria-controls="faq-3">
+                If I buy a hunt individually, do I keep it after cancelling a membership?
+                <span class="faq-chevron" aria-hidden="true">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </span>
+              </button>
+              <div class="faq-answer" id="faq-3" role="region">
+                <p>
+                  Yes, always. A hunt bought individually at $3.99 is a one-time purchase.
+                  It belongs to your account permanently. Subscribing to Full Dossier membership
+                  later does not change or affect that ownership, and cancelling the membership
+                  does not remove access to individually purchased hunts. The two are entirely
+                  independent ledger entries.
+                </p>
+              </div>
+            </li>
+
+            <li class="faq-item">
+              <button class="faq-question" aria-expanded="false" aria-controls="faq-4">
+                What happens to my Detective Score if I use a clue I received for free as a member?
+                <span class="faq-chevron" aria-hidden="true">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </span>
+              </button>
+              <div class="faq-answer" id="faq-4" role="region">
+                <p>
+                  A clue is a clue. The leaderboard does not distinguish between a clue that
+                  cost you $1.99 and a clue that came with your membership. In both cases,
+                  the score penalty is identical. The free monthly credit is a benefit of
+                  membership — not a way around the rules of the game. Solve without clues
+                  and your Detective Score will reflect it. The record is honest.
+                </p>
+              </div>
+            </li>
+
+            <li class="faq-item">
+              <button class="faq-question" aria-expanded="false" aria-controls="faq-5">
+                Is there a refund policy?
+                <span class="faq-chevron" aria-hidden="true">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </span>
+              </button>
+              <div class="faq-answer" id="faq-5" role="region">
+                <p>
+                  Individual hunt purchases and clue purchases are non-refundable once the
+                  hunt has been accessed or the clue has been revealed. Membership charges
+                  for a billing period already in progress are similarly non-refundable,
+                  though you may cancel to prevent future charges at any time.
+                  If you encounter a technical error preventing access to content you have
+                  paid for, contact us — that is a different matter entirely.
+                </p>
+              </div>
+            </li>
+
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">IMPOSSIBLE FORMS</div>
+        <div class="footer-tagline">Ten puzzles. No instructions. One leaderboard.</div>
+      </div>
+      <ul class="footer-nav" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="hunts.html">All Hunts</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="leaderboard.html">Leaderboard</a></li>
+      </ul>
+      <div class="footer-easter">
+        <span class="mirror-text" title="Look closer" aria-label="Reveal hidden message">·noitseuq gnorw eht gniksa era uoY·</span>
+        <span class="mirror-text-label">[ look closer ]</span>
+      </div>
+      <p class="footer-copy" aria-hidden="true">© IMPOSSIBLE FORMS — All hunts protected. All tricks intentional.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script>
+    /* FAQ accordion */
+    document.querySelectorAll('.faq-question').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        const answerId = btn.getAttribute('aria-controls');
+        const answer = document.getElementById(answerId);
+
+        // Close all others
+        document.querySelectorAll('.faq-question').forEach(other => {
+          if (other !== btn) {
+            other.setAttribute('aria-expanded', 'false');
+            const otherId = other.getAttribute('aria-controls');
+            const otherAnswer = document.getElementById(otherId);
+            if (otherAnswer) otherAnswer.classList.remove('open');
+          }
+        });
+
+        btn.setAttribute('aria-expanded', String(!expanded));
+        if (answer) answer.classList.toggle('open', !expanded);
+      });
+    });
+  </script>
+
+</body>
+</html>
