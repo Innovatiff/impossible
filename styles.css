@@ -1,5 +1,5 @@
 /* ============================================================
-   IMPOSSIBLE FORMS — Shared Stylesheet
+   IMPOSSIBLE HUNT — Shared Stylesheet
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
@@ -36,7 +36,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
-  font-size: 17px;
+  font-size: 20px;
   scroll-behavior: smooth;
 }
 
@@ -63,10 +63,10 @@ h1, h2, h3, h4 {
   letter-spacing: 0.04em;
 }
 
-h1 { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 700; }
-h2 { font-size: clamp(1.5rem, 3.5vw, 2.2rem); font-weight: 600; }
-h3 { font-size: clamp(1.1rem, 2.5vw, 1.5rem); font-weight: 600; }
-h4 { font-size: 1rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+h1 { font-size: clamp(2.4rem, 6vw, 4.2rem); font-weight: 700; }
+h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 600; }
+h3 { font-size: clamp(1.3rem, 3vw, 1.9rem); font-weight: 600; }
+h4 { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
 
 p { margin-bottom: 1em; }
 a { color: var(--gold); text-decoration: none; transition: color var(--transition); }
@@ -121,7 +121,7 @@ strong { font-weight: 600; color: var(--parchment); }
 
 .nav-wordmark {
   font-family: var(--font-display);
-  font-size: clamp(0.85rem, 2vw, 1rem);
+  font-size: clamp(0.9rem, 2vw, 1.15rem);
   font-weight: 700;
   letter-spacing: 0.18em;
   color: var(--parchment);
@@ -143,7 +143,7 @@ strong { font-weight: 600; color: var(--parchment); }
 
 .nav-links a {
   font-family: var(--font-display);
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--parchment-faint);
@@ -157,7 +157,7 @@ strong { font-weight: 600; color: var(--parchment); }
 
 .nav-cta {
   font-family: var(--font-display) !important;
-  font-size: 0.7rem !important;
+  font-size: 0.8rem !important;
   padding: 0.42rem 1.1rem;
   border: 1px solid var(--gold-dim);
   border-radius: var(--radius-seal);
@@ -211,10 +211,10 @@ strong { font-weight: 600; color: var(--parchment); }
 .btn {
   display: inline-block;
   font-family: var(--font-display);
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  padding: 0.85rem 2rem;
+  padding: 0.9rem 2.2rem;
   border-radius: var(--radius-seal);
   border: none;
   cursor: pointer;
@@ -316,7 +316,7 @@ strong { font-weight: 600; color: var(--parchment); }
 .badge {
   display: inline-block;
   font-family: var(--font-mono);
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   padding: 0.22rem 0.7rem;
@@ -385,14 +385,14 @@ strong { font-weight: 600; color: var(--parchment); }
 
 .footer-brand {
   font-family: var(--font-display);
-  font-size: 0.85rem;
+  font-size: 1rem;
   letter-spacing: 0.16em;
   color: var(--parchment-faint);
 }
 
 .footer-tagline {
   font-family: var(--font-body);
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   font-style: italic;
   color: var(--parchment-faint);
   margin-top: 0.4rem;
@@ -409,7 +409,7 @@ strong { font-weight: 600; color: var(--parchment); }
 
 .footer-nav a {
   font-family: var(--font-display);
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--parchment-faint);
@@ -529,7 +529,7 @@ strong { font-weight: 600; color: var(--parchment); }
 
 .section-heading .eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--gold);
@@ -544,7 +544,7 @@ strong { font-weight: 600; color: var(--parchment); }
 
 .section-heading p {
   color: var(--parchment-dim);
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   max-width: 600px;
   margin: 0 auto;
   font-style: italic;
