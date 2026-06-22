@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard — Impossible Forms</title>
+  <meta name="description" content="The Detective Score leaderboard — ranked by time and clues used.">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .lb-hero { padding: clamp(4rem, 10vw, 6rem) 0 2rem; text-align: center; }
+    .lb-hero p { font-style:italic; color:var(--parchment-dim); max-width:520px; margin:1rem auto 0; }
+
+    .lb-section { padding: clamp(2rem, 5vw, 4rem) 0; }
+
+    .lb-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--ink-border);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    thead th {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.7;
+      background: rgba(14,11,18,0.8);
+      padding: 0.9rem 1.2rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(212,167,70,0.15);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--ink-border);
+      transition: background var(--transition);
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(212,167,70,0.04); }
+
+    tbody td {
+      padding: 0.85rem 1.2rem;
+      color: var(--parchment-dim);
+      vertical-align: middle;
+    }
+
+    .td-rank {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--gold-dim);
+      width: 3rem;
+    }
+
+    .td-rank.top { color: var(--gold); font-weight: 700; }
+
+    .td-name { font-family: var(--font-body); font-size: 0.95rem; }
+
+    .td-hunt {
+      font-family: var(--font-display);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+    }
+
+    .td-time {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--parchment);
+    }
+
+    .td-clues {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--ember);
+    }
+
+    .td-score {
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    .td-badge .badge { font-size: 0.58rem; }
+
+    .placeholder-note {
+      background: var(--ink-mid);
+      border: 1px solid rgba(212,167,70,0.15);
+      border-radius: var(--radius-card);
+      padding: 2rem;
+      text-align: center;
+      margin-top: 2rem;
+    }
+    .placeholder-note p { font-style: italic; color: var(--parchment-dim); margin: 0; font-size: 0.92rem; }
+  </style>
+</head>
+<body>
+  <nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-wordmark">IMPOSSIBLE <span>FORMS</span></a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="hunts.html">All Hunts</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="leaderboard.html">Leaderboard</a></li>
+        <li><a href="hunt-1.html" class="nav-cta">Begin Free Hunt</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="page-main">
+    <section class="lb-hero section">
+      <div class="container">
+        <span style="font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);opacity:0.8;display:block;margin-bottom:0.6rem;">Hall of Record</span>
+        <h1>The Detective Score Board</h1>
+        <p>
+          Ranked by time elapsed and clues purchased. The unaided solver
+          stands above the well-funded one. Both stand above the one who quit.
+        </p>
+      </div>
+    </section>
+
+    <section class="lb-section">
+      <div class="container">
+        <div class="lb-table-wrap reveal">
+          <table aria-label="Leaderboard — all hunts">
+            <thead>
+              <tr>
+                <th scope="col">Rank</th>
+                <th scope="col">Solver</th>
+                <th scope="col">Hunt</th>
+                <th scope="col">Time</th>
+                <th scope="col">Clues</th>
+                <th scope="col">Detective Score</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="td-rank top">#1</td>
+                <td class="td-name">E. Voss</td>
+                <td class="td-hunt">The Glass &amp; The Flame</td>
+                <td class="td-time">04:12</td>
+                <td class="td-clues">0</td>
+                <td class="td-score">9,840</td>
+                <td class="td-badge"><span class="badge badge-free">Free</span></td>
+              </tr>
+              <tr>
+                <td class="td-rank top">#2</td>
+                <td class="td-name">M. Ashford</td>
+                <td class="td-hunt">The Glass &amp; The Flame</td>
+                <td class="td-time">07:39</td>
+                <td class="td-clues">0</td>
+                <td class="td-score">9,210</td>
+                <td class="td-badge"><span class="badge badge-free">Free</span></td>
+              </tr>
+              <tr>
+                <td class="td-rank top">#3</td>
+                <td class="td-name">R. Calderón</td>
+                <td class="td-hunt">The Glass &amp; The Flame</td>
+                <td class="td-time">09:05</td>
+                <td class="td-clues">1</td>
+                <td class="td-score">7,940</td>
+                <td class="td-badge"><span class="badge badge-free">Free</span></td>
+              </tr>
+              <tr>
+                <td class="td-rank">#4</td>
+                <td class="td-name">T. Nakamura</td>
+                <td class="td-hunt">The Glass &amp; The Flame</td>
+                <td class="td-time">11:18</td>
+                <td class="td-clues">0</td>
+                <td class="td-score">7,630</td>
+                <td class="td-badge"><span class="badge badge-free">Free</span></td>
+              </tr>
+              <tr>
+                <td class="td-rank">#5</td>
+                <td class="td-name">S. Brennan</td>
+                <td class="td-hunt">The Glass &amp; The Flame</td>
+                <td class="td-time">14:52</td>
+                <td class="td-clues">2</td>
+                <td class="td-score">5,880</td>
+                <td class="td-badge"><span class="badge badge-free">Free</span></td>
+              </tr>
+              <tr style="background:rgba(212,167,70,0.04);">
+                <td class="td-rank" style="color:var(--mist);">—</td>
+                <td class="td-name" style="font-style:italic;color:var(--parchment-faint);">— you —</td>
+                <td class="td-hunt" style="color:var(--parchment-faint);font-style:italic;">not yet entered</td>
+                <td class="td-time" style="color:var(--parchment-faint);">--:--</td>
+                <td class="td-clues">—</td>
+                <td class="td-score" style="color:var(--parchment-faint);">—</td>
+                <td class="td-badge"><span class="badge" style="background:transparent;border:1px dashed rgba(143,166,189,0.25);color:var(--mist);font-size:0.58rem;">Pending</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="placeholder-note reveal">
+          <p>
+            This leaderboard is a preview. Live scoring will be recorded when accounts
+            and backend are connected. Solve Hunt 01 now — your time is already running.
+          </p>
+        </div>
+
+        <div style="text-align:center;margin-top:2rem;">
+          <a href="hunt-1.html" class="btn btn-primary">Begin Hunt 01 — Free</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">IMPOSSIBLE FORMS</div>
+        <div class="footer-tagline">Ten puzzles. No instructions. One leaderboard.</div>
+      </div>
+      <ul class="footer-nav" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="hunts.html">All Hunts</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="leaderboard.html">Leaderboard</a></li>
+      </ul>
+      <div class="footer-easter">
+        <span class="mirror-text" title="Look closer" aria-label="Reveal hidden message">·noitseuq gnorw eht gniksa era uoY·</span>
+        <span class="mirror-text-label">[ look closer ]</span>
+      </div>
+      <p class="footer-copy" aria-hidden="true">© IMPOSSIBLE FORMS — All hunts protected. All tricks intentional.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

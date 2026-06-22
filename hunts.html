@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Hunts — Impossible Forms</title>
+  <meta name="description" content="Ten puzzle hunts disguised as ordinary forms. Two are free. Eight are waiting behind a locked door.">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Page-specific styles ─────────────────────────────── */
+
+    .hunts-hero {
+      padding: clamp(4rem, 10vw, 6rem) 0 clamp(2rem, 5vw, 3rem);
+      text-align: center;
+      position: relative;
+    }
+
+    .hunts-hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212,167,70,0.25), transparent);
+    }
+
+    .hunts-intro {
+      font-size: 1.05rem;
+      font-style: italic;
+      color: var(--parchment-dim);
+      max-width: 600px;
+      margin: 1rem auto 0;
+    }
+
+    /* Grid */
+    .hunts-section { padding: clamp(3rem, 7vw, 5rem) 0; }
+
+    .hunt-group-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.7;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid rgba(212,167,70,0.15);
+    }
+
+    .hunts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    /* Hunt card */
+    .hunt-card {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+    }
+
+    .hunt-card:hover:not(.hunt-card--locked) {
+      transform: translateY(-2px);
+      border-color: rgba(212,167,70,0.4);
+      box-shadow: var(--shadow-card), 0 0 32px rgba(212,167,70,0.1);
+    }
+
+    /* Gold corner accent on free cards */
+    .hunt-card--free::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 0; height: 0;
+      border-style: solid;
+      border-width: 0 36px 36px 0;
+      border-color: transparent var(--gold-dim) transparent transparent;
+      opacity: 0.5;
+    }
+
+    .hunt-card__header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .hunt-card__num {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--gold-dim);
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+
+    .hunt-card__badges {
+      display: flex;
+      gap: 0.4rem;
+      flex-shrink: 0;
+    }
+
+    .hunt-card__title {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--parchment);
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.04em;
+      line-height: 1.3;
+    }
+
+    .hunt-card__teaser {
+      font-size: 0.9rem;
+      font-style: italic;
+      color: var(--parchment-dim);
+      line-height: 1.6;
+      flex: 1;
+      margin-bottom: 1.2rem;
+    }
+
+    .hunt-card__footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--ink-border);
+      margin-top: auto;
+    }
+
+    .hunt-card__price {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--gold);
+    }
+
+    /* Locked overlay */
+    .hunt-card--locked {
+      cursor: default;
+    }
+
+    .hunt-card--locked .hunt-card__title,
+    .hunt-card--locked .hunt-card__teaser {
+      filter: blur(0);
+    }
+
+    /* Silhouette overlay effect */
+    .hunt-card--locked .locked-veil {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to bottom,
+        transparent 55%,
+        rgba(14,11,18,0.7) 100%
+      );
+      pointer-events: none;
+    }
+
+    /* Mechanism reveal on hover for locked cards */
+    .hunt-card--locked .mechanic-hint {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--mist);
+      opacity: 0;
+      letter-spacing: 0.08em;
+      transition: opacity var(--transition);
+      margin-top: 0.4rem;
+    }
+
+    .hunt-card--locked:hover .mechanic-hint {
+      opacity: 0.5;
+    }
+
+    /* Unlock button area */
+    .unlock-area {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-top: 1rem;
+      padding-top: 0.8rem;
+      border-top: 1px solid var(--ink-border);
+    }
+
+    .unlock-btn {
+      display: inline-block;
+      font-family: var(--font-display);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.55rem 1.2rem;
+      background: transparent;
+      border: 1px solid rgba(143,166,189,0.3);
+      border-radius: var(--radius-seal);
+      color: var(--mist);
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+
+    .unlock-btn:hover {
+      border-color: var(--gold-dim);
+      color: var(--gold);
+      background: var(--gold-glow);
+    }
+
+    /* Lock icon inline SVG */
+    .icon-lock {
+      display: inline-block;
+      width: 12px; height: 12px;
+      vertical-align: middle;
+      margin-right: 3px;
+      opacity: 0.7;
+    }
+
+    /* Leaderboard note */
+    .leaderboard-note {
+      background: var(--ink-mid);
+      border: 1px solid rgba(212,167,70,0.15);
+      border-radius: var(--radius-card);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      max-width: 620px;
+      margin: 3rem auto 0;
+    }
+
+    .leaderboard-note p {
+      font-size: 0.9rem;
+      color: var(--parchment-dim);
+      font-style: italic;
+      margin: 0;
+    }
+
+    .leaderboard-note a { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-wordmark">IMPOSSIBLE <span>FORMS</span></a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="hunts.html">All Hunts</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="leaderboard.html">Leaderboard</a></li>
+        <li><a href="hunt-1.html" class="nav-cta">Begin Free Hunt</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="page-main">
+
+    <!-- Hero -->
+    <section class="hunts-hero section">
+      <div class="container">
+        <span class="eyebrow" style="font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);opacity:0.8;display:block;margin-bottom:0.6rem;">The case files</span>
+        <h1>Ten Hunts. None of Them Simple.</h1>
+        <p class="hunts-intro">
+          Each one presents itself as something ordinary. A form. A page. An interface.
+          In each case, the surface is the lie. Begin with the first two at no cost —
+          or commit to the full set and see how deep the deception runs.
+        </p>
+      </div>
+    </section>
+
+    <!-- Hunt Grid -->
+    <section class="hunts-section">
+      <div class="container">
+
+        <!-- Free Hunts -->
+        <p class="hunt-group-label">Open &amp; Free — No Account Required</p>
+        <div class="hunts-grid">
+
+          <!-- Hunt 1 -->
+          <a href="hunt-1.html" class="card hunt-card hunt-card--free reveal" id="hunt-1" aria-label="Hunt 1: The Glass and The Flame — Free, begin now">
+            <div class="hunt-card__header">
+              <span class="hunt-card__num">Hunt 01</span>
+              <div class="hunt-card__badges">
+                <span class="badge badge-free">Free</span>
+              </div>
+            </div>
+            <div class="hunt-card__title">The Glass &amp; The Flame</div>
+            <p class="hunt-card__teaser">
+              The mirror shows you something — but not what you expect, and not
+              from the angle you are looking. The lantern knows where the secrets
+              are buried. It only illuminates when you bring it close enough.
+            </p>
+            <div class="hunt-card__footer">
+              <span class="hunt-card__price" style="color:var(--gold);">Free</span>
+              <span class="btn btn-primary" style="font-size:0.7rem;padding:0.6rem 1.2rem;">Enter Hunt →</span>
+            </div>
+          </a>
+
+          <!-- Hunt 2 -->
+          <a href="#hunt-2-coming" class="card hunt-card hunt-card--free reveal" id="hunt-2" aria-label="Hunt 2: The Whispering Page — Free, coming soon">
+            <div class="hunt-card__header">
+              <span class="hunt-card__num">Hunt 02</span>
+              <div class="hunt-card__badges">
+                <span class="badge badge-free">Free</span>
+                <span class="badge" style="background:rgba(143,166,189,0.1);color:var(--mist);border:1px solid rgba(143,166,189,0.2);">Coming Soon</span>
+              </div>
+            </div>
+            <div class="hunt-card__title">The Whispering Page</div>
+            <p class="hunt-card__teaser">
+              There is writing on this page that does not want to be read — not yet.
+              It waits for the warmth of someone paying attention. Cold eyes will find
+              nothing. The patient ones will see everything.
+            </p>
+            <div class="hunt-card__footer">
+              <span class="hunt-card__price" style="color:var(--gold);">Free</span>
+              <span class="btn btn-ghost" style="font-size:0.7rem;padding:0.6rem 1.2rem;">Notify Me</span>
+            </div>
+          </a>
+
+        </div>
+
+        <!-- Locked Hunts -->
+        <p class="hunt-group-label">Locked — Requires Unlock or Membership</p>
+        <div class="hunts-grid">
+
+          <!-- Hunt 3 -->
+          <div class="card hunt-card hunt-card--locked reveal" id="hunt-3" aria-label="Hunt 3: The Clockmaker's Riddle — Locked, $3.99">
+            <div class="locked-veil" aria-hidden="true"></div>
+            <div class="hunt-card__header">
+              <span class="hunt-card__num">Hunt 03</span>
+              <div class="hunt-card__badges">
+                <span class="badge badge-locked">
+                  <svg class="icon-lock" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="6" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M5 6V4.5a2 2 0 1 1 4 0V6" stroke="currentColor" stroke-width="1.2"/></svg>
+                  Locked
+                </span>
+              </div>
+            </div>
+            <div class="hunt-card__title">The Clockmaker's Riddle</div>
+            <p class="hunt-card__teaser">
+              Every dial has a position that reveals something and a position that
+              reveals nothing. The difference between them is one degree. Finding
+              the correct one requires knowing what you are actually measuring.
+            </p>
+            <div class="mechanic-hint">mechanic: a dial that must reach the exact angle</div>
+            <div class="unlock-area">
+              <a href="pricing.html" class="unlock-btn">Unlock — $3.99</a>
+              <a href="pricing.html" class="unlock-btn">Full Access — $9.99/mo</a>
+            </div>
+          </div>
+
+          <!-- Hunt 4 -->
+          <div class="card hunt-card hunt-card--locked reveal" id="hunt-4" aria-label="Hunt 4: Ashes of the Sender — Locked, $3.99">
+            <div class="locked-veil" aria-hidden="true"></div>
+            <div class="hunt-card__header">
+              <span class="hunt-card__num">Hunt 04</span>
+              <div class="hunt-card__badges">
+                <span class="badge badge-locked">
+                  <svg class="icon-lock" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="6" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M5 6V4.5a2 2 0 1 1 4 0V6" stroke="currentColor" stroke-width="1.2"/></svg>
+                  Locked
+                </span>
+              </div>
+            </div>
+            <div class="hunt-card__title">Ashes of the Sender</div>
+            <p class="hunt-card__teaser">
+              The letter arrived burned. The message did not survive in any
+              legible form — or so it appears, until you learn that some things
+              are not destroyed. They are merely hidden beneath what destroyed them.
+            </p>
+            <div class="mechanic-hint">mechanic: scratch-off reveal beneath a layer of soot</div>
+            <div class="unlock-area">
+              <a href="pricing.html" class="unlock-btn">Unlock — $3.99</a>
+              <a href="pricing.html" class="unlock-btn">Full Access — $9.99/mo</a>
+            </div>
+          </div>
+
+          <!-- Hunt 5 -->
+          <div class="card hunt-card hunt-card--locked reveal" id="hunt-5" aria-label="Hunt 5: The Locksmith's Confession — Locked, $3.99">
+            <div class="locked-veil" aria-hidden="true"></div>
+            <div class="hunt-card__header">
+              <span class="hunt-card__num">Hunt 05</span>
+              <div class="hunt-card__badges">
+                <span class="badge badge-locked">
+                  <svg class="icon-lock" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="6" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M5 6V4.5a2 2 0 1 1 4 0V6" stroke="currentColor" stroke-width="1.2"/></svg>
+                  Locked
+                </span>
+              </div>
+            </div>
+            <div class="hunt-card__title">The Locksmith's Confession</div>
+            <p class="hunt-card__teaser">
+              He wrote down the combination, but he was not the kind of man who
+              wrote things straight. The buttons in front of you say one thing.
+              They mean something else entirely.
+            </p>
+            <div class="mechanic-hint">mechanic: combination input with deliberately mislabeled controls</div>
+            <div class="unlock-area">
+              <a href="pricing.html" class="unlock-btn">Unlock — $3.99</a>
+              <a href="pricing.html" class="unlock-btn">Full Access — $9.99/mo</a>
+            </div>
+          </div>
+
+          <!-- Hunt 6 -->
+          <div class="card hunt-card hunt-card--locked reveal" id="hunt-6" aria-label="Hunt 6: Echoes in the Wax — Locked, $3.99">
+            <div class="locked-veil" aria-hidden="true"></div>
+            <div class="hunt-card__header">
+              <span class="hunt-card__num">Hunt 06</span>
+              <div class="hunt-card__badges">
+                <span class="badge badge-locked">
+                  <svg class="icon-lock" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="6" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M5 6V4.5a2 2 0 1 1 4 0V6" stroke="currentColor" stroke-width="1.2"/></svg>
+                  Locked
+                </span>
+              </div>
+            </div>
+            <div class="hunt-card__title">Echoes in the Wax</div>
+            <p class="hunt-card__teaser">
+              The recording was made once. It has never been played back for the
+              right person — until now. Listen for what the voice does not say.
+              The pattern is there, if you know how to count it.
+            </p>
+            <div class="mechanic-hint">mechanic: audio clue containing a hidden tone sequence</div>
+            <div class="unlock-area">
+              <a href="pricing.html" class="unlock-btn">Unlock — $3.99</a>
+              <a href="pricing.html" class="unlock-btn">Full Access — $9.99/mo</a>
+            </div>
+          </div>
+
+          <!-- Hunt 7 -->
+          <div class="card hunt-card hunt-card--locked reveal" id="hunt-7" aria-label="Hunt 7: The Cartographer's Trick — Locked, $3.99">
+            <div class="locked-veil" aria-hidden="true"></div>
+            <div class="hunt-card__header">
+              <span class="hunt-card__num">Hunt 07</span>
+              <div class="hunt-card__badges">
+                <span class="badge badge-locked">
+                  <svg class="icon-lock" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="6" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M5 6V4.5a2 2 0 1 1 4 0V6" stroke="currentColor" stroke-width="1.2"/></svg>
+                  Locked
+                </span>
+              </div>
+            </div>
+            <div class="hunt-card__title">The Cartographer's Trick</div>
+            <p class="hunt-card__teaser">
+              The map makes no sense. It has never made sense. You have been
+              reading it the right way up, which is precisely the problem.
+              Some territories are only legible from the other side.
+            </p>
+            <div class="mechanic-hint">mechanic: the page must be rotated or flipped to be read</div>
+            <div class="unlock-area">
+              <a href="pricing.html" class="unlock-btn">Unlock — $3.99</a>
+              <a href="pricing.html" class="unlock-btn">Full Access — $9.99/mo</a>
+            </div>
+          </div>
+
+          <!-- Hunt 8 -->
+          <div class="card hunt-card hunt-card--locked reveal" id="hunt-8" aria-label="Hunt 8: Ink That Isn't There — Locked, $3.99">
+            <div class="locked-veil" aria-hidden="true"></div>
+            <div class="hunt-card__header">
+              <span class="hunt-card__num">Hunt 08</span>
+              <div class="hunt-card__badges">
+                <span class="badge badge-locked">
+                  <svg class="icon-lock" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="6" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M5 6V4.5a2 2 0 1 1 4 0V6" stroke="currentColor" stroke-width="1.2"/></svg>
+                  Locked
+                </span>
+              </div>
+            </div>
+            <div class="hunt-card__title">Ink That Isn't There</div>
+            <p class="hunt-card__teaser">
+              The page appears blank in the places that matter most. This
+              is not an accident. The writer trusted that the right reader
+              would know what to do with an empty surface.
+            </p>
+            <div class="mechanic-hint">mechanic: invisible text revealed only by selecting it</div>
+            <div class="unlock-area">
+              <a href="pricing.html" class="unlock-btn">Unlock — $3.99</a>
+              <a href="pricing.html" class="unlock-btn">Full Access — $9.99/mo</a>
+            </div>
+          </div>
+
+          <!-- Hunt 9 -->
+          <div class="card hunt-card hunt-card--locked reveal" id="hunt-9" aria-label="Hunt 9: The Thirteenth Door — Locked, $3.99">
+            <div class="locked-veil" aria-hidden="true"></div>
+            <div class="hunt-card__header">
+              <span class="hunt-card__num">Hunt 09</span>
+              <div class="hunt-card__badges">
+                <span class="badge badge-locked">
+                  <svg class="icon-lock" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="6" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M5 6V4.5a2 2 0 1 1 4 0V6" stroke="currentColor" stroke-width="1.2"/></svg>
+                  Locked
+                </span>
+              </div>
+            </div>
+            <div class="hunt-card__title">The Thirteenth Door</div>
+            <p class="hunt-card__teaser">
+              No door handle is visible. No keyhole. The door is there — you can
+              feel the edge of it — but opening it requires knowing a phrase
+              that has never been written on this page. Not yet.
+            </p>
+            <div class="mechanic-hint">mechanic: a hidden keyboard sequence the visitor must discover and type</div>
+            <div class="unlock-area">
+              <a href="pricing.html" class="unlock-btn">Unlock — $3.99</a>
+              <a href="pricing.html" class="unlock-btn">Full Access — $9.99/mo</a>
+            </div>
+          </div>
+
+          <!-- Hunt 10 -->
+          <div class="card hunt-card hunt-card--locked reveal" id="hunt-10" aria-label="Hunt 10: What the Magnifying Glass Knows — Locked, $3.99">
+            <div class="locked-veil" aria-hidden="true"></div>
+            <div class="hunt-card__header">
+              <span class="hunt-card__num">Hunt 10</span>
+              <div class="hunt-card__badges">
+                <span class="badge badge-locked">
+                  <svg class="icon-lock" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="3" y="6" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.2"/><path d="M5 6V4.5a2 2 0 1 1 4 0V6" stroke="currentColor" stroke-width="1.2"/></svg>
+                  Locked
+                </span>
+              </div>
+            </div>
+            <div class="hunt-card__title">What the Magnifying Glass Knows</div>
+            <p class="hunt-card__teaser">
+              The answers are all here, printed plainly. You cannot read them.
+              Not at this distance, not with unaided eyes. The right instrument
+              reveals exactly what the naked glance dismisses.
+            </p>
+            <div class="mechanic-hint">mechanic: a draggable magnifier reveals tiny text hidden in a pattern</div>
+            <div class="unlock-area">
+              <a href="pricing.html" class="unlock-btn">Unlock — $3.99</a>
+              <a href="pricing.html" class="unlock-btn">Full Access — $9.99/mo</a>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Leaderboard Note -->
+        <div class="leaderboard-note reveal">
+          <p>
+            Solvers are ranked on the <a href="leaderboard.html">leaderboard</a> by Detective Score —
+            calculated from time elapsed and clues purchased. Finishing unaided is worth more
+            than finishing fast. Both are worth more than not finishing.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">IMPOSSIBLE FORMS</div>
+        <div class="footer-tagline">Ten puzzles. No instructions. One leaderboard.</div>
+      </div>
+      <ul class="footer-nav" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="hunts.html">All Hunts</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="leaderboard.html">Leaderboard</a></li>
+      </ul>
+      <div class="footer-easter">
+        <span class="mirror-text" title="Look closer" aria-label="Reveal hidden message">·noitseuq gnorw eht gniksa era uoY·</span>
+        <span class="mirror-text-label">[ look closer ]</span>
+      </div>
+      <p class="footer-copy" aria-hidden="true">© IMPOSSIBLE FORMS — All hunts protected. All tricks intentional.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
