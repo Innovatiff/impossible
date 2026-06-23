@@ -1467,7 +1467,7 @@
 
   <!-- Firebase progress saving -->
   <script type="module">
-    import { initializeApp }            from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { initializeApp }               from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc, serverTimestamp }
       from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
@@ -1475,7 +1475,7 @@
     const HUNT_ID = 'hunt-1';
     const LS_KEY  = 'ih_progress_' + HUNT_ID;
 
-    const app  = initializeApp({
+    const app = initializeApp({
       apiKey:            "AIzaSyAfd15maH07AH9P-dRehUkACx48VofFq-I",
       authDomain:        "impossible-hunt.firebaseapp.com",
       projectId:         "impossible-hunt",
@@ -1486,29 +1486,18 @@
     const auth = getAuth(app);
     const db   = getFirestore(app);
 
-    /* Shared state exposed to the classic IIFE script */
-    window._ihUser        = null;   // firebase user or null
-    window._ihReady       = false;  // true once load+restore is done
-    window._ihLoadedData  = null;   // the save data loaded (for IIFE to consume)
+    window._ihUser = null;
 
-    /* Called by IIFE after it defines _ihApplyRestore */
-    window._ihRequestRestore = function() {
-      if (window._ihLoadedData) {
-        window._ihApplyRestore(window._ihLoadedData);
-      }
-    };
-
-    /* Save to the right place */
+    /* Save: logged-in → Firestore only. Guest → localStorage only. */
     window._ihSave = async function(data) {
-      const user = window._ihUser;
-      if (user) {
+      if (window._ihUser) {
         try {
           await setDoc(
-            doc(db, 'users', user.uid, 'progress', HUNT_ID),
+            doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID),
             { ...data, huntId: HUNT_ID, updatedAt: serverTimestamp() },
             { merge: true }
           );
-        } catch(e) {}
+        } catch(e) { console.error('Firestore save failed:', e); }
       } else {
         try {
           const prev = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
@@ -1517,43 +1506,30 @@
       }
     };
 
+    function deliver(data) {
+      if (window._ihApplyRestore) {
+        window._ihApplyRestore(data);
+      } else {
+        window._ihPendingRestore = data; /* IIFE picks this up when ready */
+      }
+    }
+
     onAuthStateChanged(auth, async (user) => {
       window._ihUser = user;
 
-      let data = null;
-
       if (user) {
+        /* Logged-in: load from Firestore only */
         try {
           const snap = await getDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID));
-          if (snap.exists()) {
-            data = snap.data();
-          } else {
-            /* No Firestore record — migrate from localStorage if available */
-            const raw = localStorage.getItem(LS_KEY);
-            if (raw) {
-              data = JSON.parse(raw);
-              /* Write to Firestore and clear local */
-              await setDoc(
-                doc(db, 'users', user.uid, 'progress', HUNT_ID),
-                { ...data, huntId: HUNT_ID, updatedAt: serverTimestamp() },
-                { merge: true }
-              );
-              localStorage.removeItem(LS_KEY);
-            }
-          }
-        } catch(e) {}
+          if (snap.exists()) deliver(snap.data());
+        } catch(e) { console.error('Firestore load failed:', e); }
       } else {
-        /* Guest */
+        /* Guest: load from localStorage only */
         try {
           const raw = localStorage.getItem(LS_KEY);
-          if (raw) data = JSON.parse(raw);
+          if (raw) deliver(JSON.parse(raw));
         } catch(e) {}
       }
-
-      window._ihLoadedData = data;
-      window._ihReady = true;
-      /* If IIFE already defined the restore handler, call it now */
-      if (window._ihApplyRestore) window._ihApplyRestore(data);
     });
   </script>
 
@@ -1641,14 +1617,16 @@
       window._ihSave && window._ihSave(buildSaveData(opts));
     }
 
-    /* Restore saved run — called by Firebase module (or immediately if module was faster) */
+    /* Called by Firebase module with saved data */
     window._ihApplyRestore = function(data) {
       if (!data) return;
-      /* Only restore if there is an active (unfinished) run */
+
       const hasSolves = Array.isArray(data.slideSolved) && data.slideSolved.length > 0;
       const midRun    = (data.currentSlide || 1) > 1;
+
+      /* Nothing to restore — fresh run */
       if (!hasSolves && !midRun) return;
-      /* Don't restore a run that was already completed in this same session */
+      /* Don't restore a completed run (they clicked Play Again) */
       if (data.runCompleted) return;
 
       if (Array.isArray(data.slideSolved)) {
@@ -1670,8 +1648,11 @@
       if (target > 1) activateSlide(target);
     };
 
-    /* If Firebase module already finished before this script ran, apply now */
-    if (window._ihReady) window._ihApplyRestore(window._ihLoadedData);
+    /* Module may have fired before IIFE — consume pending restore */
+    if (window._ihPendingRestore) {
+      window._ihApplyRestore(window._ihPendingRestore);
+      window._ihPendingRestore = null;
+    }
 
     /* ── Navigation ── */
     function activateSlide(n) {
