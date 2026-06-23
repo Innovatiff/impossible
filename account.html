@@ -1531,56 +1531,50 @@
       progSnap.forEach(d => { userProgress[d.id] = d.data(); });
     }
 
+    /* ── Single helper: read all progress (Firestore + localStorage) ── */
+    function getAllProgress() {
+      const result = {};
+      HUNT_CATALOG.forEach(h => {
+        // Start with Firestore data
+        if (userProgress[h.id]) result[h.id] = { ...userProgress[h.id] };
+        // Overlay localStorage if it has more recent/further progress
+        try {
+          const raw = localStorage.getItem('ih_progress_' + h.id);
+          if (raw) {
+            const local = JSON.parse(raw);
+            if (!result[h.id]) {
+              result[h.id] = local;
+            } else {
+              // Keep whichever source has the hunt further along
+              const localSlide = local.currentSlide || 1;
+              const fsSlide    = result[h.id].currentSlide || 1;
+              if (localSlide > fsSlide) result[h.id] = { ...result[h.id], ...local };
+              // Always keep best bestScore/bestTime from either source
+              result[h.id].bestScore = Math.max(result[h.id].bestScore || 0, local.bestScore || 0);
+              if (local.bestTime && (!result[h.id].bestTime || local.bestTime < result[h.id].bestTime)) {
+                result[h.id].bestTime = local.bestTime;
+              }
+              if (local.completed) result[h.id].completed = true;
+            }
+          }
+        } catch(e) {}
+      });
+      return result;
+    }
+
     /* ── Render dashboard ─────────────────────────────────── */
     async function renderDashboard() {
       const name = userDoc?.displayName || currentUser?.displayName || 'Detective';
       document.getElementById('dashGreeting').textContent = 'Welcome back, ' + name;
 
       // Sidebar
-      document.getElementById('sidebarName').textContent  = name;
-      document.getElementById('sidebarEmail').textContent = currentUser.email || '';
+      document.getElementById('sidebarName').textContent   = name;
+      document.getElementById('sidebarEmail').textContent  = currentUser.email || '';
       document.getElementById('sidebarAvatar').textContent = name.charAt(0).toUpperCase();
       const plan = userDoc?.plan || 'free';
       const planBadge = { free: 'badge-free', single: 'badge-lock', full: 'badge-ember' };
       document.getElementById('sidebarPlan').innerHTML =
         '<span class="badge ' + (planBadge[plan] || 'badge-free') + '">' + plan.toUpperCase() + '</span>';
-
-      // Stats — merge localStorage so completed/score counts are accurate
-      const mergedForStats = { ...userProgress };
-      HUNT_CATALOG.forEach(h => {
-        if (!mergedForStats[h.id]) {
-          try {
-            const raw = localStorage.getItem('ih_progress_' + h.id);
-            if (raw) mergedForStats[h.id] = JSON.parse(raw);
-          } catch(e) {}
-        }
-      });
-
-      // Auto-add completed hunts to library (Firestore only for auth users)
-      for (const h of HUNT_CATALOG) {
-        const p = mergedForStats[h.id];
-        if (p?.completed && !userLibrary[h.id] && currentUser) {
-          try {
-            await setDoc(doc(db, 'users', currentUser.uid, 'library', h.id), {
-              huntId: h.id,
-              addedAt: serverTimestamp(),
-              type: h.isFree ? 'free' : 'completed',
-            });
-            userLibrary[h.id] = { huntId: h.id };
-          } catch(e) {}
-        }
-      }
-
-      const libCount   = Object.keys(userLibrary).length;
-      const completed  = Object.values(mergedForStats).filter(p => p.completed).length;
-      // Use bestScore (best across all runs), fallback to finalScore for older saves
-      const bestScore  = Object.values(mergedForStats).map(p => p.bestScore || p.finalScore || 0).reduce((a, b) => Math.max(a, b), 0);
-      const totalClues = Object.values(mergedForStats).reduce((a, p) => a + (p.cluesUsed || 0), 0);
-
-      document.getElementById('statHunts').textContent     = libCount;
-      document.getElementById('statCompleted').textContent = completed;
-      document.getElementById('statBestScore').textContent = bestScore > 0 ? bestScore.toLocaleString() : '—';
-      document.getElementById('statClues').textContent     = totalClues;
 
       // Settings info
       document.getElementById('settingNameValue').textContent  = name;
@@ -1590,54 +1584,57 @@
           userDoc.createdAt.toDate().toLocaleDateString('en-GB', { year:'numeric', month:'long', day:'numeric' });
       }
 
-      // Merge localStorage for dashboard — also migrate to userProgress in memory
-      // so logged-in users see their guest progress until hunt-1 migrates it to Firestore
-      const mergedDash = { ...userProgress };
-      HUNT_CATALOG.forEach(h => {
-        try {
-          const raw = localStorage.getItem('ih_progress_' + h.id);
-          if (raw) {
-            const local = JSON.parse(raw);
-            if (!mergedDash[h.id]) {
-              // No Firestore record at all — use localStorage
-              mergedDash[h.id] = local;
-            } else {
-              // Both exist — merge: localStorage may have newer run fields if migration
-              // hasn't happened yet; keep whichever currentSlide is further along
-              const fs = mergedDash[h.id];
-              const localSlide = local.currentSlide || 1;
-              const fsSlide    = fs.currentSlide    || 1;
-              if (localSlide > fsSlide) mergedDash[h.id] = { ...fs, ...local };
-            }
-          }
-        } catch(e) {}
-      });
+      const allProgress = getAllProgress();
 
-      // Continue hunting — active run = has solves OR currentSlide > 1, AND not yet finished
+      // Auto-add completed hunts to library
+      for (const h of HUNT_CATALOG) {
+        const p = allProgress[h.id];
+        if (p?.completed && !userLibrary[h.id]) {
+          try {
+            await setDoc(doc(db, 'users', currentUser.uid, 'library', h.id), {
+              huntId: h.id, addedAt: serverTimestamp(), type: h.isFree ? 'free' : 'completed',
+            });
+            userLibrary[h.id] = { huntId: h.id };
+          } catch(e) {}
+        }
+      }
+
+      // Stats
+      const allVals    = Object.values(allProgress);
+      const libCount   = Object.keys(userLibrary).length;
+      const completed  = allVals.filter(p => p.completed).length;
+      const bestScore  = allVals.reduce((best, p) => Math.max(best, p.bestScore || p.runScore || 0), 0);
+      const totalClues = allVals.reduce((sum, p) => sum + (p.cluesUsed || 0), 0);
+
+      document.getElementById('statHunts').textContent     = libCount;
+      document.getElementById('statCompleted').textContent = completed;
+      document.getElementById('statBestScore').textContent = bestScore > 0 ? bestScore.toLocaleString() : '—';
+      document.getElementById('statClues').textContent     = totalClues;
+
+      // Continue hunting: has an active (unfinished) run
       const continueEl = document.getElementById('continueList');
       const inProgress = HUNT_CATALOG.filter(h => {
-        const p = mergedDash[h.id];
+        const p = allProgress[h.id];
         if (!p) return false;
         const hasSolves = Array.isArray(p.slideSolved) && p.slideSolved.length > 0;
         const midRun    = (p.currentSlide || 1) > 1;
-        // finalScore > 0 means current run finished; 0/undefined means still going
-        return (hasSolves || midRun) && !p.finalScore;
+        return (hasSolves || midRun) && !p.runCompleted;
       });
 
       if (inProgress.length === 0) {
         continueEl.innerHTML = '<p class="empty-state">No hunts in progress. <a href="hunt-1.html">Start Hunt 01 →</a></p>';
       } else {
         continueEl.innerHTML = inProgress.map(h => {
-          const p = mergedDash[h.id];
-          const total  = p.totalSlides || h.scenes || 10;
-          const solved = Array.isArray(p.slideSolved) ? p.slideSolved.length : (p.currentSlide ? p.currentSlide - 1 : 0);
-          const pct    = Math.min(100, Math.round((solved / total) * 100));
+          const p     = allProgress[h.id];
+          const total = p.totalSlides || h.scenes || 10;
+          const solved = Array.isArray(p.slideSolved) ? p.slideSolved.length : Math.max(0, (p.currentSlide || 1) - 1);
+          const pct   = Math.min(100, Math.round((solved / total) * 100));
           return `
             <a class="hunt-continue-item" href="${h.url}">
               <div class="hunt-continue-icon">◈</div>
               <div class="hunt-continue-info">
                 <div class="hunt-continue-name">Hunt ${h.number} — ${h.name}</div>
-                <div class="hunt-continue-meta">Scene ${p.currentSlide || 1} of ${total} · ${formatTime(p.elapsedSeconds || p.secondsElapsed || 0)} elapsed</div>
+                <div class="hunt-continue-meta">Scene ${p.currentSlide || 1} of ${total} · ${formatTime(p.elapsedSeconds || 0)} elapsed</div>
                 <div class="progress-mini">
                   <div class="progress-mini-fill" style="width:${pct}%"></div>
                 </div>
@@ -1647,29 +1644,21 @@
         }).join('');
       }
 
-      // Recent scores
-      const scores = HUNT_CATALOG
-        .filter(h => mergedDash[h.id]?.completed)
-        .map(h => ({ hunt: h, p: mergedDash[h.id] }));
-
-      const scoresEl = document.getElementById('recentScores');
+      // Recent scores (completed hunts)
+      const scores    = HUNT_CATALOG.filter(h => allProgress[h.id]?.completed).map(h => ({ hunt: h, p: allProgress[h.id] }));
+      const scoresEl  = document.getElementById('recentScores');
       if (scores.length === 0) {
         scoresEl.innerHTML = '<p class="empty-state">Complete a hunt to see your score here.</p>';
       } else {
-        scoresEl.innerHTML = scores.slice(0, 5).map(({ hunt, p }) => {
-          // Show best score & best time (fall back to finalScore/elapsedSeconds for older saves)
-          const displayScore = p.bestScore || p.finalScore || 0;
-          const displayTime  = p.bestTime  != null ? p.bestTime : (p.elapsedSeconds || p.secondsElapsed || 0);
-          return `
+        scoresEl.innerHTML = scores.slice(0, 5).map(({ hunt, p }) => `
           <div class="recent-score-row">
             <div class="rscore-hunt">${hunt.name}</div>
             <div style="display:flex;align-items:center;gap:0.75rem;">
-              <span class="rscore-val">${displayScore.toLocaleString()} pts</span>
-              <span class="rscore-time">${formatTime(displayTime)}</span>
+              <span class="rscore-val">${(p.bestScore || p.runScore || 0).toLocaleString()} pts</span>
+              <span class="rscore-time">${formatTime(p.bestTime || p.elapsedSeconds || 0)}</span>
               <span style="font-size:0.65rem;color:var(--mist);font-family:var(--font-mono);">${p.cluesUsed || 0} clues</span>
             </div>
-          </div>`;
-        }).join('');
+          </div>`).join('');
       }
     }
 
@@ -1689,24 +1678,14 @@
     };
 
     function renderLibrary() {
-      const plan = userDoc?.plan || 'free';
-      const grid = document.getElementById('huntGrid');
-
-      // Merge localStorage into library progress
-      const mergedLib = { ...userProgress };
-      HUNT_CATALOG.forEach(h => {
-        if (!mergedLib[h.id]) {
-          try {
-            const raw = localStorage.getItem('ih_progress_' + h.id);
-            if (raw) mergedLib[h.id] = JSON.parse(raw);
-          } catch(e) {}
-        }
-      });
+      const plan    = userDoc?.plan || 'free';
+      const grid    = document.getElementById('huntGrid');
+      const allProg = getAllProgress();
 
       let hunts = HUNT_CATALOG.filter(h => {
         if (activeFilter === 'in-library') return !!userLibrary[h.id];
         if (activeFilter === 'free')       return h.isFree;
-        if (activeFilter === 'completed')  return mergedLib[h.id]?.completed;
+        if (activeFilter === 'completed')  return allProg[h.id]?.completed;
         if (activeFilter === 'locked')     return !h.isFree && plan === 'free';
         return true;
       });
@@ -1717,14 +1696,13 @@
       }
 
       grid.innerHTML = hunts.map(h => {
-        const inLib     = !!userLibrary[h.id];
-        const progress  = mergedLib[h.id];
+        const inLib    = !!userLibrary[h.id];
+        const progress = allProg[h.id];
         const completed = progress?.completed;
         const isLocked  = !h.isFree && plan === 'free';
         const total     = progress?.totalSlides || h.scenes || 10;
-        const solved    = completed ? total : (Array.isArray(progress?.slideSolved) ? progress.slideSolved.length : (progress?.currentSlide ? progress.currentSlide - 1 : 0));
+        const solved    = completed ? total : (Array.isArray(progress?.slideSolved) ? progress.slideSolved.length : Math.max(0, (progress?.currentSlide || 1) - 1));
         const pct       = progress ? Math.min(100, Math.round((solved / total) * 100)) : 0;
-
         const fragments = progress?.fragmentsFound || [];
 
         return `
@@ -1813,49 +1791,27 @@
     };
 
     window.restartHunt = async function(huntId) {
-      // Reset only current-run fields; keep completed/bestScore/bestTime intact
-      const runReset = {
-        currentSlide: 1,
-        slideSolved: [],
-        cluesUsed: 0,
-        elapsedSeconds: 0,
-        fragmentsFound: [],
-        finalScore: 0,
-        updatedAt: serverTimestamp(),
-      };
+      // Keep completed/bestScore/bestTime — only reset current-run fields
+      const runReset = { currentSlide: 1, slideSolved: [], cluesUsed: 0, elapsedSeconds: 0, fragmentsFound: [], runCompleted: false, runScore: 0 };
       if (currentUser) {
         try {
-          await setDoc(doc(db, 'users', currentUser.uid, 'progress', huntId), runReset, { merge: true });
+          await setDoc(doc(db, 'users', currentUser.uid, 'progress', huntId), { ...runReset, updatedAt: serverTimestamp() }, { merge: true });
           if (userProgress[huntId]) Object.assign(userProgress[huntId], runReset);
         } catch(e) {}
       }
-      // Also reset localStorage run fields (keep bestScore/bestTime/completed)
       try {
-        const raw = localStorage.getItem('ih_progress_' + huntId);
-        const existing = raw ? JSON.parse(raw) : {};
-        localStorage.setItem('ih_progress_' + huntId, JSON.stringify({ ...existing, ...runReset, updatedAt: Date.now() }));
+        const prev = JSON.parse(localStorage.getItem('ih_progress_' + huntId) || '{}');
+        localStorage.setItem('ih_progress_' + huntId, JSON.stringify({ ...prev, ...runReset }));
       } catch(e) {}
-      // Navigate to the hunt
       const hunt = HUNT_CATALOG.find(h => h.id === huntId);
       if (hunt) window.location.href = hunt.url;
     };
 
     /* ── Render progress ──────────────────────────────────── */
     function renderProgress() {
-      const list = document.getElementById('progressList');
-
-      // Merge Firestore progress with localStorage (guests or logged-in fallback)
-      const merged = { ...userProgress };
-      HUNT_CATALOG.forEach(h => {
-        if (!merged[h.id]) {
-          try {
-            const raw = localStorage.getItem('ih_progress_' + h.id);
-            if (raw) merged[h.id] = JSON.parse(raw);
-          } catch(e) {}
-        }
-      });
-
-      const started = HUNT_CATALOG.filter(h => merged[h.id]);
+      const list    = document.getElementById('progressList');
+      const allProg = getAllProgress();
+      const started = HUNT_CATALOG.filter(h => allProg[h.id]);
 
       if (started.length === 0) {
         list.innerHTML = '<p class="empty-state" style="padding:2rem 0;">Start a hunt to track your progress here.</p>';
@@ -1863,24 +1819,19 @@
       }
 
       list.innerHTML = started.map(h => {
-        const p = merged[h.id];
+        const p         = allProg[h.id];
         const total     = p.totalSlides || h.scenes || 10;
-        const solved    = Array.isArray(p.slideSolved) ? p.slideSolved.length : (p.currentSlide ? p.currentSlide - 1 : 0);
+        const solved    = Array.isArray(p.slideSolved) ? p.slideSolved.length : Math.max(0, (p.currentSlide || 1) - 1);
         const pct       = p.completed ? 100 : Math.min(100, Math.round((solved / total) * 100));
         const fragments = p.fragmentsFound || [];
-        const isGuest   = !currentUser;
+        const bestScore = p.bestScore || p.runScore || 0;
 
         return `
           <div class="progress-item">
             <div style="flex:1;min-width:0;">
-              <div class="progress-item-name">
-                Hunt ${h.number} — ${h.name}
-                ${isGuest ? '<span style="font-size:0.65rem;color:var(--mist);margin-left:0.5rem;">(guest save)</span>' : ''}
-              </div>
+              <div class="progress-item-name">Hunt ${h.number} — ${h.name}</div>
               <div class="progress-bar-wrap">
-                <div class="progress-bar">
-                  <div class="progress-bar-fill" style="width:${pct}%"></div>
-                </div>
+                <div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
                 <span class="progress-pct">${pct}%</span>
               </div>
               <div class="progress-chips">
@@ -1890,10 +1841,10 @@
               </div>
               <div class="progress-meta-row">
                 <span>Scene ${p.currentSlide || 1} / ${total}</span>
-                <span>${formatTime(p.elapsedSeconds || p.secondsElapsed || 0)} elapsed</span>
+                <span>${formatTime(p.elapsedSeconds || 0)} elapsed</span>
                 <span>${p.cluesUsed || 0} clues used</span>
                 ${p.completed ? `<span style="color:var(--gold);">✦ Completed</span>` : ''}
-                ${p.finalScore ? `<span style="color:var(--gold);">${p.finalScore.toLocaleString()} pts</span>` : ''}
+                ${bestScore ? `<span style="color:var(--gold);">${bestScore.toLocaleString()} pts best</span>` : ''}
               </div>
             </div>
             <a href="${h.url}" class="btn-sm btn-sm-primary" style="flex-shrink:0;margin-top:0.25rem;">
