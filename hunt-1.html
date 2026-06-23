@@ -1488,16 +1488,8 @@
 
     window._ihUser = null;
 
-    /* Save: ALWAYS write localStorage. Also write Firestore if logged in. */
+    /* Save: logged-in → Firestore only. Guest → localStorage only. */
     window._ihSave = async function(data) {
-      /* localStorage — always, instant */
-      try {
-        const prev = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
-        const merged = { ...prev, ...data, huntId: HUNT_ID };
-        localStorage.setItem(LS_KEY, JSON.stringify(merged));
-      } catch(e) {}
-
-      /* Firestore — best-effort for cross-device sync */
       if (window._ihUser) {
         try {
           await setDoc(
@@ -1505,52 +1497,39 @@
             { ...data, huntId: HUNT_ID, updatedAt: serverTimestamp() },
             { merge: true }
           );
+        } catch(e) { console.error('Firestore save failed:', e); }
+      } else {
+        try {
+          const prev = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+          localStorage.setItem(LS_KEY, JSON.stringify({ ...prev, ...data, huntId: HUNT_ID }));
         } catch(e) {}
       }
     };
 
-    /* Load on page open: localStorage is primary (always available).
-       If logged in and Firestore has a FURTHER record, use that instead
-       (handles cross-device: user completed hunt on another device). */
-    async function loadAndRestore() {
-      let data = null;
-
-      /* 1. Read localStorage */
-      try {
-        const raw = localStorage.getItem(LS_KEY);
-        if (raw) data = JSON.parse(raw);
-      } catch(e) {}
-
-      /* 2. If logged in, check Firestore — prefer whichever is further along */
-      if (window._ihUser) {
-        try {
-          const snap = await getDoc(doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID));
-          if (snap.exists()) {
-            const fs = snap.data();
-            const fsSlide    = fs.currentSlide    || 1;
-            const localSlide = data ? (data.currentSlide || 1) : 0;
-            if (fsSlide > localSlide) {
-              data = fs;
-              /* Sync the better record back to localStorage */
-              try { localStorage.setItem(LS_KEY, JSON.stringify({ ...fs, huntId: HUNT_ID })); } catch(e) {}
-            }
-          }
-        } catch(e) {}
-      }
-
-      /* 3. Deliver to IIFE */
-      if (data) {
-        if (window._ihApplyRestore) {
-          window._ihApplyRestore(data);
-        } else {
-          window._ihPendingRestore = data;
-        }
+    function deliver(data) {
+      if (window._ihApplyRestore) {
+        window._ihApplyRestore(data);
+      } else {
+        window._ihPendingRestore = data; /* IIFE picks this up when ready */
       }
     }
 
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       window._ihUser = user;
-      loadAndRestore();
+
+      if (user) {
+        /* Logged-in: load from Firestore only */
+        try {
+          const snap = await getDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID));
+          if (snap.exists()) deliver(snap.data());
+        } catch(e) { console.error('Firestore load failed:', e); }
+      } else {
+        /* Guest: load from localStorage only */
+        try {
+          const raw = localStorage.getItem(LS_KEY);
+          if (raw) deliver(JSON.parse(raw));
+        } catch(e) {}
+      }
     });
   </script>
 
