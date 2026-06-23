@@ -1523,7 +1523,7 @@
     }
 
     /* ── Render dashboard ─────────────────────────────────── */
-    function renderDashboard() {
+    async function renderDashboard() {
       const name = userDoc?.displayName || currentUser?.displayName || 'Detective';
       document.getElementById('dashGreeting').textContent = 'Welcome back, ' + name;
 
@@ -1536,15 +1536,38 @@
       document.getElementById('sidebarPlan').innerHTML =
         '<span class="badge ' + (planBadge[plan] || 'badge-free') + '">' + plan.toUpperCase() + '</span>';
 
-      // Stats
-      const libCount  = Object.keys(userLibrary).length;
-      const completed = Object.values(userProgress).filter(p => p.completed).length;
-      const bestScore = Object.values(userProgress)
-        .map(p => p.finalScore || 0).reduce((a, b) => Math.max(a, b), 0);
-      const totalClues = Object.values(userProgress)
-        .reduce((a, p) => a + (p.cluesUsed || 0), 0);
+      // Stats — merge localStorage so completed/score counts are accurate
+      const mergedForStats = { ...userProgress };
+      HUNT_CATALOG.forEach(h => {
+        if (!mergedForStats[h.id]) {
+          try {
+            const raw = localStorage.getItem('ih_progress_' + h.id);
+            if (raw) mergedForStats[h.id] = JSON.parse(raw);
+          } catch(e) {}
+        }
+      });
 
-      document.getElementById('statHunts').textContent    = libCount;
+      // Auto-add completed hunts to library (Firestore only for auth users)
+      for (const h of HUNT_CATALOG) {
+        const p = mergedForStats[h.id];
+        if (p?.completed && !userLibrary[h.id] && currentUser) {
+          try {
+            await setDoc(doc(db, 'users', currentUser.uid, 'library', h.id), {
+              huntId: h.id,
+              addedAt: serverTimestamp(),
+              type: h.isFree ? 'free' : 'completed',
+            });
+            userLibrary[h.id] = { huntId: h.id };
+          } catch(e) {}
+        }
+      }
+
+      const libCount   = Object.keys(userLibrary).length;
+      const completed  = Object.values(mergedForStats).filter(p => p.completed).length;
+      const bestScore  = Object.values(mergedForStats).map(p => p.finalScore || 0).reduce((a, b) => Math.max(a, b), 0);
+      const totalClues = Object.values(mergedForStats).reduce((a, p) => a + (p.cluesUsed || 0), 0);
+
+      document.getElementById('statHunts').textContent     = libCount;
       document.getElementById('statCompleted').textContent = completed;
       document.getElementById('statBestScore').textContent = bestScore > 0 ? bestScore.toLocaleString() : '—';
       document.getElementById('statClues').textContent     = totalClues;
@@ -1610,9 +1633,10 @@
         scoresEl.innerHTML = scores.slice(0, 5).map(({ hunt, p }) => `
           <div class="recent-score-row">
             <div class="rscore-hunt">${hunt.name}</div>
-            <div>
-              <span class="rscore-val">${(p.finalScore || 0).toLocaleString()}</span>
-              <span class="rscore-time" style="margin-left:0.6rem;">${formatTime(p.secondsElapsed || 0)}</span>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <span class="rscore-val">${(p.finalScore || 0).toLocaleString()} pts</span>
+              <span class="rscore-time">${formatTime(p.elapsedSeconds || p.secondsElapsed || 0)}</span>
+              <span style="font-size:0.65rem;color:var(--mist);font-family:var(--font-mono);">${p.cluesUsed || 0} clues</span>
             </div>
           </div>`).join('');
       }
@@ -1637,10 +1661,21 @@
       const plan = userDoc?.plan || 'free';
       const grid = document.getElementById('huntGrid');
 
+      // Merge localStorage into library progress
+      const mergedLib = { ...userProgress };
+      HUNT_CATALOG.forEach(h => {
+        if (!mergedLib[h.id]) {
+          try {
+            const raw = localStorage.getItem('ih_progress_' + h.id);
+            if (raw) mergedLib[h.id] = JSON.parse(raw);
+          } catch(e) {}
+        }
+      });
+
       let hunts = HUNT_CATALOG.filter(h => {
         if (activeFilter === 'in-library') return !!userLibrary[h.id];
         if (activeFilter === 'free')       return h.isFree;
-        if (activeFilter === 'completed')  return userProgress[h.id]?.completed;
+        if (activeFilter === 'completed')  return mergedLib[h.id]?.completed;
         if (activeFilter === 'locked')     return !h.isFree && plan === 'free';
         return true;
       });
@@ -1652,10 +1687,12 @@
 
       grid.innerHTML = hunts.map(h => {
         const inLib     = !!userLibrary[h.id];
-        const progress  = userProgress[h.id];
+        const progress  = mergedLib[h.id];
         const completed = progress?.completed;
         const isLocked  = !h.isFree && plan === 'free';
-        const pct       = progress ? Math.round(((progress.currentSlide - 1) / 9) * 100) : 0;
+        const total     = progress?.totalSlides || h.scenes || 10;
+        const solved    = completed ? total : (Array.isArray(progress?.slideSolved) ? progress.slideSolved.length : (progress?.currentSlide ? progress.currentSlide - 1 : 0));
+        const pct       = progress ? Math.min(100, Math.round((solved / total) * 100)) : 0;
 
         const fragments = progress?.fragmentsFound || [];
 
