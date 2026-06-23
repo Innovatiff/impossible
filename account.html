@@ -502,15 +502,16 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 0.75rem;
       padding: 0.55rem 0;
       border-bottom: 1px solid rgba(212,167,70,0.06);
     }
 
     .recent-score-row:last-child { border-bottom: none; }
 
-    .rscore-hunt { font-family: var(--font-display); font-size: 0.78rem; color: var(--parchment-dim); }
-    .rscore-val { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gold); font-weight: 700; }
-    .rscore-time { font-family: var(--font-mono); font-size: 0.65rem; color: var(--mist); }
+    .rscore-hunt { font-family: var(--font-display); font-size: 0.78rem; color: var(--parchment-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; }
+    .rscore-val  { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gold); font-weight: 700; white-space: nowrap; }
+    .rscore-time { font-family: var(--font-mono); font-size: 0.65rem; color: var(--mist); white-space: nowrap; }
 
     /* ── Library ────────────────────────────────────────────── */
     .library-filters {
@@ -605,14 +606,22 @@
       padding: 0.8rem 1.4rem;
       border-top: 1px solid rgba(212,167,70,0.06);
       display: flex;
-      gap: 0.5rem;
+      flex-direction: column;
+      gap: 0.45rem;
+      align-items: stretch;
+    }
+
+    .hunt-card-actions-row {
+      display: flex;
+      gap: 0.45rem;
       align-items: center;
-      flex-wrap: nowrap;
     }
 
     .hunt-card-actions .btn-sm {
       white-space: nowrap;
-      flex-shrink: 0;
+      flex: 1;
+      text-align: center;
+      justify-content: center;
     }
 
     .btn-sm {
@@ -1725,15 +1734,24 @@
             </div>
             <div class="hunt-card-actions">
               ${isLocked
-                ? `<a href="pricing.html" class="btn-sm btn-sm-primary">Unlock →</a>`
+                ? `<div class="hunt-card-actions-row"><a href="pricing.html" class="btn-sm btn-sm-primary">Unlock →</a></div>`
                 : inLib
-                  ? `${completed
-                       ? `<button class="btn-sm btn-sm-primary" onclick="restartHunt('${h.id}')">Play Again →</button>
-                          <a href="${h.url}" class="btn-sm btn-sm-ghost">Continue Last</a>`
-                       : `<a href="${h.url}" class="btn-sm btn-sm-primary">${progress ? 'Continue →' : 'Begin →'}</a>`}
-                     <button class="btn-sm btn-sm-ghost" onclick="removeFromLibrary('${h.id}')">Remove</button>`
-                  : `<button class="btn-sm btn-sm-primary" onclick="addToLibrary('${h.id}')">+ Add to Library</button>
-                     <a href="${h.url}" class="btn-sm btn-sm-ghost">Preview</a>`
+                  ? completed
+                    ? `<div class="hunt-card-actions-row">
+                         <button class="btn-sm btn-sm-primary" onclick="restartHunt('${h.id}')">Play Again →</button>
+                         <a href="${h.url}" class="btn-sm btn-sm-ghost">View Run</a>
+                       </div>
+                       <div class="hunt-card-actions-row">
+                         <button class="btn-sm btn-sm-ghost" onclick="removeFromLibrary('${h.id}')">Remove from Library</button>
+                       </div>`
+                    : `<div class="hunt-card-actions-row">
+                         <a href="${h.url}" class="btn-sm btn-sm-primary">${progress ? 'Continue →' : 'Begin →'}</a>
+                         <button class="btn-sm btn-sm-ghost" onclick="removeFromLibrary('${h.id}')">Remove</button>
+                       </div>`
+                  : `<div class="hunt-card-actions-row">
+                       <button class="btn-sm btn-sm-primary" onclick="addToLibrary('${h.id}')">+ Add to Library</button>
+                       <a href="${h.url}" class="btn-sm btn-sm-ghost">Preview</a>
+                     </div>`
               }
             </div>
             ${isLocked ? `<div class="hunt-card-locked-overlay"><div class="lock-icon">🔒</div><div class="lock-label">Members only</div></div>` : ''}
