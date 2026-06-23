@@ -1573,7 +1573,8 @@
 
       const libCount   = Object.keys(userLibrary).length;
       const completed  = Object.values(mergedForStats).filter(p => p.completed).length;
-      const bestScore  = Object.values(mergedForStats).map(p => p.finalScore || 0).reduce((a, b) => Math.max(a, b), 0);
+      // Use bestScore (best across all runs), fallback to finalScore for older saves
+      const bestScore  = Object.values(mergedForStats).map(p => p.bestScore || p.finalScore || 0).reduce((a, b) => Math.max(a, b), 0);
       const totalClues = Object.values(mergedForStats).reduce((a, p) => a + (p.cluesUsed || 0), 0);
 
       document.getElementById('statHunts').textContent     = libCount;
@@ -1600,11 +1601,16 @@
         }
       });
 
-      // Continue hunting
+      // Continue hunting — active run = slideSolved has entries OR currentSlide > 1
+      // This includes second runs on completed hunts (completed=true but new run underway)
       const continueEl = document.getElementById('continueList');
       const inProgress = HUNT_CATALOG.filter(h => {
         const p = mergedDash[h.id];
-        return p && !p.completed && (p.currentSlide > 1 || (Array.isArray(p.slideSolved) && p.slideSolved.length > 0));
+        if (!p) return false;
+        const hasSolves = Array.isArray(p.slideSolved) && p.slideSolved.length > 0;
+        const midRun    = p.currentSlide > 1;
+        // An active (unfinished) run: has progress and current run's finalScore is 0
+        return (hasSolves || midRun) && !p.finalScore;
       });
 
       if (inProgress.length === 0) {
@@ -1639,15 +1645,20 @@
       if (scores.length === 0) {
         scoresEl.innerHTML = '<p class="empty-state">Complete a hunt to see your score here.</p>';
       } else {
-        scoresEl.innerHTML = scores.slice(0, 5).map(({ hunt, p }) => `
+        scoresEl.innerHTML = scores.slice(0, 5).map(({ hunt, p }) => {
+          // Show best score & best time (fall back to finalScore/elapsedSeconds for older saves)
+          const displayScore = p.bestScore || p.finalScore || 0;
+          const displayTime  = p.bestTime  != null ? p.bestTime : (p.elapsedSeconds || p.secondsElapsed || 0);
+          return `
           <div class="recent-score-row">
             <div class="rscore-hunt">${hunt.name}</div>
             <div style="display:flex;align-items:center;gap:0.75rem;">
-              <span class="rscore-val">${(p.finalScore || 0).toLocaleString()} pts</span>
-              <span class="rscore-time">${formatTime(p.elapsedSeconds || p.secondsElapsed || 0)}</span>
+              <span class="rscore-val">${displayScore.toLocaleString()} pts</span>
+              <span class="rscore-time">${formatTime(displayTime)}</span>
               <span style="font-size:0.65rem;color:var(--mist);font-family:var(--font-mono);">${p.cluesUsed || 0} clues</span>
             </div>
-          </div>`).join('');
+          </div>`;
+        }).join('');
       }
     }
 
@@ -1791,16 +1802,28 @@
     };
 
     window.restartHunt = async function(huntId) {
-      // Clear Firestore progress for auth users
+      // Reset only current-run fields; keep completed/bestScore/bestTime intact
+      const runReset = {
+        currentSlide: 1,
+        slideSolved: [],
+        cluesUsed: 0,
+        elapsedSeconds: 0,
+        fragmentsFound: [],
+        finalScore: 0,
+        updatedAt: serverTimestamp(),
+      };
       if (currentUser) {
         try {
-          const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js");
-          await deleteDoc(doc(db, 'users', currentUser.uid, 'progress', huntId));
+          await setDoc(doc(db, 'users', currentUser.uid, 'progress', huntId), runReset, { merge: true });
+          if (userProgress[huntId]) Object.assign(userProgress[huntId], runReset);
         } catch(e) {}
-        delete userProgress[huntId];
       }
-      // Always clear localStorage too
-      try { localStorage.removeItem('ih_progress_' + huntId); } catch(e) {}
+      // Also reset localStorage run fields (keep bestScore/bestTime/completed)
+      try {
+        const raw = localStorage.getItem('ih_progress_' + huntId);
+        const existing = raw ? JSON.parse(raw) : {};
+        localStorage.setItem('ih_progress_' + huntId, JSON.stringify({ ...existing, ...runReset, updatedAt: Date.now() }));
+      } catch(e) {}
       // Navigate to the hunt
       const hunt = HUNT_CATALOG.find(h => h.id === huntId);
       if (hunt) window.location.href = hunt.url;
