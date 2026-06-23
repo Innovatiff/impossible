@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account — Impossible Hunt</title>
+  <meta name="description" content="Your detective dossier. Track progress, manage your library, and view your membership.">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Account layout ─────────────────────────────────────── */
+    .account-wrap {
+      min-height: 100vh;
+      padding-top: clamp(60px, 8vw, 72px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .account-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 0 clamp(1rem, 3vw, 2rem);
+      gap: 0;
+      align-items: start;
+    }
+
+    @media (max-width: 768px) {
+      .account-body { grid-template-columns: 1fr; }
+    }
+
+    /* ── Auth screen ────────────────────────────────────────── */
+    .auth-screen {
+      min-height: calc(100vh - 72px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .auth-card {
+      background: var(--ink-mid);
+      border: 1px solid rgba(212,167,70,0.18);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-glow);
+      width: 100%;
+      max-width: 440px;
+      overflow: hidden;
+    }
+
+    .auth-header {
+      padding: 2rem 2.4rem 1.2rem;
+      border-bottom: 1px solid rgba(212,167,70,0.1);
+      text-align: center;
+    }
+
+    .auth-brand {
+      font-family: var(--font-display);
+      font-size: 0.65rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.7;
+      display: block;
+      margin-bottom: 0.4rem;
+    }
+
+    .auth-header h2 {
+      font-size: 1.5rem;
+      color: var(--parchment);
+      margin: 0;
+    }
+
+    .auth-tabs {
+      display: flex;
+      border-bottom: 1px solid rgba(212,167,70,0.1);
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 0.8rem;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      background: transparent;
+      border: none;
+      color: var(--parchment-faint);
+      cursor: pointer;
+      transition: all var(--transition);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+
+    .auth-tab.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    .auth-tab:hover:not(.active) { color: var(--parchment-dim); }
+
+    .auth-form { padding: 2rem 2.4rem; display: flex; flex-direction: column; gap: 1rem; }
+    .auth-form.hidden { display: none; }
+
+    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+
+    .form-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--parchment-faint);
+    }
+
+    .form-input {
+      background: rgba(14,11,18,0.7);
+      border: 1px solid rgba(212,167,70,0.18);
+      border-radius: var(--radius-seal);
+      color: var(--parchment);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      padding: 0.65rem 0.9rem;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      width: 100%;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 2px rgba(212,167,70,0.1);
+    }
+
+    .form-input::placeholder { color: var(--parchment-faint); opacity: 0.45; }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      color: var(--parchment-faint);
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      opacity: 0.5;
+    }
+
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(212,167,70,0.12);
+    }
+
+    .btn-google {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.7rem;
+      padding: 0.65rem 1rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(212,167,70,0.18);
+      border-radius: var(--radius-seal);
+      color: var(--parchment-dim);
+      font-family: var(--font-display);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .btn-google:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(212,167,70,0.3);
+      color: var(--parchment);
+    }
+
+    .btn-google svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .auth-error {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--ember);
+      letter-spacing: 0.06em;
+      min-height: 1.2em;
+      text-align: center;
+    }
+
+    .auth-footer-note {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--parchment-faint);
+      font-style: italic;
+      opacity: 0.6;
+      margin-top: 0.2rem;
+    }
+
+    /* ── Sidebar ────────────────────────────────────────────── */
+    .account-sidebar {
+      position: sticky;
+      top: calc(72px + 1.5rem);
+      padding: 1.5rem 0;
+      border-right: 1px solid rgba(212,167,70,0.1);
+      min-height: 480px;
+    }
+
+    @media (max-width: 768px) {
+      .account-sidebar {
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid rgba(212,167,70,0.1);
+        padding: 1rem 0;
+        min-height: auto;
+      }
+    }
+
+    .sidebar-user {
+      padding: 0 1.2rem 1.5rem;
+      border-bottom: 1px solid rgba(212,167,70,0.08);
+      margin-bottom: 0.8rem;
+    }
+
+    .sidebar-avatar {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #251e35, #1c1728);
+      border: 1px solid rgba(212,167,70,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      color: var(--gold);
+      margin-bottom: 0.7rem;
+    }
+
+    .sidebar-name {
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      color: var(--parchment);
+      margin-bottom: 0.25rem;
+      font-weight: 600;
+    }
+
+    .sidebar-email {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--parchment-faint);
+      opacity: 0.55;
+      letter-spacing: 0.06em;
+      word-break: break-all;
+    }
+
+    .sidebar-plan-badge {
+      margin-top: 0.6rem;
+    }
+
+    .sidebar-nav { list-style: none; padding: 0 0.6rem; }
+
+    .sidebar-nav li { margin-bottom: 0.15rem; }
+
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.6rem 0.8rem;
+      border-radius: var(--radius-seal);
+      font-family: var(--font-display);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      color: var(--parchment-faint);
+      transition: all var(--transition);
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .sidebar-nav a:hover {
+      background: rgba(212,167,70,0.06);
+      color: var(--parchment);
+    }
+
+    .sidebar-nav a.active {
+      background: rgba(212,167,70,0.1);
+      color: var(--gold);
+      border-left: 2px solid var(--gold);
+    }
+
+    .sidebar-nav .nav-icon {
+      font-size: 0.9rem;
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .sidebar-signout {
+      margin: 1rem 0.6rem 0;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(212,167,70,0.08);
+    }
+
+    .btn-signout {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--parchment-faint);
+      opacity: 0.5;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition);
+      padding: 0.4rem 0.8rem;
+    }
+
+    .btn-signout:hover { opacity: 1; color: var(--ember); }
+
+    /* Mobile tab bar */
+    @media (max-width: 768px) {
+      .sidebar-user { display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1rem 1rem; }
+      .sidebar-avatar { margin-bottom: 0; width: 36px; height: 36px; font-size: 0.9rem; flex-shrink: 0; }
+      .sidebar-nav { display: flex; gap: 0.3rem; padding: 0.5rem 0.5rem; overflow-x: auto; }
+      .sidebar-nav li { margin: 0; flex-shrink: 0; }
+      .sidebar-nav a { padding: 0.4rem 0.7rem; font-size: 0.68rem; }
+      .sidebar-nav a.active { border-left: none; border-bottom: 2px solid var(--gold); }
+      .sidebar-signout { margin: 0; padding: 0; border: none; }
+    }
+
+    /* ── Main content ───────────────────────────────────────── */
+    .account-main {
+      padding: 2rem 0 4rem 2rem;
+      min-height: calc(100vh - 72px - 4rem);
+    }
+
+    @media (max-width: 768px) {
+      .account-main { padding: 1.5rem 0 4rem; }
+    }
+
+    .account-section { display: none; }
+    .account-section.active { display: block; }
+
+    .section-heading {
+      margin-bottom: 1.8rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(212,167,70,0.1);
+    }
+
+    .section-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.7;
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .section-heading h2 {
+      font-size: clamp(1.3rem, 3vw, 1.9rem);
+      margin: 0;
+    }
+
+    /* ── Dashboard ──────────────────────────────────────────── */
+    .dashboard-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--ink-mid);
+      border: 1px solid rgba(212,167,70,0.12);
+      border-radius: var(--radius-card);
+      padding: 1.2rem 1.4rem;
+    }
+
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--parchment-faint);
+      opacity: 0.6;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+    }
+
+    @media (max-width: 600px) { .dashboard-grid { grid-template-columns: 1fr; } }
+
+    .dash-card {
+      background: var(--ink-mid);
+      border: 1px solid rgba(212,167,70,0.12);
+      border-radius: var(--radius-card);
+      padding: 1.4rem 1.6rem;
+      box-shadow: var(--shadow-card);
+    }
+
+    .dash-card h3 {
+      font-size: 0.85rem;
+      color: var(--parchment-dim);
+      margin-bottom: 1rem;
+      padding-bottom: 0.7rem;
+      border-bottom: 1px solid rgba(212,167,70,0.08);
+    }
+
+    .continue-hunt-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .hunt-continue-item {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      padding: 0.8rem;
+      background: rgba(14,11,18,0.5);
+      border: 1px solid rgba(212,167,70,0.1);
+      border-radius: var(--radius-seal);
+      text-decoration: none;
+      transition: all var(--transition);
+    }
+
+    .hunt-continue-item:hover {
+      border-color: rgba(212,167,70,0.3);
+      background: rgba(14,11,18,0.7);
+    }
+
+    .hunt-continue-icon {
+      width: 36px; height: 36px;
+      background: rgba(212,167,70,0.08);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .hunt-continue-info { flex: 1; min-width: 0; }
+
+    .hunt-continue-name {
+      font-family: var(--font-display);
+      font-size: 0.78rem;
+      color: var(--parchment);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .hunt-continue-meta {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--parchment-faint);
+      opacity: 0.55;
+      letter-spacing: 0.06em;
+      margin-top: 0.18rem;
+    }
+
+    .progress-mini {
+      height: 3px;
+      background: rgba(212,167,70,0.1);
+      border-radius: 2px;
+      margin-top: 0.35rem;
+      overflow: hidden;
+    }
+
+    .progress-mini-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--ember), var(--gold));
+      border-radius: 2px;
+      transition: width 0.6s ease;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 1.5rem 0;
+      color: var(--parchment-faint);
+      font-style: italic;
+      font-size: 0.88rem;
+      opacity: 0.6;
+    }
+
+    .recent-score-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid rgba(212,167,70,0.06);
+    }
+
+    .recent-score-row:last-child { border-bottom: none; }
+
+    .rscore-hunt { font-family: var(--font-display); font-size: 0.78rem; color: var(--parchment-dim); }
+    .rscore-val { font-family: var(--font-mono); font-size: 0.75rem; color: var(--gold); font-weight: 700; }
+    .rscore-time { font-family: var(--font-mono); font-size: 0.65rem; color: var(--mist); }
+
+    /* ── Library ────────────────────────────────────────────── */
+    .library-filters {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-btn {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.85rem;
+      background: transparent;
+      border: 1px solid rgba(212,167,70,0.18);
+      border-radius: var(--radius-seal);
+      color: var(--parchment-faint);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .filter-btn:hover { border-color: rgba(212,167,70,0.4); color: var(--parchment); }
+    .filter-btn.active { background: rgba(212,167,70,0.1); border-color: var(--gold); color: var(--gold); }
+
+    .hunt-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+
+    .hunt-card {
+      background: var(--ink-mid);
+      border: 1px solid rgba(212,167,70,0.12);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      transition: all var(--transition);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .hunt-card:hover { border-color: rgba(212,167,70,0.28); transform: translateY(-2px); box-shadow: var(--shadow-card); }
+
+    .hunt-card-header {
+      padding: 1.2rem 1.4rem 0.8rem;
+      background: linear-gradient(135deg, rgba(212,167,70,0.05) 0%, transparent 60%);
+      border-bottom: 1px solid rgba(212,167,70,0.08);
+    }
+
+    .hunt-card-number {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.6;
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .hunt-card-name {
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      color: var(--parchment);
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .hunt-card-body {
+      padding: 0.9rem 1.4rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .hunt-card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--parchment-faint);
+      opacity: 0.55;
+    }
+
+    .hunt-card-progress { }
+
+    .hunt-card-actions {
+      padding: 0.8rem 1.4rem;
+      border-top: 1px solid rgba(212,167,70,0.06);
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .btn-sm {
+      font-family: var(--font-display);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.4rem 0.9rem;
+      border-radius: var(--radius-seal);
+      cursor: pointer;
+      transition: all var(--transition);
+      border: 1px solid transparent;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .btn-sm-primary {
+      background: var(--gold);
+      color: var(--ink-deep);
+      font-weight: 700;
+    }
+
+    .btn-sm-primary:hover { background: var(--parchment); color: var(--ink-deep); }
+
+    .btn-sm-ghost {
+      background: transparent;
+      border-color: rgba(212,167,70,0.25);
+      color: var(--parchment-dim);
+    }
+
+    .btn-sm-ghost:hover { border-color: rgba(212,167,70,0.5); color: var(--parchment); }
+
+    .hunt-card-locked-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(14,11,18,0.75);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      backdrop-filter: blur(2px);
+    }
+
+    .lock-icon { font-size: 1.8rem; opacity: 0.5; }
+
+    .lock-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--parchment-faint);
+      opacity: 0.6;
+    }
+
+    .hunt-completed-badge {
+      position: absolute;
+      top: 0.6rem; right: 0.6rem;
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(212,167,70,0.15);
+      border: 1px solid rgba(212,167,70,0.3);
+      color: var(--gold);
+      padding: 0.18rem 0.5rem;
+      border-radius: 2px;
+    }
+
+    /* ── Progress section ───────────────────────────────────── */
+    .progress-list { display: flex; flex-direction: column; gap: 1rem; }
+
+    .progress-item {
+      background: var(--ink-mid);
+      border: 1px solid rgba(212,167,70,0.12);
+      border-radius: var(--radius-card);
+      padding: 1.4rem 1.6rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .progress-item-name {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      color: var(--parchment);
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin: 0.6rem 0;
+    }
+
+    .progress-bar {
+      flex: 1;
+      height: 4px;
+      background: rgba(212,167,70,0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--ember), var(--gold));
+      border-radius: 2px;
+      transition: width 0.8s ease;
+    }
+
+    .progress-pct {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--gold);
+      min-width: 2.5em;
+      text-align: right;
+    }
+
+    .progress-chips {
+      display: flex;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+      margin-top: 0.4rem;
+    }
+
+    .p-chip {
+      width: 24px; height: 24px;
+      border: 1px solid rgba(212,167,70,0.18);
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: rgba(212,167,70,0.18);
+      background: rgba(14,11,18,0.5);
+    }
+
+    .p-chip.found {
+      color: var(--gold);
+      border-color: rgba(212,167,70,0.45);
+    }
+
+    .progress-meta-row {
+      display: flex;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--parchment-faint);
+      opacity: 0.6;
+      letter-spacing: 0.06em;
+      margin-top: 0.3rem;
+    }
+
+    /* ── Membership ─────────────────────────────────────────── */
+    .membership-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .plan-card {
+      background: var(--ink-mid);
+      border: 1px solid rgba(212,167,70,0.12);
+      border-radius: var(--radius-card);
+      padding: 1.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+      transition: all var(--transition);
+    }
+
+    .plan-card.current {
+      border-color: rgba(212,167,70,0.4);
+      box-shadow: 0 0 24px rgba(212,167,70,0.12);
+    }
+
+    .plan-card.featured {
+      border-color: rgba(212,167,70,0.35);
+      background: linear-gradient(160deg, rgba(212,167,70,0.04) 0%, var(--ink-mid) 60%);
+    }
+
+    .plan-current-label {
+      position: absolute;
+      top: -1px; right: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      background: var(--gold);
+      color: var(--ink-deep);
+      padding: 0.18rem 0.6rem;
+      border-radius: 0 0 3px 3px;
+      font-weight: 700;
+    }
+
+    .plan-name {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      color: var(--parchment);
+      font-weight: 600;
+    }
+
+    .plan-price {
+      font-family: var(--font-mono);
+    }
+
+    .plan-price .amount {
+      font-size: 2rem;
+      color: var(--gold);
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .plan-price .period {
+      font-size: 0.7rem;
+      color: var(--parchment-faint);
+      opacity: 0.6;
+    }
+
+    .plan-features {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .plan-features li {
+      font-size: 0.85rem;
+      color: var(--parchment-dim);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .plan-features li::before {
+      content: '✦';
+      color: var(--gold);
+      font-size: 0.5rem;
+      opacity: 0.6;
+      margin-top: 0.3rem;
+      flex-shrink: 0;
+    }
+
+    .stripe-note {
+      background: rgba(143,166,189,0.06);
+      border: 1px solid rgba(143,166,189,0.15);
+      border-radius: var(--radius-card);
+      padding: 1.2rem 1.6rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.9rem;
+    }
+
+    .stripe-note-icon { font-size: 1.2rem; flex-shrink: 0; opacity: 0.5; }
+
+    .stripe-note p {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--mist);
+      opacity: 0.7;
+      line-height: 1.6;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Settings ───────────────────────────────────────────── */
+    .settings-group {
+      background: var(--ink-mid);
+      border: 1px solid rgba(212,167,70,0.12);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      margin-bottom: 1.2rem;
+    }
+
+    .settings-group-header {
+      padding: 1rem 1.6rem;
+      border-bottom: 1px solid rgba(212,167,70,0.08);
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.7;
+    }
+
+    .settings-row {
+      padding: 1rem 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      border-bottom: 1px solid rgba(212,167,70,0.05);
+    }
+
+    .settings-row:last-child { border-bottom: none; }
+
+    .settings-label {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      color: var(--parchment-dim);
+    }
+
+    .settings-value {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--parchment-faint);
+      opacity: 0.65;
+    }
+
+    .settings-inline-form {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .settings-inline-form .form-input {
+      width: auto;
+      max-width: 220px;
+      font-size: 0.85rem;
+      padding: 0.45rem 0.75rem;
+    }
+
+    .danger-zone {
+      border-color: rgba(226,87,43,0.2);
+    }
+
+    .danger-zone .settings-group-header {
+      color: var(--ember);
+      border-bottom-color: rgba(226,87,43,0.1);
+    }
+
+    .btn-danger {
+      font-family: var(--font-display);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.4rem 0.9rem;
+      background: transparent;
+      border: 1px solid rgba(226,87,43,0.35);
+      border-radius: var(--radius-seal);
+      color: var(--ember);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .btn-danger:hover { background: rgba(226,87,43,0.1); border-color: var(--ember); }
+
+    /* Loading / spinner */
+    .account-loading {
+      min-height: calc(100vh - 72px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .spinner {
+      width: 32px; height: 32px;
+      border: 2px solid rgba(212,167,70,0.15);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(2rem);
+      background: var(--ink-mid);
+      border: 1px solid rgba(212,167,70,0.25);
+      border-radius: var(--radius-seal);
+      padding: 0.7rem 1.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--gold);
+      letter-spacing: 0.08em;
+      z-index: 400;
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { color: var(--ember); border-color: rgba(226,87,43,0.3); }
+  </style>
+</head>
+<body>
+
+  <nav class="site-nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-wordmark">IMPOSSIBLE <span>HUNT</span></a>
+      <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="hunts.html">All Hunts</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="leaderboard.html">Leaderboard</a></li>
+        <li><a href="account.html" class="nav-cta">Account</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ── Loading state ──────────────────────────────────────── -->
+  <div class="account-loading" id="stateLoading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- ── Auth screen ────────────────────────────────────────── -->
+  <div class="auth-screen" id="stateAuth" style="display:none;">
+    <div class="auth-card">
+      <div class="auth-header">
+        <span class="auth-brand">Impossible Hunt</span>
+        <h2>The Detective's Dossier</h2>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabSignIn" onclick="switchAuthTab('signin')">Sign In</button>
+        <button class="auth-tab" id="tabSignUp" onclick="switchAuthTab('signup')">Create Account</button>
+      </div>
+
+      <!-- Sign In form -->
+      <div class="auth-form" id="formSignIn">
+        <button class="btn-google" id="btnGoogle" type="button">
+          <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.2l6.8-6.8C35.8 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.5 13.3l7.9 6.1C12.4 13 17.7 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.1z"/>
+            <path fill="#FBBC05" d="M10.4 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6L2.5 13.3A24 24 0 0 0 0 24c0 3.8.9 7.4 2.5 10.6l7.9-6z"/>
+            <path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.6-5.9C29.5 38.5 27 39.5 24 39.5c-6.2 0-11.5-3.5-13.6-8.6l-7.9 6.1C6.5 44.6 14.6 48 24 48z"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <div class="auth-divider">or</div>
+
+        <div class="form-group">
+          <label class="form-label" for="siEmail">Email</label>
+          <input class="form-input" type="email" id="siEmail" placeholder="detective@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="siPassword">Password</label>
+          <input class="form-input" type="password" id="siPassword" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div class="auth-error" id="siError"></div>
+        <button class="btn btn-primary" id="btnSignIn" style="width:100%;justify-content:center;">Sign In</button>
+        <p class="auth-footer-note">Progress is saved to your account automatically.</p>
+      </div>
+
+      <!-- Sign Up form -->
+      <div class="auth-form hidden" id="formSignUp">
+        <button class="btn-google" id="btnGoogleUp" type="button">
+          <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.2l6.8-6.8C35.8 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.5 13.3l7.9 6.1C12.4 13 17.7 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.1z"/>
+            <path fill="#FBBC05" d="M10.4 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6L2.5 13.3A24 24 0 0 0 0 24c0 3.8.9 7.4 2.5 10.6l7.9-6z"/>
+            <path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.6-5.9C29.5 38.5 27 39.5 24 39.5c-6.2 0-11.5-3.5-13.6-8.6l-7.9 6.1C6.5 44.6 14.6 48 24 48z"/>
+          </svg>
+          Sign up with Google
+        </button>
+
+        <div class="auth-divider">or</div>
+
+        <div class="form-group">
+          <label class="form-label" for="suName">Display Name</label>
+          <input class="form-input" type="text" id="suName" placeholder="Your detective name" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="suEmail">Email</label>
+          <input class="form-input" type="email" id="suEmail" placeholder="detective@example.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="suPassword">Password</label>
+          <input class="form-input" type="password" id="suPassword" placeholder="At least 8 characters" autocomplete="new-password">
+        </div>
+        <div class="auth-error" id="suError"></div>
+        <button class="btn btn-primary" id="btnSignUp" style="width:100%;justify-content:center;">Create Account</button>
+        <p class="auth-footer-note">Free tier includes Hunt 01 — no card required.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Authenticated account view ────────────────────────── -->
+  <div class="account-wrap" id="stateAccount" style="display:none;">
+    <div class="account-body">
+
+      <!-- Sidebar -->
+      <aside class="account-sidebar" role="navigation" aria-label="Account navigation">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar" id="sidebarAvatar">?</div>
+          <div class="sidebar-name" id="sidebarName">—</div>
+          <div class="sidebar-email" id="sidebarEmail">—</div>
+          <div class="sidebar-plan-badge" id="sidebarPlan"></div>
+        </div>
+
+        <ul class="sidebar-nav" role="list">
+          <li>
+            <a class="active" data-section="dashboard" onclick="showSection('dashboard')" role="button" tabindex="0">
+              <span class="nav-icon">◈</span> Dashboard
+            </a>
+          </li>
+          <li>
+            <a data-section="library" onclick="showSection('library')" role="button" tabindex="0">
+              <span class="nav-icon">✦</span> Library
+            </a>
+          </li>
+          <li>
+            <a data-section="progress" onclick="showSection('progress')" role="button" tabindex="0">
+              <span class="nav-icon">⊕</span> Progress
+            </a>
+          </li>
+          <li>
+            <a data-section="membership" onclick="showSection('membership')" role="button" tabindex="0">
+              <span class="nav-icon">◆</span> Membership
+            </a>
+          </li>
+          <li>
+            <a data-section="settings" onclick="showSection('settings')" role="button" tabindex="0">
+              <span class="nav-icon">⟡</span> Settings
+            </a>
+          </li>
+        </ul>
+
+        <div class="sidebar-signout">
+          <button class="btn-signout" id="btnSignOut">↩ Sign Out</button>
+        </div>
+      </aside>
+
+      <!-- Main content -->
+      <main class="account-main" id="accountMain">
+
+        <!-- ── Dashboard ──── -->
+        <section class="account-section active" id="secDashboard">
+          <div class="section-heading">
+            <span class="section-eyebrow">Overview</span>
+            <h2 id="dashGreeting">Welcome back</h2>
+          </div>
+
+          <div class="dashboard-stats" id="dashStats">
+            <div class="stat-card">
+              <div class="stat-value" id="statHunts">0</div>
+              <div class="stat-label">Hunts in Library</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="statCompleted">0</div>
+              <div class="stat-label">Completed</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="statBestScore">—</div>
+              <div class="stat-label">Best Score</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="statClues">0</div>
+              <div class="stat-label">Clues Used Total</div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="dash-card">
+              <h3>Continue Hunting</h3>
+              <div class="continue-hunt-card" id="continueList">
+                <p class="empty-state">No hunts in progress yet.</p>
+              </div>
+            </div>
+            <div class="dash-card">
+              <h3>Recent Scores</h3>
+              <div id="recentScores">
+                <p class="empty-state">Complete a hunt to see your score here.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Library ──── -->
+        <section class="account-section" id="secLibrary">
+          <div class="section-heading">
+            <span class="section-eyebrow">Your Collection</span>
+            <h2>Hunt Library</h2>
+          </div>
+
+          <div class="library-filters">
+            <button class="filter-btn active" data-filter="all" onclick="filterLibrary('all')">All</button>
+            <button class="filter-btn" data-filter="in-library" onclick="filterLibrary('in-library')">In Library</button>
+            <button class="filter-btn" data-filter="free" onclick="filterLibrary('free')">Free</button>
+            <button class="filter-btn" data-filter="completed" onclick="filterLibrary('completed')">Completed</button>
+            <button class="filter-btn" data-filter="locked" onclick="filterLibrary('locked')">Locked</button>
+          </div>
+
+          <div class="hunt-grid" id="huntGrid">
+            <!-- populated by JS -->
+          </div>
+        </section>
+
+        <!-- ── Progress ──── -->
+        <section class="account-section" id="secProgress">
+          <div class="section-heading">
+            <span class="section-eyebrow">Detective Record</span>
+            <h2>Hunt Progress</h2>
+          </div>
+
+          <div class="progress-list" id="progressList">
+            <p class="empty-state" style="padding:2rem 0;">Start a hunt to track your progress here.</p>
+          </div>
+        </section>
+
+        <!-- ── Membership ──── -->
+        <section class="account-section" id="secMembership">
+          <div class="section-heading">
+            <span class="section-eyebrow">Your Plan</span>
+            <h2>Membership</h2>
+          </div>
+
+          <div class="membership-grid" id="membershipGrid">
+            <!-- populated by JS -->
+          </div>
+
+          <div class="stripe-note">
+            <span class="stripe-note-icon">🔒</span>
+            <p>Secure payment processing will be handled by Stripe. No card details are stored on our servers. Membership upgrades are not yet active — this section is a preview of the billing interface coming soon.</p>
+          </div>
+        </section>
+
+        <!-- ── Settings ──── -->
+        <section class="account-section" id="secSettings">
+          <div class="section-heading">
+            <span class="section-eyebrow">Your Account</span>
+            <h2>Settings</h2>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-group-header">Profile</div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Display Name</div>
+                <div class="settings-value" id="settingNameValue">—</div>
+              </div>
+              <div class="settings-inline-form">
+                <input class="form-input" type="text" id="settingNameInput" placeholder="New name" style="max-width:180px;font-size:0.85rem;padding:0.4rem 0.7rem;">
+                <button class="btn-sm btn-sm-ghost" onclick="updateDisplayName()">Update</button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Email</div>
+                <div class="settings-value" id="settingEmailValue">—</div>
+              </div>
+              <span class="badge" style="font-size:0.55rem;padding:0.15rem 0.5rem;">Verified</span>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Member Since</div>
+                <div class="settings-value" id="settingJoined">—</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-group-header">Security</div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Password</div>
+                <div class="settings-value">Last changed: account creation</div>
+              </div>
+              <button class="btn-sm btn-sm-ghost" onclick="sendPasswordReset()">Send Reset Email</button>
+            </div>
+          </div>
+
+          <div class="settings-group danger-zone">
+            <div class="settings-group-header">Danger Zone</div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Sign Out</div>
+                <div class="settings-value">End your current session on this device</div>
+              </div>
+              <button class="btn-danger" onclick="signOutUser()">Sign Out</button>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-label">Delete Account</div>
+                <div class="settings-value">Permanently remove your account and all data</div>
+              </div>
+              <button class="btn-danger" onclick="confirmDeleteAccount()">Delete Account</button>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      signInWithPopup,
+      GoogleAuthProvider,
+      signOut,
+      updateProfile,
+      sendPasswordResetEmail,
+      deleteUser
+    } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc,
+      collection,
+      getDocs,
+      serverTimestamp,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+    /* ── Firebase init ────────────────────────────────────── */
+    const firebaseConfig = {
+      apiKey:            "AIzaSyAfd15maH07AH9P-dRehUkACx48VofFq-I",
+      authDomain:        "impossible-9ac8d.firebaseapp.com",
+      projectId:         "impossible-9ac8d",
+      storageBucket:     "impossible-9ac8d.firebasestorage.app",
+      messagingSenderId: "93504469684",
+      appId:             "1:93504469684:web:d0c3ef054df765d5fd35e1",
+      measurementId:     "G-YYC9HPYBDC"
+    };
+
+    const app       = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth      = getAuth(app);
+    const db        = getFirestore(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    /* ── Hunt catalog (static for now) ───────────────────── */
+    const HUNT_CATALOG = [
+      { id: 'hunt-1', number: '01', name: 'The Glass & The Flame',       difficulty: 'Initiate',   isFree: true,  url: 'hunt-1.html', scenes: 10, description: 'A sealed envelope. A dark mirror. A lantern in the void.' },
+      { id: 'hunt-2', number: '02', name: 'The Clockwork Confession',    difficulty: 'Inspector',  isFree: false, url: '#',           scenes: 10, description: 'The confession was hidden inside the mechanism itself.' },
+      { id: 'hunt-3', number: '03', name: 'The Phosphor Letters',        difficulty: 'Inspector',  isFree: false, url: '#',           scenes: 10, description: 'Written in a light only visible to those who know where to look.' },
+      { id: 'hunt-4', number: '04', name: 'The Cartographer\'s Lie',     difficulty: 'Senior',     isFree: false, url: '#',           scenes: 10, description: 'Every map has one place it refuses to show.' },
+      { id: 'hunt-5', number: '05', name: 'The Widow\'s Frequency',      difficulty: 'Senior',     isFree: false, url: '#',           scenes: 10, description: 'The signal broadcasts at an hour no one is listening.' },
+      { id: 'hunt-6', number: '06', name: 'The Second Autopsy',          difficulty: 'Chief',      isFree: false, url: '#',           scenes: 10, description: 'The first report was wrong. Deliberately.' },
+    ];
+
+    const PLANS = [
+      { id: 'free',   name: 'Free',          price: '$0',    period: '',        badge: 'badge-free',   features: ['Access to Hunt 01', 'Basic leaderboard', 'Manual progress saving'] },
+      { id: 'single', name: 'Single File',   price: '$3.99', period: 'one-off', badge: 'badge-lock',   features: ['Unlock one hunt of your choice', 'Clue purchases', 'Leaderboard entry', 'Progress sync'] },
+      { id: 'full',   name: 'Full Dossier',  price: '$9.99', period: '/ month', badge: 'badge-ember',  features: ['All 10 hunts unlocked', 'Unlimited clues', 'Full leaderboard', 'Early access to new hunts', 'Priority support'] },
+    ];
+
+    /* ── State ────────────────────────────────────────────── */
+    let currentUser  = null;
+    let userDoc      = null;
+    let userLibrary  = {};   // { huntId: true }
+    let userProgress = {};   // { huntId: progressData }
+
+    /* ── UI state helpers ─────────────────────────────────── */
+    function showState(state) {
+      document.getElementById('stateLoading').style.display  = state === 'loading'  ? 'flex'  : 'none';
+      document.getElementById('stateAuth').style.display     = state === 'auth'     ? 'flex'  : 'none';
+      document.getElementById('stateAccount').style.display  = state === 'account'  ? 'flex'  : 'none';
+    }
+
+    function toast(msg, type = '') {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = 'toast show' + (type ? ' ' + type : '');
+      clearTimeout(el._t);
+      el._t = setTimeout(() => { el.className = 'toast'; }, 3200);
+    }
+
+    /* ── Section nav ──────────────────────────────────────── */
+    window.showSection = function(id) {
+      document.querySelectorAll('.account-section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+      document.getElementById('sec' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('active');
+      const link = document.querySelector('[data-section="' + id + '"]');
+      if (link) link.classList.add('active');
+      if (id === 'library')    renderLibrary();
+      if (id === 'progress')   renderProgress();
+      if (id === 'membership') renderMembership();
+    };
+
+    /* ── Auth tab switch ──────────────────────────────────── */
+    window.switchAuthTab = function(tab) {
+      document.getElementById('formSignIn').classList.toggle('hidden', tab !== 'signin');
+      document.getElementById('formSignUp').classList.toggle('hidden', tab !== 'signup');
+      document.getElementById('tabSignIn').classList.toggle('active', tab === 'signin');
+      document.getElementById('tabSignUp').classList.toggle('active', tab === 'signup');
+    };
+
+    /* ── Auth actions ─────────────────────────────────────── */
+    document.getElementById('btnSignIn').addEventListener('click', async () => {
+      const email = document.getElementById('siEmail').value.trim();
+      const pass  = document.getElementById('siPassword').value;
+      const errEl = document.getElementById('siError');
+      errEl.textContent = '';
+      if (!email || !pass) { errEl.textContent = 'Email and password required.'; return; }
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+      } catch (e) {
+        errEl.textContent = friendlyAuthError(e.code);
+      }
+    });
+
+    document.getElementById('btnSignUp').addEventListener('click', async () => {
+      const name  = document.getElementById('suName').value.trim();
+      const email = document.getElementById('suEmail').value.trim();
+      const pass  = document.getElementById('suPassword').value;
+      const errEl = document.getElementById('suError');
+      errEl.textContent = '';
+      if (!name || !email || !pass) { errEl.textContent = 'All fields are required.'; return; }
+      if (pass.length < 8) { errEl.textContent = 'Password must be at least 8 characters.'; return; }
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        await updateProfile(cred.user, { displayName: name });
+        await createUserDoc(cred.user, name);
+      } catch (e) {
+        errEl.textContent = friendlyAuthError(e.code);
+      }
+    });
+
+    async function googleSignIn() {
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (e) {
+        toast(friendlyAuthError(e.code), 'error');
+      }
+    }
+
+    document.getElementById('btnGoogle').addEventListener('click', googleSignIn);
+    document.getElementById('btnGoogleUp').addEventListener('click', googleSignIn);
+
+    document.getElementById('btnSignOut').addEventListener('click', signOutUser);
+    window.signOutUser = async function() {
+      await signOut(auth);
+    };
+
+    function friendlyAuthError(code) {
+      const map = {
+        'auth/invalid-email':           'That email address is not valid.',
+        'auth/user-not-found':          'No account found with that email.',
+        'auth/wrong-password':          'Incorrect password.',
+        'auth/email-already-in-use':    'An account with that email already exists.',
+        'auth/weak-password':           'Password is too weak — use at least 8 characters.',
+        'auth/popup-closed-by-user':    'Sign-in popup was closed.',
+        'auth/network-request-failed':  'Network error — check your connection.',
+        'auth/invalid-credential':      'Invalid email or password.',
+      };
+      return map[code] || 'Something went wrong. Please try again.';
+    }
+
+    /* ── Firestore helpers ────────────────────────────────── */
+    async function createUserDoc(user, name) {
+      const ref = doc(db, 'users', user.uid);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await setDoc(ref, {
+          displayName: name || user.displayName || 'Detective',
+          email:       user.email,
+          plan:        'free',
+          createdAt:   serverTimestamp(),
+        });
+      }
+    }
+
+    async function loadUserData(user) {
+      const ref = doc(db, 'users', user.uid);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) {
+        await createUserDoc(user, user.displayName);
+        userDoc = { displayName: user.displayName || 'Detective', email: user.email, plan: 'free' };
+      } else {
+        userDoc = snap.data();
+      }
+
+      // Load library
+      const libSnap = await getDocs(collection(db, 'users', user.uid, 'library'));
+      userLibrary = {};
+      libSnap.forEach(d => { userLibrary[d.id] = d.data(); });
+
+      // Load progress
+      const progSnap = await getDocs(collection(db, 'users', user.uid, 'progress'));
+      userProgress = {};
+      progSnap.forEach(d => { userProgress[d.id] = d.data(); });
+    }
+
+    /* ── Render dashboard ─────────────────────────────────── */
+    function renderDashboard() {
+      const name = userDoc?.displayName || currentUser?.displayName || 'Detective';
+      document.getElementById('dashGreeting').textContent = 'Welcome back, ' + name;
+
+      // Sidebar
+      document.getElementById('sidebarName').textContent  = name;
+      document.getElementById('sidebarEmail').textContent = currentUser.email || '';
+      document.getElementById('sidebarAvatar').textContent = name.charAt(0).toUpperCase();
+      const plan = userDoc?.plan || 'free';
+      const planBadge = { free: 'badge-free', single: 'badge-lock', full: 'badge-ember' };
+      document.getElementById('sidebarPlan').innerHTML =
+        '<span class="badge ' + (planBadge[plan] || 'badge-free') + '">' + plan.toUpperCase() + '</span>';
+
+      // Stats
+      const libCount  = Object.keys(userLibrary).length;
+      const completed = Object.values(userProgress).filter(p => p.completed).length;
+      const bestScore = Object.values(userProgress)
+        .map(p => p.finalScore || 0).reduce((a, b) => Math.max(a, b), 0);
+      const totalClues = Object.values(userProgress)
+        .reduce((a, p) => a + (p.cluesUsed || 0), 0);
+
+      document.getElementById('statHunts').textContent    = libCount;
+      document.getElementById('statCompleted').textContent = completed;
+      document.getElementById('statBestScore').textContent = bestScore > 0 ? bestScore.toLocaleString() : '—';
+      document.getElementById('statClues').textContent     = totalClues;
+
+      // Settings info
+      document.getElementById('settingNameValue').textContent  = name;
+      document.getElementById('settingEmailValue').textContent = currentUser.email || '—';
+      if (userDoc?.createdAt?.toDate) {
+        document.getElementById('settingJoined').textContent =
+          userDoc.createdAt.toDate().toLocaleDateString('en-GB', { year:'numeric', month:'long', day:'numeric' });
+      }
+
+      // Continue hunting
+      const continueEl = document.getElementById('continueList');
+      const inProgress = HUNT_CATALOG.filter(h => {
+        const p = userProgress[h.id];
+        return p && !p.completed && p.currentSlide > 1;
+      });
+
+      if (inProgress.length === 0) {
+        continueEl.innerHTML = '<p class="empty-state">No hunts in progress. <a href="hunt-1.html">Start Hunt 01 →</a></p>';
+      } else {
+        continueEl.innerHTML = inProgress.map(h => {
+          const p = userProgress[h.id];
+          const pct = Math.round(((p.currentSlide - 1) / 9) * 100);
+          return `
+            <a class="hunt-continue-item" href="${h.url}">
+              <div class="hunt-continue-icon">◈</div>
+              <div class="hunt-continue-info">
+                <div class="hunt-continue-name">Hunt ${h.number} — ${h.name}</div>
+                <div class="hunt-continue-meta">Scene ${p.currentSlide} of 10 · ${formatTime(p.secondsElapsed || 0)} elapsed</div>
+                <div class="progress-mini">
+                  <div class="progress-mini-fill" style="width:${pct}%"></div>
+                </div>
+              </div>
+              <span style="color:var(--gold);font-size:0.8rem;">→</span>
+            </a>`;
+        }).join('');
+      }
+
+      // Recent scores
+      const scores = HUNT_CATALOG
+        .filter(h => userProgress[h.id]?.completed)
+        .map(h => ({ hunt: h, p: userProgress[h.id] }));
+
+      const scoresEl = document.getElementById('recentScores');
+      if (scores.length === 0) {
+        scoresEl.innerHTML = '<p class="empty-state">Complete a hunt to see your score here.</p>';
+      } else {
+        scoresEl.innerHTML = scores.slice(0, 5).map(({ hunt, p }) => `
+          <div class="recent-score-row">
+            <div class="rscore-hunt">${hunt.name}</div>
+            <div>
+              <span class="rscore-val">${(p.finalScore || 0).toLocaleString()}</span>
+              <span class="rscore-time" style="margin-left:0.6rem;">${formatTime(p.secondsElapsed || 0)}</span>
+            </div>
+          </div>`).join('');
+      }
+    }
+
+    function formatTime(s) {
+      return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+    }
+
+    /* ── Render library ───────────────────────────────────── */
+    let activeFilter = 'all';
+
+    window.filterLibrary = function(f) {
+      activeFilter = f;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.filter === f);
+      });
+      renderLibrary();
+    };
+
+    function renderLibrary() {
+      const plan = userDoc?.plan || 'free';
+      const grid = document.getElementById('huntGrid');
+
+      let hunts = HUNT_CATALOG.filter(h => {
+        if (activeFilter === 'in-library') return !!userLibrary[h.id];
+        if (activeFilter === 'free')       return h.isFree;
+        if (activeFilter === 'completed')  return userProgress[h.id]?.completed;
+        if (activeFilter === 'locked')     return !h.isFree && plan === 'free';
+        return true;
+      });
+
+      if (hunts.length === 0) {
+        grid.innerHTML = '<p class="empty-state" style="grid-column:1/-1;padding:2rem 0;">No hunts match this filter.</p>';
+        return;
+      }
+
+      grid.innerHTML = hunts.map(h => {
+        const inLib     = !!userLibrary[h.id];
+        const progress  = userProgress[h.id];
+        const completed = progress?.completed;
+        const isLocked  = !h.isFree && plan === 'free';
+        const pct       = progress ? Math.round(((progress.currentSlide - 1) / 9) * 100) : 0;
+
+        const fragments = progress?.fragmentsFound || [];
+
+        return `
+          <div class="hunt-card" data-hunt="${h.id}">
+            <div class="hunt-card-header">
+              <span class="hunt-card-number">Hunt ${h.number} · ${h.difficulty}</span>
+              <div class="hunt-card-name">${h.name}</div>
+            </div>
+            <div class="hunt-card-body">
+              <p style="font-size:0.82rem;color:var(--parchment-faint);opacity:0.7;font-style:italic;line-height:1.5;margin:0;">${h.description}</p>
+              <div class="hunt-card-meta">
+                <span>${h.scenes} scenes</span>
+                <span>${h.isFree ? 'Free' : 'Members'}</span>
+              </div>
+              ${progress ? `
+              <div>
+                <div class="progress-bar-wrap">
+                  <div class="progress-bar">
+                    <div class="progress-bar-fill" style="width:${pct}%"></div>
+                  </div>
+                  <span class="progress-pct">${pct}%</span>
+                </div>
+                <div class="progress-chips">
+                  ${['S','H','A','D','O','W'].map(l =>
+                    `<div class="p-chip ${fragments.includes(l) ? 'found' : ''}">${l}</div>`
+                  ).join('')}
+                </div>
+              </div>` : ''}
+            </div>
+            <div class="hunt-card-actions">
+              ${isLocked
+                ? `<a href="pricing.html" class="btn-sm btn-sm-primary">Unlock →</a>`
+                : inLib
+                  ? `<a href="${h.url}" class="btn-sm btn-sm-primary">${completed ? 'Play Again' : progress ? 'Continue →' : 'Begin →'}</a>
+                     <button class="btn-sm btn-sm-ghost" onclick="removeFromLibrary('${h.id}')">Remove</button>`
+                  : `<button class="btn-sm btn-sm-primary" onclick="addToLibrary('${h.id}')">+ Add to Library</button>
+                     <a href="${h.url}" class="btn-sm btn-sm-ghost">Preview</a>`
+              }
+            </div>
+            ${isLocked ? `<div class="hunt-card-locked-overlay"><div class="lock-icon">🔒</div><div class="lock-label">Members only</div></div>` : ''}
+            ${completed ? `<div class="hunt-completed-badge">Completed ✦</div>` : ''}
+          </div>`;
+      }).join('');
+    }
+
+    window.addToLibrary = async function(huntId) {
+      try {
+        await setDoc(doc(db, 'users', currentUser.uid, 'library', huntId), {
+          addedAt: serverTimestamp(),
+          huntId,
+          type: HUNT_CATALOG.find(h => h.id === huntId)?.isFree ? 'free' : 'purchased',
+        });
+        userLibrary[huntId] = { huntId };
+        renderLibrary();
+        renderDashboard();
+        toast('Added to your library.');
+      } catch (e) {
+        toast('Could not add to library.', 'error');
+      }
+    };
+
+    window.removeFromLibrary = async function(huntId) {
+      if (!confirm('Remove this hunt from your library?')) return;
+      try {
+        const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js");
+        await deleteDoc(doc(db, 'users', currentUser.uid, 'library', huntId));
+        delete userLibrary[huntId];
+        renderLibrary();
+        renderDashboard();
+        toast('Removed from library.');
+      } catch (e) {
+        toast('Could not remove from library.', 'error');
+      }
+    };
+
+    /* ── Render progress ──────────────────────────────────── */
+    function renderProgress() {
+      const list = document.getElementById('progressList');
+      const started = HUNT_CATALOG.filter(h => userProgress[h.id]);
+
+      if (started.length === 0) {
+        list.innerHTML = '<p class="empty-state" style="padding:2rem 0;">Start a hunt to track your progress here.</p>';
+        return;
+      }
+
+      list.innerHTML = started.map(h => {
+        const p = userProgress[h.id];
+        const pct = Math.round(((p.currentSlide - 1) / 9) * 100);
+        const fragments = p.fragmentsFound || [];
+
+        return `
+          <div class="progress-item">
+            <div>
+              <div class="progress-item-name">Hunt ${h.number} — ${h.name}</div>
+              <div class="progress-bar-wrap">
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width:${pct}%"></div>
+                </div>
+                <span class="progress-pct">${pct}%</span>
+              </div>
+              <div class="progress-chips">
+                ${['S','H','A','D','O','W'].map(l =>
+                  `<div class="p-chip ${fragments.includes(l) ? 'found' : ''}">${l}</div>`
+                ).join('')}
+              </div>
+              <div class="progress-meta-row">
+                <span>Scene ${p.currentSlide || 1} / 10</span>
+                <span>${formatTime(p.secondsElapsed || 0)} elapsed</span>
+                <span>${p.cluesUsed || 0} clues used</span>
+                ${p.completed ? `<span style="color:var(--gold);">✦ Completed</span>` : ''}
+                ${p.finalScore ? `<span style="color:var(--gold);">${p.finalScore.toLocaleString()} pts</span>` : ''}
+              </div>
+            </div>
+            <a href="${h.url}" class="btn-sm btn-sm-primary" style="flex-shrink:0;">
+              ${p.completed ? 'Play Again' : 'Continue →'}
+            </a>
+          </div>`;
+      }).join('');
+    }
+
+    /* ── Render membership ────────────────────────────────── */
+    function renderMembership() {
+      const currentPlan = userDoc?.plan || 'free';
+      const grid = document.getElementById('membershipGrid');
+
+      grid.innerHTML = PLANS.map(plan => {
+        const isCurrent = plan.id === currentPlan;
+        return `
+          <div class="plan-card ${isCurrent ? 'current' : ''} ${plan.id === 'full' ? 'featured' : ''}">
+            ${isCurrent ? '<div class="plan-current-label">Current Plan</div>' : ''}
+            <div>
+              <span class="badge ${plan.badge}" style="font-size:0.6rem;margin-bottom:0.5rem;">${plan.name}</span>
+              <div class="plan-name">${plan.name}</div>
+            </div>
+            <div class="plan-price">
+              <span class="amount">${plan.price}</span>
+              ${plan.period ? `<span class="period"> ${plan.period}</span>` : ''}
+            </div>
+            <ul class="plan-features">
+              ${plan.features.map(f => `<li>${f}</li>`).join('')}
+            </ul>
+            ${isCurrent
+              ? `<button class="btn btn-ghost" disabled style="opacity:0.4;cursor:default;">Current Plan</button>`
+              : `<button class="btn btn-primary" onclick="upgradePlan('${plan.id}')" style="font-size:0.72rem;padding:0.55rem 1rem;">
+                   ${plan.id === 'free' ? 'Downgrade' : 'Upgrade — Coming Soon'}
+                 </button>`
+            }
+          </div>`;
+      }).join('');
+    }
+
+    /* ── Settings actions ─────────────────────────────────── */
+    window.updateDisplayName = async function() {
+      const val = document.getElementById('settingNameInput').value.trim();
+      if (!val) { toast('Enter a name first.', 'error'); return; }
+      try {
+        await updateProfile(currentUser, { displayName: val });
+        await updateDoc(doc(db, 'users', currentUser.uid), { displayName: val });
+        userDoc.displayName = val;
+        renderDashboard();
+        document.getElementById('settingNameInput').value = '';
+        toast('Name updated.');
+      } catch (e) {
+        toast('Could not update name.', 'error');
+      }
+    };
+
+    window.sendPasswordReset = async function() {
+      try {
+        await sendPasswordResetEmail(auth, currentUser.email);
+        toast('Password reset email sent.');
+      } catch (e) {
+        toast('Could not send reset email.', 'error');
+      }
+    };
+
+    window.confirmDeleteAccount = function() {
+      if (!confirm('This will permanently delete your account and all progress. This cannot be undone. Continue?')) return;
+      deleteUser(currentUser)
+        .then(() => toast('Account deleted.'))
+        .catch(() => toast('Please sign out and sign back in before deleting your account.', 'error'));
+    };
+
+    window.upgradePlan = function(planId) {
+      toast('Stripe integration coming soon — check back shortly.', '');
+    };
+
+    /* ── Library filter (global) ──────────────────────────── */
+    window.filterLibrary = window.filterLibrary;
+
+    /* ── Auth state observer ──────────────────────────────── */
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        try {
+          await loadUserData(user);
+        } catch (e) {
+          console.warn('Firestore load error:', e);
+          userDoc = { displayName: user.displayName || 'Detective', plan: 'free' };
+        }
+        renderDashboard();
+        renderLibrary();
+        showState('account');
+      } else {
+        currentUser = null;
+        userDoc = null;
+        userLibrary = {};
+        userProgress = {};
+        showState('auth');
+      }
+    });
+
+    /* ── Keyboard support for sidebar nav ─────────────────── */
+    document.querySelectorAll('.sidebar-nav a').forEach(a => {
+      a.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); a.click(); }
+      });
+    });
+
+  </script>
+</body>
+</html>
