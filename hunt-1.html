@@ -1467,114 +1467,94 @@
 
   <!-- Firebase progress saving -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { initializeApp }            from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, serverTimestamp }
+      from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAfd15maH07AH9P-dRehUkACx48VofFq-I",
-      authDomain: "impossible-hunt.firebaseapp.com",
-      projectId: "impossible-hunt",
-      storageBucket: "impossible-hunt.firebasestorage.app",
+    const HUNT_ID = 'hunt-1';
+    const LS_KEY  = 'ih_progress_' + HUNT_ID;
+
+    const app  = initializeApp({
+      apiKey:            "AIzaSyAfd15maH07AH9P-dRehUkACx48VofFq-I",
+      authDomain:        "impossible-hunt.firebaseapp.com",
+      projectId:         "impossible-hunt",
+      storageBucket:     "impossible-hunt.firebasestorage.app",
       messagingSenderId: "651086748287",
-      appId: "1:651086748287:web:2b5fc09b5ccfb6c6bfd428",
-      measurementId: "G-PNZL0TF9EV"
-    };
-
-    const app  = initializeApp(firebaseConfig);
+      appId:             "1:651086748287:web:2b5fc09b5ccfb6c6bfd428",
+    });
     const auth = getAuth(app);
     const db   = getFirestore(app);
 
-    const HUNT_ID = 'hunt-1';
+    /* Shared state exposed to the classic IIFE script */
+    window._ihUser        = null;   // firebase user or null
+    window._ihReady       = false;  // true once load+restore is done
+    window._ihLoadedData  = null;   // the save data loaded (for IIFE to consume)
 
-    window._huntAuth     = { user: null };
-    window._huntPending  = null; // buffered save data waiting for IIFE to be ready
-    let _savedBestScore  = 0;
-    let _savedBestTime   = null;
-
-    function deliverRestore(data) {
-      if (!data) return;
-      if (window._huntRestoreProgress) {
-        // IIFE already ready — call immediately
-        window._huntRestoreProgress(data);
-      } else {
-        // IIFE not yet ready — buffer and let it pick up on definition
-        window._huntPending = data;
+    /* Called by IIFE after it defines _ihApplyRestore */
+    window._ihRequestRestore = function() {
+      if (window._ihLoadedData) {
+        window._ihApplyRestore(window._ihLoadedData);
       }
-    }
+    };
+
+    /* Save to the right place */
+    window._ihSave = async function(data) {
+      const user = window._ihUser;
+      if (user) {
+        try {
+          await setDoc(
+            doc(db, 'users', user.uid, 'progress', HUNT_ID),
+            { ...data, huntId: HUNT_ID, updatedAt: serverTimestamp() },
+            { merge: true }
+          );
+        } catch(e) {}
+      } else {
+        try {
+          const prev = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+          localStorage.setItem(LS_KEY, JSON.stringify({ ...prev, ...data, huntId: HUNT_ID }));
+        } catch(e) {}
+      }
+    };
 
     onAuthStateChanged(auth, async (user) => {
-      window._huntAuth.user = user;
+      window._ihUser = user;
+
+      let data = null;
+
       if (user) {
         try {
           const snap = await getDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID));
           if (snap.exists()) {
-            // Firestore record found — use it
-            const data = snap.data();
-            _savedBestScore = data.bestScore || 0;
-            _savedBestTime  = data.bestTime  != null ? data.bestTime : null;
-            deliverRestore(data);
+            data = snap.data();
           } else {
-            // No Firestore record — check localStorage (guest-to-auth migration)
-            try {
-              const raw = localStorage.getItem('ih_progress_' + HUNT_ID);
-              if (raw) {
-                const data = JSON.parse(raw);
-                _savedBestScore = data.bestScore || 0;
-                _savedBestTime  = data.bestTime  != null ? data.bestTime : null;
-                // Migrate to Firestore so future saves go there
-                await setDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID),
-                  { ...data, huntId: HUNT_ID, migratedFromGuest: true, updatedAt: serverTimestamp() },
-                  { merge: true });
-                localStorage.removeItem('ih_progress_' + HUNT_ID);
-                deliverRestore(data);
-              }
-            } catch(e) {}
+            /* No Firestore record — migrate from localStorage if available */
+            const raw = localStorage.getItem(LS_KEY);
+            if (raw) {
+              data = JSON.parse(raw);
+              /* Write to Firestore and clear local */
+              await setDoc(
+                doc(db, 'users', user.uid, 'progress', HUNT_ID),
+                { ...data, huntId: HUNT_ID, updatedAt: serverTimestamp() },
+                { merge: true }
+              );
+              localStorage.removeItem(LS_KEY);
+            }
           }
         } catch(e) {}
       } else {
-        // Guest — load from localStorage
+        /* Guest */
         try {
-          const raw = localStorage.getItem('ih_progress_' + HUNT_ID);
-          if (raw) {
-            const data = JSON.parse(raw);
-            _savedBestScore = data.bestScore || 0;
-            _savedBestTime  = data.bestTime  != null ? data.bestTime : null;
-            deliverRestore(data);
-          }
+          const raw = localStorage.getItem(LS_KEY);
+          if (raw) data = JSON.parse(raw);
         } catch(e) {}
       }
+
+      window._ihLoadedData = data;
+      window._ihReady = true;
+      /* If IIFE already defined the restore handler, call it now */
+      if (window._ihApplyRestore) window._ihApplyRestore(data);
     });
-
-    window._saveHuntProgress = async function(progressData) {
-      let extra = {};
-      if (progressData.completed) {
-        const newScore  = progressData.finalScore || 0;
-        const newTime   = progressData.elapsedSeconds || 0;
-        extra.bestScore = Math.max(_savedBestScore, newScore);
-        extra.bestTime  = _savedBestTime == null ? newTime : Math.min(_savedBestTime, newTime);
-        extra.completed = true;
-        _savedBestScore = extra.bestScore;
-        _savedBestTime  = extra.bestTime;
-      }
-
-      const toSave = { ...progressData, ...extra, huntId: HUNT_ID };
-      const user = window._huntAuth.user;
-
-      if (user) {
-        try {
-          await setDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID),
-            { ...toSave, updatedAt: serverTimestamp() },
-            { merge: true });
-        } catch(e) {}
-      } else {
-        try {
-          const existing = JSON.parse(localStorage.getItem('ih_progress_' + HUNT_ID) || '{}');
-          localStorage.setItem('ih_progress_' + HUNT_ID,
-            JSON.stringify({ ...existing, ...toSave, updatedAt: Date.now() }));
-        } catch(e) {}
-      }
-    };
   </script>
 
   <script>
@@ -1622,55 +1602,76 @@
     document.addEventListener('keydown', startTimer, { once: true });
 
     /* ── Progress persistence ── */
-    function saveProgress(opts) {
-      const fragmentsFound = Object.keys(slideSolved).map(Number)
-        .filter(n => n < TOTAL_SLIDES)
-        .map(n => ['S','H','H','A','D','O','W','','',''][n - 1])
-        .filter(Boolean);
-      const data = {
+    const FRAGMENT_MAP = { 1:'S', 2:'H', 3:'A', 4:'D', 5:'O', 6:'W' };
+
+    function buildSaveData(opts) {
+      const solvedNums    = Object.keys(slideSolved).map(Number);
+      const fragmentsFound = solvedNums.filter(n => FRAGMENT_MAP[n]).map(n => FRAGMENT_MAP[n]);
+      const isCompleted    = !!(opts && opts.completed);
+      const runScore       = (opts && opts.finalScore) || 0;
+
+      const base = {
         currentSlide,
-        totalSlides: TOTAL_SLIDES,
-        slideSolved: Object.keys(slideSolved).map(Number),
-        cluesUsed: clueCount,
+        totalSlides:   TOTAL_SLIDES,
+        slideSolved:   solvedNums,
+        cluesUsed:     clueCount,
         elapsedSeconds: seconds,
         fragmentsFound,
-        completed: !!(opts && opts.completed),
-        finalScore: (opts && opts.finalScore) || 0,
+        /* run-level */
+        runCompleted: isCompleted,
+        runScore,
       };
-      window._saveHuntProgress && window._saveHuntProgress(data);
+
+      /* bestScore / bestTime: only update on completion and only if improved */
+      if (isCompleted) {
+        const prev     = window._ihLoadedData || {};
+        const prevBest = prev.bestScore || 0;
+        const prevTime = prev.bestTime  || Infinity;
+        base.bestScore = Math.max(prevBest, runScore);
+        base.bestTime  = Math.min(prevTime, seconds);
+        base.completed = true; /* never goes back to false */
+        /* update in-memory so same-session subsequent saves are correct */
+        window._ihLoadedData = { ...(window._ihLoadedData || {}), ...base };
+      }
+
+      return base;
     }
 
-    // Called by Firebase module once auth state and saved data are ready.
-    // Also called immediately here if the module resolved before the IIFE (race buffer).
-    window._huntRestoreProgress = function(data) {
+    function saveProgress(opts) {
+      window._ihSave && window._ihSave(buildSaveData(opts));
+    }
+
+    /* Restore saved run — called by Firebase module (or immediately if module was faster) */
+    window._ihApplyRestore = function(data) {
       if (!data) return;
-      // No active run to restore — start fresh
+      /* Only restore if there is an active (unfinished) run */
       const hasSolves = Array.isArray(data.slideSolved) && data.slideSolved.length > 0;
-      const midRun    = data.currentSlide > 1;
+      const midRun    = (data.currentSlide || 1) > 1;
       if (!hasSolves && !midRun) return;
-      // Restore slide solves
+      /* Don't restore a run that was already completed in this same session */
+      if (data.runCompleted) return;
+
       if (Array.isArray(data.slideSolved)) {
         data.slideSolved.forEach(n => { slideSolved[n] = true; });
       }
       clueCount = data.cluesUsed || 0;
       seconds   = data.elapsedSeconds || 0;
+
       if (seconds > 0) {
         timerStarted = true;
         document.getElementById('timerDisplay').textContent = formatTime(seconds);
-        timerInterval = setInterval(function () {
+        timerInterval = setInterval(function() {
           seconds++;
           document.getElementById('timerDisplay').textContent = formatTime(seconds);
         }, 1000);
       }
-      const targetSlide = data.currentSlide || 1;
-      if (targetSlide > 1) activateSlide(targetSlide);
+
+      const target = data.currentSlide || 1;
+      if (target > 1) activateSlide(target);
     };
 
-    // Consume buffered data if Firebase module resolved before this IIFE ran
-    if (window._huntPending) {
-      window._huntRestoreProgress(window._huntPending);
-      window._huntPending = null;
-    }
+    /* If Firebase module already finished before this script ran, apply now */
+    if (window._ihReady) window._ihApplyRestore(window._ihLoadedData);
 
     /* ── Navigation ── */
     function activateSlide(n) {
