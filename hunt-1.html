@@ -1465,6 +1465,75 @@
     </nav>
   </div>
 
+  <!-- Firebase progress saving -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCUWkr3T1GgPf0R8M0V_MbABzLlS3JC2bY",
+      authDomain: "impossible-hunt.firebaseapp.com",
+      projectId: "impossible-hunt",
+      storageBucket: "impossible-hunt.firebasestorage.app",
+      messagingSenderId: "651086748287",
+      appId: "1:651086748287:web:2b5fc09b5ccfb6c6bfd428",
+      measurementId: "G-PNZL0TF9EV"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    const HUNT_ID = 'hunt-1';
+    const TOTAL   = 10;
+
+    // Expose helpers to main IIFE via window
+    window._huntAuth = { user: null };
+
+    onAuthStateChanged(auth, async (user) => {
+      window._huntAuth.user = user;
+      if (user) {
+        // Load saved progress from Firestore and restore state
+        try {
+          const snap = await getDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID));
+          if (snap.exists()) {
+            const data = snap.data();
+            window._huntRestoreProgress && window._huntRestoreProgress(data);
+          }
+        } catch(e) { /* silent — progress just won't restore */ }
+      } else {
+        // Load from localStorage for guests
+        try {
+          const raw = localStorage.getItem('ih_progress_' + HUNT_ID);
+          if (raw) {
+            const data = JSON.parse(raw);
+            window._huntRestoreProgress && window._huntRestoreProgress(data);
+          }
+        } catch(e) {}
+      }
+    });
+
+    window._saveHuntProgress = async function(progressData) {
+      const user = window._huntAuth.user;
+      if (user) {
+        try {
+          await setDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID), {
+            ...progressData,
+            huntId: HUNT_ID,
+            updatedAt: serverTimestamp()
+          }, { merge: true });
+        } catch(e) {}
+      } else {
+        // Guest: localStorage
+        try {
+          const existing = JSON.parse(localStorage.getItem('ih_progress_' + HUNT_ID) || '{}');
+          localStorage.setItem('ih_progress_' + HUNT_ID, JSON.stringify({ ...existing, ...progressData, huntId: HUNT_ID, updatedAt: Date.now() }));
+        } catch(e) {}
+      }
+    };
+  </script>
+
   <script>
   (function () {
     'use strict';
@@ -1509,6 +1578,46 @@
     document.addEventListener('touchstart', startTimer, { once: true });
     document.addEventListener('keydown', startTimer, { once: true });
 
+    /* ── Progress persistence ── */
+    function saveProgress(opts) {
+      const fragmentsFound = Object.keys(slideSolved).map(Number)
+        .filter(n => n < TOTAL_SLIDES)
+        .map(n => ['S','H','H','A','D','O','W','','',''][n - 1])
+        .filter(Boolean);
+      const data = {
+        currentSlide,
+        totalSlides: TOTAL_SLIDES,
+        slideSolved: Object.keys(slideSolved).map(Number),
+        cluesUsed: clueCount,
+        elapsedSeconds: seconds,
+        fragmentsFound,
+        completed: !!(opts && opts.completed),
+        finalScore: (opts && opts.finalScore) || 0,
+      };
+      window._saveHuntProgress && window._saveHuntProgress(data);
+    }
+
+    // Called by Firebase module once auth state is known and data loaded
+    window._huntRestoreProgress = function(data) {
+      if (!data) return;
+      // Restore slide solves
+      if (Array.isArray(data.slideSolved)) {
+        data.slideSolved.forEach(n => { slideSolved[n] = true; });
+      }
+      clueCount = data.cluesUsed || 0;
+      seconds   = data.elapsedSeconds || 0;
+      if (seconds > 0) {
+        timerStarted = true;
+        document.getElementById('timerDisplay').textContent = formatTime(seconds);
+        timerInterval = setInterval(function () {
+          seconds++;
+          document.getElementById('timerDisplay').textContent = formatTime(seconds);
+        }, 1000);
+      }
+      const targetSlide = data.currentSlide || 1;
+      if (targetSlide > 1) activateSlide(targetSlide);
+    };
+
     /* ── Navigation ── */
     function activateSlide(n) {
       const cur = document.querySelector('.slide.active');
@@ -1547,6 +1656,7 @@
       const flash = document.getElementById('solvedFlash');
       flash.classList.add('show');
       setTimeout(function () { flash.classList.remove('show'); }, 450);
+      saveProgress();
     }
 
     function updateNextBtn() {
@@ -2371,6 +2481,7 @@
           feedback.textContent = 'The hunt is complete.';
           markSlideSolved(10);
           const score = Math.max(0, 10000 - seconds * 30 - clueCount * 800);
+          saveProgress({ completed: true, finalScore: score });
           document.getElementById('finalAnswerArea').style.display = 'none';
           const panel = document.getElementById('victoryPanel');
           panel.classList.add('show');

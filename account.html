@@ -1551,25 +1551,38 @@
           userDoc.createdAt.toDate().toLocaleDateString('en-GB', { year:'numeric', month:'long', day:'numeric' });
       }
 
+      // Merge localStorage for dashboard too
+      const mergedDash = { ...userProgress };
+      HUNT_CATALOG.forEach(h => {
+        if (!mergedDash[h.id]) {
+          try {
+            const raw = localStorage.getItem('ih_progress_' + h.id);
+            if (raw) mergedDash[h.id] = JSON.parse(raw);
+          } catch(e) {}
+        }
+      });
+
       // Continue hunting
       const continueEl = document.getElementById('continueList');
       const inProgress = HUNT_CATALOG.filter(h => {
-        const p = userProgress[h.id];
-        return p && !p.completed && p.currentSlide > 1;
+        const p = mergedDash[h.id];
+        return p && !p.completed && (p.currentSlide > 1 || (Array.isArray(p.slideSolved) && p.slideSolved.length > 0));
       });
 
       if (inProgress.length === 0) {
         continueEl.innerHTML = '<p class="empty-state">No hunts in progress. <a href="hunt-1.html">Start Hunt 01 →</a></p>';
       } else {
         continueEl.innerHTML = inProgress.map(h => {
-          const p = userProgress[h.id];
-          const pct = Math.round(((p.currentSlide - 1) / 9) * 100);
+          const p = mergedDash[h.id];
+          const total  = p.totalSlides || h.scenes || 10;
+          const solved = Array.isArray(p.slideSolved) ? p.slideSolved.length : (p.currentSlide ? p.currentSlide - 1 : 0);
+          const pct    = Math.min(100, Math.round((solved / total) * 100));
           return `
             <a class="hunt-continue-item" href="${h.url}">
               <div class="hunt-continue-icon">◈</div>
               <div class="hunt-continue-info">
                 <div class="hunt-continue-name">Hunt ${h.number} — ${h.name}</div>
-                <div class="hunt-continue-meta">Scene ${p.currentSlide} of 10 · ${formatTime(p.secondsElapsed || 0)} elapsed</div>
+                <div class="hunt-continue-meta">Scene ${p.currentSlide || 1} of ${total} · ${formatTime(p.elapsedSeconds || p.secondsElapsed || 0)} elapsed</div>
                 <div class="progress-mini">
                   <div class="progress-mini-fill" style="width:${pct}%"></div>
                 </div>
@@ -1581,8 +1594,8 @@
 
       // Recent scores
       const scores = HUNT_CATALOG
-        .filter(h => userProgress[h.id]?.completed)
-        .map(h => ({ hunt: h, p: userProgress[h.id] }));
+        .filter(h => mergedDash[h.id]?.completed)
+        .map(h => ({ hunt: h, p: mergedDash[h.id] }));
 
       const scoresEl = document.getElementById('recentScores');
       if (scores.length === 0) {
@@ -1716,7 +1729,19 @@
     /* ── Render progress ──────────────────────────────────── */
     function renderProgress() {
       const list = document.getElementById('progressList');
-      const started = HUNT_CATALOG.filter(h => userProgress[h.id]);
+
+      // Merge Firestore progress with localStorage (guests or logged-in fallback)
+      const merged = { ...userProgress };
+      HUNT_CATALOG.forEach(h => {
+        if (!merged[h.id]) {
+          try {
+            const raw = localStorage.getItem('ih_progress_' + h.id);
+            if (raw) merged[h.id] = JSON.parse(raw);
+          } catch(e) {}
+        }
+      });
+
+      const started = HUNT_CATALOG.filter(h => merged[h.id]);
 
       if (started.length === 0) {
         list.innerHTML = '<p class="empty-state" style="padding:2rem 0;">Start a hunt to track your progress here.</p>';
@@ -1724,14 +1749,20 @@
       }
 
       list.innerHTML = started.map(h => {
-        const p = userProgress[h.id];
-        const pct = Math.round(((p.currentSlide - 1) / 9) * 100);
+        const p = merged[h.id];
+        const total     = p.totalSlides || h.scenes || 10;
+        const solved    = Array.isArray(p.slideSolved) ? p.slideSolved.length : (p.currentSlide ? p.currentSlide - 1 : 0);
+        const pct       = p.completed ? 100 : Math.min(100, Math.round((solved / total) * 100));
         const fragments = p.fragmentsFound || [];
+        const isGuest   = !currentUser;
 
         return `
           <div class="progress-item">
-            <div>
-              <div class="progress-item-name">Hunt ${h.number} — ${h.name}</div>
+            <div style="flex:1;min-width:0;">
+              <div class="progress-item-name">
+                Hunt ${h.number} — ${h.name}
+                ${isGuest ? '<span style="font-size:0.65rem;color:var(--mist);margin-left:0.5rem;">(guest save)</span>' : ''}
+              </div>
               <div class="progress-bar-wrap">
                 <div class="progress-bar">
                   <div class="progress-bar-fill" style="width:${pct}%"></div>
@@ -1744,14 +1775,14 @@
                 ).join('')}
               </div>
               <div class="progress-meta-row">
-                <span>Scene ${p.currentSlide || 1} / 10</span>
-                <span>${formatTime(p.secondsElapsed || 0)} elapsed</span>
+                <span>Scene ${p.currentSlide || 1} / ${total}</span>
+                <span>${formatTime(p.elapsedSeconds || p.secondsElapsed || 0)} elapsed</span>
                 <span>${p.cluesUsed || 0} clues used</span>
                 ${p.completed ? `<span style="color:var(--gold);">✦ Completed</span>` : ''}
                 ${p.finalScore ? `<span style="color:var(--gold);">${p.finalScore.toLocaleString()} pts</span>` : ''}
               </div>
             </div>
-            <a href="${h.url}" class="btn-sm btn-sm-primary" style="flex-shrink:0;">
+            <a href="${h.url}" class="btn-sm btn-sm-primary" style="flex-shrink:0;margin-top:0.25rem;">
               ${p.completed ? 'Play Again' : 'Continue →'}
             </a>
           </div>`;
