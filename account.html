@@ -1460,10 +1460,10 @@
     document.getElementById('btnGoogle').addEventListener('click', googleSignIn);
     document.getElementById('btnGoogleUp').addEventListener('click', googleSignIn);
 
-    document.getElementById('btnSignOut').addEventListener('click', signOutUser);
     window.signOutUser = async function() {
       await signOut(auth);
     };
+    document.getElementById('btnSignOut').addEventListener('click', window.signOutUser);
 
     function friendlyAuthError(code) {
       const map = {
