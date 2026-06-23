@@ -255,6 +255,62 @@
       margin-top: 0.6rem;
     }
 
+    .detective-tag {
+      margin-top: 0.45rem;
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.57rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid rgba(212,167,70,0.35);
+      background: rgba(212,167,70,0.07);
+      padding: 0.18rem 0.55rem;
+      border-radius: 2px;
+    }
+
+    .rank-banner {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding: 1rem 1.4rem;
+      background: rgba(212,167,70,0.05);
+      border: 1px solid rgba(212,167,70,0.2);
+      border-radius: var(--radius-card);
+    }
+
+    .rank-banner-icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      opacity: 0.8;
+    }
+
+    .rank-banner-label {
+      font-family: var(--font-mono);
+      font-size: 0.57rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.7;
+      margin-bottom: 0.2rem;
+    }
+
+    .rank-banner-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      color: var(--parchment);
+      font-weight: 600;
+    }
+
+    .rank-banner-sub {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--parchment-faint);
+      opacity: 0.55;
+      margin-top: 0.15rem;
+    }
+
     .sidebar-nav { list-style: none; padding: 0 0.6rem; }
 
     .sidebar-nav li { margin-bottom: 0.15rem; }
@@ -1130,6 +1186,7 @@
           <div class="sidebar-name" id="sidebarName">—</div>
           <div class="sidebar-email" id="sidebarEmail">—</div>
           <div class="sidebar-plan-badge" id="sidebarPlan"></div>
+          <div class="detective-tag" id="sidebarRank" style="display:none;"></div>
         </div>
 
         <ul class="sidebar-nav" role="list">
@@ -1173,6 +1230,15 @@
           <div class="section-heading">
             <span class="section-eyebrow">Overview</span>
             <h2 id="dashGreeting">Welcome back</h2>
+          </div>
+
+          <div class="rank-banner" id="rankBanner" style="display:none;">
+            <div class="rank-banner-icon">🕵️</div>
+            <div>
+              <div class="rank-banner-label">Detective Rank</div>
+              <div class="rank-banner-title" id="rankBannerTitle">—</div>
+              <div class="rank-banner-sub" id="rankBannerSub"></div>
+            </div>
           </div>
 
           <div class="dashboard-stats" id="dashStats">
@@ -1388,6 +1454,27 @@
       { id: 'hunt-6', number: '06', name: 'The Second Autopsy',          difficulty: 'Chief',      isFree: false, url: '#',           scenes: 10, description: 'The first report was wrong. Deliberately.' },
     ];
 
+    const DETECTIVE_RANKS = [
+      { min: 1,  label: 'Street Observer',       icon: '🔍' },
+      { min: 2,  label: 'Case Reader',            icon: '📋' },
+      { min: 3,  label: 'Field Investigator',     icon: '🗂️' },
+      { min: 4,  label: 'Inspector',              icon: '🧩' },
+      { min: 5,  label: 'Senior Inspector',       icon: '🕵️' },
+      { min: 6,  label: 'Chief Detective',        icon: '⚖️' },
+      { min: 7,  label: 'Criminal Analyst',       icon: '🧠' },
+      { min: 8,  label: 'Shadow Commissioner',    icon: '🌑' },
+      { min: 9,  label: 'Grand Inquisitor',       icon: '🔮' },
+      { min: 10, label: 'The Impossible Detective', icon: '✦' },
+    ];
+
+    function getDetectiveRank(completed) {
+      let rank = null;
+      for (const r of DETECTIVE_RANKS) {
+        if (completed >= r.min) rank = r;
+      }
+      return rank;
+    }
+
     const PLANS = [
       { id: 'free',   name: 'Free',          price: '$0',    period: '',        badge: 'badge-free',   features: ['Access to Hunt 01', 'Basic leaderboard', 'Manual progress saving'] },
       { id: 'single', name: 'Single File',   price: '$3.99', period: 'one-off', badge: 'badge-lock',   features: ['Unlock one hunt of your choice', 'Clue purchases', 'Leaderboard entry', 'Progress sync'] },
@@ -1597,6 +1684,26 @@
       document.getElementById('statCompleted').textContent = completed;
       document.getElementById('statBestScore').textContent = bestScore > 0 ? bestScore.toLocaleString() : '—';
       document.getElementById('statClues').textContent     = totalClues;
+
+      // Detective rank
+      const rank = getDetectiveRank(completed);
+      const rankTagEl    = document.getElementById('sidebarRank');
+      const rankBanner   = document.getElementById('rankBanner');
+      const rankTitle    = document.getElementById('rankBannerTitle');
+      const rankSub      = document.getElementById('rankBannerSub');
+      if (rank) {
+        rankTagEl.textContent    = rank.label;
+        rankTagEl.style.display  = 'inline-block';
+        rankBanner.style.display = 'flex';
+        rankTitle.textContent    = rank.icon + '  ' + rank.label;
+        const next = DETECTIVE_RANKS.find(r => r.min > completed);
+        rankSub.textContent = next
+          ? (next.min - completed) + ' more hunt' + (next.min - completed === 1 ? '' : 's') + ' to reach ' + next.label
+          : 'You have reached the highest rank.';
+      } else {
+        rankTagEl.style.display  = 'none';
+        rankBanner.style.display = 'none';
+      }
 
       // Continue hunting: has an active (unfinished) run
       const continueEl = document.getElementById('continueList');
