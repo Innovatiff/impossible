@@ -1490,6 +1490,8 @@
 
     // Expose helpers to main IIFE via window
     window._huntAuth = { user: null };
+    let _savedBestScore = 0;
+    let _savedBestTime  = null; // null = no prior completion
 
     onAuthStateChanged(auth, async (user) => {
       window._huntAuth.user = user;
@@ -1499,6 +1501,8 @@
           const snap = await getDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID));
           if (snap.exists()) {
             const data = snap.data();
+            _savedBestScore = data.bestScore || 0;
+            _savedBestTime  = data.bestTime  != null ? data.bestTime : null;
             window._huntRestoreProgress && window._huntRestoreProgress(data);
           }
         } catch(e) { /* silent — progress just won't restore */ }
@@ -1508,6 +1512,8 @@
           const raw = localStorage.getItem('ih_progress_' + HUNT_ID);
           if (raw) {
             const data = JSON.parse(raw);
+            _savedBestScore = data.bestScore || 0;
+            _savedBestTime  = data.bestTime  != null ? data.bestTime : null;
             window._huntRestoreProgress && window._huntRestoreProgress(data);
           }
         } catch(e) {}
@@ -1515,12 +1521,27 @@
     });
 
     window._saveHuntProgress = async function(progressData) {
+      // Compute bestScore / bestTime: keep the best across all completed runs
+      let extra = {};
+      if (progressData.completed) {
+        const newScore = progressData.finalScore || 0;
+        const newTime  = progressData.elapsedSeconds || 0;
+        extra.bestScore = Math.max(_savedBestScore, newScore);
+        extra.bestTime  = _savedBestTime == null ? newTime : Math.min(_savedBestTime, newTime);
+        // Once completed always stays completed
+        extra.completed = true;
+        // Update in-memory bests so next save in same session is accurate
+        _savedBestScore = extra.bestScore;
+        _savedBestTime  = extra.bestTime;
+      }
+
+      const toSave = { ...progressData, ...extra, huntId: HUNT_ID };
+
       const user = window._huntAuth.user;
       if (user) {
         try {
           await setDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID), {
-            ...progressData,
-            huntId: HUNT_ID,
+            ...toSave,
             updatedAt: serverTimestamp()
           }, { merge: true });
         } catch(e) {}
@@ -1528,7 +1549,7 @@
         // Guest: localStorage
         try {
           const existing = JSON.parse(localStorage.getItem('ih_progress_' + HUNT_ID) || '{}');
-          localStorage.setItem('ih_progress_' + HUNT_ID, JSON.stringify({ ...existing, ...progressData, huntId: HUNT_ID, updatedAt: Date.now() }));
+          localStorage.setItem('ih_progress_' + HUNT_ID, JSON.stringify({ ...existing, ...toSave, updatedAt: Date.now() }));
         } catch(e) {}
       }
     };
@@ -1600,8 +1621,9 @@
     // Called by Firebase module once auth state is known and data loaded
     window._huntRestoreProgress = function(data) {
       if (!data) return;
-      // If hunt was completed, don't restore — let them start fresh
-      if (data.completed) return;
+      // If this run is already finished (finalScore set and currentSlide = last),
+      // start fresh — they hit "Play Again" which reset the run fields to slide 1
+      if (data.completed && (!data.currentSlide || data.currentSlide <= 1) && !data.slideSolved?.length) return;
       // Restore slide solves
       if (Array.isArray(data.slideSolved)) {
         data.slideSolved.forEach(n => { slideSolved[n] = true; });
