@@ -539,8 +539,8 @@
 
     .hunt-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.2rem;
     }
 
     .hunt-card {
@@ -607,6 +607,12 @@
       display: flex;
       gap: 0.5rem;
       align-items: center;
+      flex-wrap: nowrap;
+    }
+
+    .hunt-card-actions .btn-sm {
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .btn-sm {
