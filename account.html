@@ -1531,33 +1531,33 @@
       progSnap.forEach(d => { userProgress[d.id] = d.data(); });
     }
 
-    /* ── Single helper: read all progress (Firestore + localStorage) ── */
+    /* ── Read all progress: localStorage is primary (always written by hunt pages).
+          Firestore is secondary — used only when localStorage has nothing (cross-device). ── */
     function getAllProgress() {
       const result = {};
       HUNT_CATALOG.forEach(h => {
-        // Start with Firestore data
-        if (userProgress[h.id]) result[h.id] = { ...userProgress[h.id] };
-        // Overlay localStorage if it has more recent/further progress
+        /* Always check localStorage first */
         try {
           const raw = localStorage.getItem('ih_progress_' + h.id);
-          if (raw) {
-            const local = JSON.parse(raw);
-            if (!result[h.id]) {
-              result[h.id] = local;
-            } else {
-              // Keep whichever source has the hunt further along
-              const localSlide = local.currentSlide || 1;
-              const fsSlide    = result[h.id].currentSlide || 1;
-              if (localSlide > fsSlide) result[h.id] = { ...result[h.id], ...local };
-              // Always keep best bestScore/bestTime from either source
-              result[h.id].bestScore = Math.max(result[h.id].bestScore || 0, local.bestScore || 0);
-              if (local.bestTime && (!result[h.id].bestTime || local.bestTime < result[h.id].bestTime)) {
-                result[h.id].bestTime = local.bestTime;
-              }
-              if (local.completed) result[h.id].completed = true;
-            }
-          }
+          if (raw) result[h.id] = JSON.parse(raw);
         } catch(e) {}
+
+        /* Supplement with Firestore if it has a further/better record */
+        if (userProgress[h.id]) {
+          const fs = userProgress[h.id];
+          if (!result[h.id]) {
+            result[h.id] = { ...fs };
+          } else {
+            const fsSlide    = fs.currentSlide    || 1;
+            const localSlide = result[h.id].currentSlide || 1;
+            if (fsSlide > localSlide) result[h.id] = { ...result[h.id], ...fs };
+            result[h.id].bestScore = Math.max(result[h.id].bestScore || 0, fs.bestScore || 0);
+            if (fs.bestTime && (!result[h.id].bestTime || fs.bestTime < result[h.id].bestTime)) {
+              result[h.id].bestTime = fs.bestTime;
+            }
+            if (fs.completed) result[h.id].completed = true;
+          }
+        }
       });
       return result;
     }
@@ -1791,18 +1791,23 @@
     };
 
     window.restartHunt = async function(huntId) {
-      // Keep completed/bestScore/bestTime — only reset current-run fields
-      const runReset = { currentSlide: 1, slideSolved: [], cluesUsed: 0, elapsedSeconds: 0, fragmentsFound: [], runCompleted: false, runScore: 0 };
-      if (currentUser) {
-        try {
-          await setDoc(doc(db, 'users', currentUser.uid, 'progress', huntId), { ...runReset, updatedAt: serverTimestamp() }, { merge: true });
-          if (userProgress[huntId]) Object.assign(userProgress[huntId], runReset);
-        } catch(e) {}
-      }
+      const runReset = {
+        currentSlide: 1, slideSolved: [], cluesUsed: 0,
+        elapsedSeconds: 0, fragmentsFound: [], runCompleted: false, runScore: 0,
+      };
+      /* Reset localStorage (primary store) */
       try {
         const prev = JSON.parse(localStorage.getItem('ih_progress_' + huntId) || '{}');
         localStorage.setItem('ih_progress_' + huntId, JSON.stringify({ ...prev, ...runReset }));
       } catch(e) {}
+      /* Reset Firestore too */
+      if (currentUser) {
+        try {
+          await setDoc(doc(db, 'users', currentUser.uid, 'progress', huntId),
+            { ...runReset, updatedAt: serverTimestamp() }, { merge: true });
+          if (userProgress[huntId]) Object.assign(userProgress[huntId], runReset);
+        } catch(e) {}
+      }
       const hunt = HUNT_CATALOG.find(h => h.id === huntId);
       if (hunt) window.location.href = hunt.url;
     };
