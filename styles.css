@@ -114,7 +114,7 @@ strong { font-weight: 600; color: var(--parchment); }
 .nav-inner {
   display: flex;
   align-items: center;
-  padding: 0 clamp(1rem, 4vw, 2.5rem);
+  padding: 0 clamp(1.5rem, 5vw, 3rem);
   height: 64px;
   max-width: 1200px;
   margin: 0 auto;
@@ -145,7 +145,7 @@ strong { font-weight: 600; color: var(--parchment); }
   list-style: none;
   white-space: nowrap;
   flex: 1;
-  padding: 0 1rem;
+  padding: 0 2.5rem;
 }
 
 .nav-links a {
