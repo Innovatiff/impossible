@@ -1690,7 +1690,10 @@
               ${isLocked
                 ? `<a href="pricing.html" class="btn-sm btn-sm-primary">Unlock →</a>`
                 : inLib
-                  ? `<a href="${h.url}" class="btn-sm btn-sm-primary">${completed ? 'Play Again' : progress ? 'Continue →' : 'Begin →'}</a>
+                  ? `${completed
+                       ? `<button class="btn-sm btn-sm-primary" onclick="restartHunt('${h.id}')">Play Again →</button>
+                          <a href="${h.url}" class="btn-sm btn-sm-ghost">Continue Last</a>`
+                       : `<a href="${h.url}" class="btn-sm btn-sm-primary">${progress ? 'Continue →' : 'Begin →'}</a>`}
                      <button class="btn-sm btn-sm-ghost" onclick="removeFromLibrary('${h.id}')">Remove</button>`
                   : `<button class="btn-sm btn-sm-primary" onclick="addToLibrary('${h.id}')">+ Add to Library</button>
                      <a href="${h.url}" class="btn-sm btn-sm-ghost">Preview</a>`
@@ -1730,6 +1733,22 @@
       } catch (e) {
         toast('Could not remove from library.', 'error');
       }
+    };
+
+    window.restartHunt = async function(huntId) {
+      // Clear Firestore progress for auth users
+      if (currentUser) {
+        try {
+          const { deleteDoc } = await import("https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js");
+          await deleteDoc(doc(db, 'users', currentUser.uid, 'progress', huntId));
+        } catch(e) {}
+        delete userProgress[huntId];
+      }
+      // Always clear localStorage too
+      try { localStorage.removeItem('ih_progress_' + huntId); } catch(e) {}
+      // Navigate to the hunt
+      const hunt = HUNT_CATALOG.find(h => h.id === huntId);
+      if (hunt) window.location.href = hunt.url;
     };
 
     /* ── Render progress ──────────────────────────────────── */
