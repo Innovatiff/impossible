@@ -1600,6 +1600,8 @@
     // Called by Firebase module once auth state is known and data loaded
     window._huntRestoreProgress = function(data) {
       if (!data) return;
+      // If hunt was completed, don't restore — let them start fresh
+      if (data.completed) return;
       // Restore slide solves
       if (Array.isArray(data.slideSolved)) {
         data.slideSolved.forEach(n => { slideSolved[n] = true; });
