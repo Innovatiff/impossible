@@ -1509,10 +1509,27 @@
         try {
           const snap = await getDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID));
           if (snap.exists()) {
+            // Firestore record found — use it
             const data = snap.data();
             _savedBestScore = data.bestScore || 0;
             _savedBestTime  = data.bestTime  != null ? data.bestTime : null;
             deliverRestore(data);
+          } else {
+            // No Firestore record — check localStorage (guest-to-auth migration)
+            try {
+              const raw = localStorage.getItem('ih_progress_' + HUNT_ID);
+              if (raw) {
+                const data = JSON.parse(raw);
+                _savedBestScore = data.bestScore || 0;
+                _savedBestTime  = data.bestTime  != null ? data.bestTime : null;
+                // Migrate to Firestore so future saves go there
+                await setDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID),
+                  { ...data, huntId: HUNT_ID, migratedFromGuest: true, updatedAt: serverTimestamp() },
+                  { merge: true });
+                localStorage.removeItem('ih_progress_' + HUNT_ID);
+                deliverRestore(data);
+              }
+            } catch(e) {}
           }
         } catch(e) {}
       } else {

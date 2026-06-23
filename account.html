@@ -1590,26 +1590,37 @@
           userDoc.createdAt.toDate().toLocaleDateString('en-GB', { year:'numeric', month:'long', day:'numeric' });
       }
 
-      // Merge localStorage for dashboard too
+      // Merge localStorage for dashboard — also migrate to userProgress in memory
+      // so logged-in users see their guest progress until hunt-1 migrates it to Firestore
       const mergedDash = { ...userProgress };
       HUNT_CATALOG.forEach(h => {
-        if (!mergedDash[h.id]) {
-          try {
-            const raw = localStorage.getItem('ih_progress_' + h.id);
-            if (raw) mergedDash[h.id] = JSON.parse(raw);
-          } catch(e) {}
-        }
+        try {
+          const raw = localStorage.getItem('ih_progress_' + h.id);
+          if (raw) {
+            const local = JSON.parse(raw);
+            if (!mergedDash[h.id]) {
+              // No Firestore record at all — use localStorage
+              mergedDash[h.id] = local;
+            } else {
+              // Both exist — merge: localStorage may have newer run fields if migration
+              // hasn't happened yet; keep whichever currentSlide is further along
+              const fs = mergedDash[h.id];
+              const localSlide = local.currentSlide || 1;
+              const fsSlide    = fs.currentSlide    || 1;
+              if (localSlide > fsSlide) mergedDash[h.id] = { ...fs, ...local };
+            }
+          }
+        } catch(e) {}
       });
 
-      // Continue hunting — active run = slideSolved has entries OR currentSlide > 1
-      // This includes second runs on completed hunts (completed=true but new run underway)
+      // Continue hunting — active run = has solves OR currentSlide > 1, AND not yet finished
       const continueEl = document.getElementById('continueList');
       const inProgress = HUNT_CATALOG.filter(h => {
         const p = mergedDash[h.id];
         if (!p) return false;
         const hasSolves = Array.isArray(p.slideSolved) && p.slideSolved.length > 0;
-        const midRun    = p.currentSlide > 1;
-        // An active (unfinished) run: has progress and current run's finalScore is 0
+        const midRun    = (p.currentSlide || 1) > 1;
+        // finalScore > 0 means current run finished; 0/undefined means still going
         return (hasSolves || midRun) && !p.finalScore;
       });
 
