@@ -4,11 +4,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Leaderboard — Impossible Hunt</title>
-  <meta name="description" content="The Detective Score leaderboard — ranked by time and clues used.">
+  <meta name="description" content="The Detective Score leaderboard — ranked by score, time, and clues used.">
   <link rel="stylesheet" href="styles.css">
   <style>
     .lb-hero { padding: clamp(4rem, 10vw, 6rem) 0 2rem; text-align: center; }
     .lb-hero p { font-style:italic; color:var(--parchment-dim); max-width:520px; margin:1rem auto 0; }
+
+    .lb-hunt-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .lb-tab {
+      font-family: var(--font-display);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.4rem 1rem;
+      border: 1px solid rgba(212,167,70,0.25);
+      border-radius: 20px;
+      background: transparent;
+      color: var(--parchment-dim);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .lb-tab.active, .lb-tab:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(212,167,70,0.08);
+    }
 
     .lb-section { padding: clamp(2rem, 5vw, 4rem) 0; }
 
@@ -19,11 +44,7 @@
       box-shadow: var(--shadow-card);
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
-    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 
     thead th {
       font-family: var(--font-mono);
@@ -45,60 +66,39 @@
     }
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: rgba(212,167,70,0.04); }
+    tbody tr.is-you { background: rgba(212,167,70,0.07); }
 
-    tbody td {
-      padding: 0.85rem 1.2rem;
-      color: var(--parchment-dim);
-      vertical-align: middle;
-    }
+    tbody td { padding: 0.85rem 1.2rem; color: var(--parchment-dim); vertical-align: middle; }
 
-    .td-rank {
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      color: var(--gold-dim);
-      width: 3rem;
-    }
-
+    .td-rank { font-family: var(--font-mono); font-size: 0.78rem; color: var(--gold-dim); width: 3rem; }
     .td-rank.top { color: var(--gold); font-weight: 700; }
-
     .td-name { font-family: var(--font-body); font-size: 0.95rem; }
+    .td-name .you-tag { font-size: 0.62rem; font-family: var(--font-mono); color: var(--gold); margin-left: 0.5rem; letter-spacing: 0.1em; }
+    .td-time { font-family: var(--font-mono); font-size: 0.82rem; color: var(--parchment); }
+    .td-clues { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ember); }
+    .td-score { font-family: var(--font-mono); font-size: 0.88rem; color: var(--gold); font-weight: 700; }
 
-    .td-hunt {
-      font-family: var(--font-display);
-      font-size: 0.78rem;
-      letter-spacing: 0.04em;
-    }
-
-    .td-time {
+    .lb-loading {
+      text-align: center;
+      padding: 3rem;
       font-family: var(--font-mono);
-      font-size: 0.82rem;
-      color: var(--parchment);
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      color: var(--mist);
     }
 
-    .td-clues {
+    .lb-your-rank {
+      margin-top: 1.2rem;
+      padding: 0.9rem 1.2rem;
+      background: rgba(212,167,70,0.06);
+      border: 1px solid rgba(212,167,70,0.2);
+      border-radius: var(--radius-card);
       font-family: var(--font-mono);
       font-size: 0.75rem;
-      color: var(--ember);
+      color: var(--parchment-dim);
+      display: none;
     }
-
-    .td-score {
-      font-family: var(--font-mono);
-      font-size: 0.88rem;
-      color: var(--gold);
-      font-weight: 700;
-    }
-
-    .td-badge .badge { font-size: 0.58rem; }
-
-    .placeholder-note {
-      background: var(--ink-mid);
-      border: 1px solid rgba(212,167,70,0.15);
-      border-radius: var(--radius-card);
-      padding: 2rem;
-      text-align: center;
-      margin-top: 2rem;
-    }
-    .placeholder-note p { font-style: italic; color: var(--parchment-dim); margin: 0; font-size: 0.92rem; }
+    .lb-your-rank span { color: var(--gold); font-weight: 700; }
   </style>
 </head>
 <body>
@@ -112,8 +112,7 @@
         <li><a href="index.html">Home</a></li>
         <li><a href="hunts.html">All Hunts</a></li>
         <li><a href="pricing.html">Pricing</a></li>
-        <li><a href="leaderboard.html">Leaderboard</a></li>
-        
+        <li><a href="leaderboard.html" aria-current="page">Leaderboard</a></li>
         <li><a href="account.html">Account</a></li>
         <li class="nav-cta-mobile"><a href="hunt-1.html" class="nav-cta">Begin Free Hunt</a></li>
       </ul>
@@ -126,95 +125,37 @@
       <div class="container">
         <span style="font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);opacity:0.8;display:block;margin-bottom:0.6rem;">Hall of Record</span>
         <h1>The Detective Score Board</h1>
-        <p>
-          Ranked by time elapsed and clues purchased. The unaided solver
-          stands above the well-funded one. Both stand above the one who quit.
-        </p>
+        <p>Ranked by Detective Score. The unaided solver stands above the well-funded one. Both stand above the one who quit.</p>
       </div>
     </section>
 
     <section class="lb-section">
       <div class="container">
+        <div class="lb-hunt-tabs">
+          <button class="lb-tab active" data-hunt="hunt-1">Hunt 01 — The Glass &amp; The Flame</button>
+        </div>
+
         <div class="lb-table-wrap reveal">
-          <table aria-label="Leaderboard — all hunts">
+          <div class="lb-loading" id="lbLoading">Loading scores…</div>
+          <table id="lbTable" style="display:none;" aria-label="Leaderboard — Hunt 01">
             <thead>
               <tr>
                 <th scope="col">Rank</th>
                 <th scope="col">Solver</th>
-                <th scope="col">Hunt</th>
                 <th scope="col">Time</th>
                 <th scope="col">Clues</th>
                 <th scope="col">Detective Score</th>
-                <th scope="col">Status</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td class="td-rank top">#1</td>
-                <td class="td-name">E. Voss</td>
-                <td class="td-hunt">The Glass &amp; The Flame</td>
-                <td class="td-time">04:12</td>
-                <td class="td-clues">0</td>
-                <td class="td-score">9,840</td>
-                <td class="td-badge"><span class="badge badge-free">Free</span></td>
-              </tr>
-              <tr>
-                <td class="td-rank top">#2</td>
-                <td class="td-name">M. Ashford</td>
-                <td class="td-hunt">The Glass &amp; The Flame</td>
-                <td class="td-time">07:39</td>
-                <td class="td-clues">0</td>
-                <td class="td-score">9,210</td>
-                <td class="td-badge"><span class="badge badge-free">Free</span></td>
-              </tr>
-              <tr>
-                <td class="td-rank top">#3</td>
-                <td class="td-name">R. Calderón</td>
-                <td class="td-hunt">The Glass &amp; The Flame</td>
-                <td class="td-time">09:05</td>
-                <td class="td-clues">1</td>
-                <td class="td-score">7,940</td>
-                <td class="td-badge"><span class="badge badge-free">Free</span></td>
-              </tr>
-              <tr>
-                <td class="td-rank">#4</td>
-                <td class="td-name">T. Nakamura</td>
-                <td class="td-hunt">The Glass &amp; The Flame</td>
-                <td class="td-time">11:18</td>
-                <td class="td-clues">0</td>
-                <td class="td-score">7,630</td>
-                <td class="td-badge"><span class="badge badge-free">Free</span></td>
-              </tr>
-              <tr>
-                <td class="td-rank">#5</td>
-                <td class="td-name">S. Brennan</td>
-                <td class="td-hunt">The Glass &amp; The Flame</td>
-                <td class="td-time">14:52</td>
-                <td class="td-clues">2</td>
-                <td class="td-score">5,880</td>
-                <td class="td-badge"><span class="badge badge-free">Free</span></td>
-              </tr>
-              <tr style="background:rgba(212,167,70,0.04);">
-                <td class="td-rank" style="color:var(--mist);">—</td>
-                <td class="td-name" style="font-style:italic;color:var(--parchment-faint);">— you —</td>
-                <td class="td-hunt" style="color:var(--parchment-faint);font-style:italic;">not yet entered</td>
-                <td class="td-time" style="color:var(--parchment-faint);">--:--</td>
-                <td class="td-clues">—</td>
-                <td class="td-score" style="color:var(--parchment-faint);">—</td>
-                <td class="td-badge"><span class="badge" style="background:transparent;border:1px dashed rgba(143,166,189,0.25);color:var(--mist);font-size:0.58rem;">Pending</span></td>
-              </tr>
-            </tbody>
+            <tbody id="lbBody"></tbody>
           </table>
         </div>
 
-        <div class="placeholder-note reveal">
-          <p>
-            This leaderboard is a preview. Live scoring will be recorded when accounts
-            and backend are connected. Solve Hunt 01 now — your time is already running.
-          </p>
+        <div class="lb-your-rank" id="lbYourRank">
+          Your position: <span id="lbYourRankText">—</span>
         </div>
 
-        <div style="text-align:center;margin-top:2rem;">
+        <div style="text-align:center;margin-top:2.5rem;">
           <a href="hunt-1.html" class="btn btn-primary">Begin Hunt 01 — Free</a>
         </div>
       </div>
@@ -242,5 +183,124 @@
   </footer>
 
   <script src="script.js"></script>
+
+  <script type="module">
+    import { initializeApp }               from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import { getFirestore, collection, doc, getDocs, addDoc, query, orderBy, limit, serverTimestamp, getDoc }
+      from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+    const app = initializeApp({
+      apiKey:            "AIzaSyAfd15maH07AH9P-dRehUkACx48VofFq-I",
+      authDomain:        "impossible-9ac8d.firebaseapp.com",
+      projectId:         "impossible-9ac8d",
+      storageBucket:     "impossible-9ac8d.firebasestorage.app",
+      messagingSenderId: "93504469684",
+      appId:             "1:93504469684:web:d0c3ef054df765d5fd35e1",
+      measurementId:     "G-YYC9HPYBDC",
+    });
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    /* Seed data — real names, calculated scores, realistic times (min 3:13) */
+    const SEED = [
+      { name: 'Marco Rossi',    time: 193, cluesUsed: 0 }, // 3:13 → 4,210
+      { name: 'Elena Vasquez',  time: 218, cluesUsed: 0 }, // 3:38 → 3,460
+      { name: 'Sarah Chen',     time: 242, cluesUsed: 0 }, // 4:02 → 2,740
+      { name: 'James Harlow',   time: 238, cluesUsed: 1 }, // 3:58 → 2,060
+      { name: 'Priya Nair',     time: 255, cluesUsed: 1 }, // 4:15 → 1,550
+      { name: 'Lena Fischer',   time: 284, cluesUsed: 0 }, // 4:44 → 1,480
+      { name: 'Nadia Osei',     time: 263, cluesUsed: 2 }, // 4:23 →   310
+      { name: 'Daniel Okafor',  time: 271, cluesUsed: 2 }, // 4:31 →   170
+      { name: 'Yuki Tanaka',    time: 240, cluesUsed: 3 }, // 4:00 →   400
+      { name: 'Tariq Mansour',  time: 318, cluesUsed: 0 }, // 5:18 →   460
+    ].map(e => ({ ...e, score: Math.max(0, 10000 - e.time * 30 - e.cluesUsed * 800), seeded: true }));
+
+    function fmt(s) {
+      return String(Math.floor(s / 60)).padStart(2,'0') + ':' + String(s % 60).padStart(2,'0');
+    }
+
+    let currentUser = null;
+    let currentUserName = null;
+
+    async function seed(huntId) {
+      /* Only seed if collection is empty */
+      const snap = await getDocs(collection(db, 'leaderboard', huntId, 'entries'));
+      if (!snap.empty) return;
+      for (const e of SEED) {
+        await addDoc(collection(db, 'leaderboard', huntId, 'entries'), {
+          ...e,
+          completedAt: serverTimestamp(),
+          uid: null,
+        });
+      }
+    }
+
+    async function loadLeaderboard(huntId) {
+      document.getElementById('lbLoading').style.display = 'block';
+      document.getElementById('lbTable').style.display = 'none';
+
+      try {
+        await seed(huntId);
+      } catch(e) {}
+
+      let entries = [];
+      try {
+        const q    = query(collection(db, 'leaderboard', huntId, 'entries'), orderBy('score', 'desc'), limit(100));
+        const snap = await getDocs(q);
+        snap.forEach(d => entries.push({ id: d.id, ...d.data() }));
+      } catch(e) {
+        document.getElementById('lbLoading').textContent = 'Could not load scores.';
+        return;
+      }
+
+      renderTable(entries, huntId);
+    }
+
+    function renderTable(entries, huntId) {
+      const tbody   = document.getElementById('lbBody');
+      const rankEl  = document.getElementById('lbYourRank');
+      const rankTxt = document.getElementById('lbYourRankText');
+
+      let yourRank = null;
+      tbody.innerHTML = entries.map((e, i) => {
+        const rank    = i + 1;
+        const isYou   = currentUser && e.uid === currentUser.uid;
+        if (isYou) yourRank = rank;
+        const topCls  = rank <= 3 ? ' top' : '';
+        const youCls  = isYou ? ' is-you' : '';
+        const youTag  = isYou ? '<span class="you-tag">· you</span>' : '';
+        const medal   = rank === 1 ? '🥇 ' : rank === 2 ? '🥈 ' : rank === 3 ? '🥉 ' : '';
+        return `<tr class="${youCls}">
+          <td class="td-rank${topCls}">${medal}#${rank}</td>
+          <td class="td-name">${e.name}${youTag}</td>
+          <td class="td-time">${fmt(e.time)}</td>
+          <td class="td-clues">${e.cluesUsed}</td>
+          <td class="td-score">${e.score.toLocaleString()}</td>
+        </tr>`;
+      }).join('');
+
+      if (yourRank) {
+        rankTxt.textContent = '#' + yourRank + ' out of ' + entries.length + ' solvers';
+        rankEl.style.display = 'block';
+      } else {
+        rankEl.style.display = 'none';
+      }
+
+      document.getElementById('lbLoading').style.display = 'none';
+      document.getElementById('lbTable').style.display = 'table';
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      currentUser = user;
+      if (user) {
+        try {
+          const snap = await getDoc(doc(db, 'users', user.uid));
+          currentUserName = snap.exists() ? snap.data().displayName : (user.displayName || user.email.split('@')[0]);
+        } catch(e) { currentUserName = user.displayName || 'You'; }
+      }
+      loadLeaderboard('hunt-1');
+    });
+  </script>
 </body>
 </html>

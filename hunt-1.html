@@ -1443,6 +1443,20 @@
               <h3>Hunt Complete.</h3>
               <div class="victory-score" id="victoryScore">—</div>
               <div class="victory-breakdown" id="victoryBreakdown"></div>
+              <div id="lbSubmitArea" style="margin-top:1.4rem;width:100%;max-width:340px;display:none;">
+                <p style="font-size:0.78rem;color:var(--parchment-dim);margin-bottom:0.7rem;font-style:italic;">Enter your name to appear on the leaderboard:</p>
+                <div style="display:flex;gap:0.5rem;">
+                  <input id="lbNameInput" type="text" maxlength="32" placeholder="Your name…"
+                    style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(212,167,70,0.3);border-radius:6px;padding:0.45rem 0.8rem;color:var(--parchment);font-family:var(--font-body);font-size:0.85rem;outline:none;">
+                  <button id="lbSubmitBtn"
+                    style="background:var(--gold);color:var(--ink-deep);border:none;border-radius:6px;padding:0.45rem 1rem;font-family:var(--font-display);font-size:0.7rem;font-weight:700;letter-spacing:0.1em;cursor:pointer;">
+                    SUBMIT
+                  </button>
+                </div>
+                <p id="lbSubmitMsg" style="font-size:0.72rem;margin-top:0.5rem;min-height:1em;color:var(--gold);"></p>
+              </div>
+              <div id="lbAutoMsg" style="margin-top:1.2rem;font-size:0.78rem;color:var(--gold);display:none;">✦ Your score has been recorded on the leaderboard.</div>
+              <a href="leaderboard.html" style="margin-top:1.2rem;font-family:var(--font-display);font-size:0.72rem;letter-spacing:0.12em;color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(212,167,70,0.3);">View Leaderboard →</a>
             </div>
           </div>
         </div>
@@ -1469,7 +1483,7 @@
   <script type="module">
     import { initializeApp }               from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, serverTimestamp }
+    import { getFirestore, doc, setDoc, getDoc, addDoc, collection, serverTimestamp }
       from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
     const HUNT_ID = 'hunt-1';
@@ -1532,6 +1546,51 @@
         } catch(e) {}
       }
     });
+
+    /* Leaderboard entry submission */
+    window._ihSubmitLeaderboard = async function(score, time, clues) {
+      const user = window._ihUser;
+
+      async function writeEntry(name, uid) {
+        await setDoc(doc(collection(db, 'leaderboard', HUNT_ID, 'entries')), {
+          name, score, time, cluesUsed: clues,
+          uid: uid || null,
+          completedAt: serverTimestamp(),
+        });
+      }
+
+      if (user) {
+        /* Auth user: get name from Firestore profile, auto-submit */
+        try {
+          const userSnap = await getDoc(doc(db, 'users', user.uid));
+          const name = (userSnap.exists() && userSnap.data().displayName)
+            ? userSnap.data().displayName
+            : (user.displayName || user.email.split('@')[0]);
+          await writeEntry(name, user.uid);
+          document.getElementById('lbAutoMsg').style.display = 'block';
+        } catch(e) { console.error('Leaderboard auto-submit failed:', e); }
+      } else {
+        /* Guest: show name input */
+        const area = document.getElementById('lbSubmitArea');
+        area.style.display = 'block';
+        document.getElementById('lbSubmitBtn').addEventListener('click', async function() {
+          const name = document.getElementById('lbNameInput').value.trim();
+          if (!name) { document.getElementById('lbSubmitMsg').textContent = 'Please enter a name.'; return; }
+          this.disabled = true;
+          this.textContent = '...';
+          try {
+            await writeEntry(name, null);
+            area.style.display = 'none';
+            document.getElementById('lbAutoMsg').textContent = '✦ ' + name + ' has been added to the leaderboard.';
+            document.getElementById('lbAutoMsg').style.display = 'block';
+          } catch(e) {
+            document.getElementById('lbSubmitMsg').textContent = 'Could not submit. Try again.';
+            this.disabled = false;
+            this.textContent = 'SUBMIT';
+          }
+        });
+      }
+    };
   </script>
 
   <script>
@@ -2518,14 +2577,19 @@
           feedback.textContent = 'The hunt is complete.';
           markSlideSolved(10);
           const score = Math.max(0, 10000 - seconds * 30 - clueCount * 800);
+          const finalSeconds = seconds;
+          const finalClues   = clueCount;
           saveProgress({ completed: true, finalScore: score });
           document.getElementById('finalAnswerArea').style.display = 'none';
           const panel = document.getElementById('victoryPanel');
           panel.classList.add('show');
-          document.getElementById('victoryScore').textContent = score;
+          document.getElementById('victoryScore').textContent = score.toLocaleString();
           document.getElementById('victoryBreakdown').innerHTML =
-            'Time: ' + formatTime(seconds) + ' &nbsp;·&nbsp; Clues used: ' + clueCount + '<br>' +
-            'Base 10000 − ' + (seconds * 30) + ' (time) − ' + (clueCount * 800) + ' (clues)';
+            'Time: ' + formatTime(finalSeconds) + ' &nbsp;·&nbsp; Clues used: ' + finalClues + '<br>' +
+            'Base 10000 − ' + (finalSeconds * 30) + ' (time) − ' + (finalClues * 800) + ' (clues)';
+
+          /* Leaderboard submission */
+          window._ihSubmitLeaderboard(score, finalSeconds, finalClues);
         } else {
           feedback.className = 'answer-feedback wrong';
           feedback.textContent = 'That is not the answer.';
