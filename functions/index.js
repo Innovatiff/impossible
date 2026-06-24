@@ -102,7 +102,47 @@ exports.createCheckoutSession = onRequest(
   }
 );
 
-// ── stripeWebhook ────────────────────────────────────────────────────────────
+// ── createPortalSession ──────────────────────────────────────────────────────
+// Opens Stripe Customer Portal so users can cancel/manage their subscription.
+exports.createPortalSession = onRequest(
+  { secrets: [stripeSecret] },
+  async (req, res) => {
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    if (req.method === "OPTIONS") return res.status(204).send("");
+    if (req.method !== "POST") return res.sendStatus(405);
+
+    const token = req.headers.authorization?.split("Bearer ")[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+    let uid;
+    try {
+      const decoded = await getAuth().verifyIdToken(token);
+      uid = decoded.uid;
+    } catch (e) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    try {
+      const snap = await db.doc(`users/${uid}`).get();
+      const customerId = snap.data()?.stripeCustomerId;
+      if (!customerId) return res.status(400).json({ error: "No subscription found." });
+
+      const stripe  = require("stripe")(stripeSecret.value());
+      const session = await stripe.billingPortal.sessions.create({
+        customer:   customerId,
+        return_url: BASE_URL + "/account.html",
+      });
+      res.json({ url: session.url });
+    } catch (e) {
+      console.error("Portal error:", e);
+      res.status(500).json({ error: e.message });
+    }
+  }
+);
+
+
 // Stripe sends events here. Verify signature, then update Firestore.
 // Webhook URL after deploy: shown in `firebase deploy` output, or in Cloud Console.
 // Register it in Stripe Dashboard → Developers → Webhooks → Add endpoint.

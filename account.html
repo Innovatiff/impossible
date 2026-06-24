@@ -1447,6 +1447,7 @@
     const auth      = getAuth(app);
     const db        = getFirestore(app);
     const CHECKOUT_URL = "https://us-central1-impossible-9ac8d.cloudfunctions.net/createCheckoutSession";
+    const PORTAL_URL   = "https://us-central1-impossible-9ac8d.cloudfunctions.net/createPortalSession";
 
     async function createCheckoutSession(data) {
       const token = await currentUser.getIdToken();
@@ -1459,6 +1460,26 @@
       if (!res.ok) throw new Error(json.error || "Checkout failed");
       return { data: json };
     }
+
+    window.openCustomerPortal = async function(btnEl) {
+      const orig = btnEl.textContent;
+      btnEl.textContent = 'Loading…';
+      btnEl.disabled = true;
+      try {
+        const token = await currentUser.getIdToken();
+        const res   = await fetch(PORTAL_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error);
+        window.location.href = json.url;
+      } catch(e) {
+        toast('Could not open billing portal — ' + e.message, 'error');
+        btnEl.textContent = orig;
+        btnEl.disabled = false;
+      }
+    };
     const googleProvider = new GoogleAuthProvider();
 
     /* ── Hunt catalog (static for now) ───────────────────── */
@@ -2017,8 +2038,8 @@
           ctaHtml = `<button class="btn btn-ghost" disabled style="opacity:0.4;cursor:default;">Current Plan</button>`;
         } else if (isCurrent && plan.id === 'full') {
           ctaHtml = `
-            <button class="btn btn-ghost" disabled style="opacity:0.4;cursor:default;margin-bottom:0.5rem;">Active Membership</button>
-            <p style="font-size:0.72rem;color:var(--parchment-faint);opacity:0.5;text-align:center;font-family:var(--font-mono);">Manage via Stripe Customer Portal</p>`;
+            <button class="btn btn-primary" onclick="openCustomerPortal(this)" style="font-size:0.72rem;padding:0.55rem 1rem;margin-bottom:0.5rem;">Manage / Cancel Subscription</button>
+            <p style="font-size:0.68rem;color:var(--parchment-faint);opacity:0.5;text-align:center;font-family:var(--font-mono);">Opens Stripe billing portal</p>`;
         } else if (plan.id === 'single') {
           ctaHtml = `<button class="btn btn-primary" onclick="upgradePlan('single', this)" style="font-size:0.72rem;padding:0.55rem 1rem;">Choose a Hunt in Library</button>`;
         } else {
