@@ -977,46 +977,86 @@
   </div>
 </div>
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyC4BpJBiNOMJFLGgOvLJEtiixKXY3sxTvk",
-  authDomain: "impossible-hunt.firebaseapp.com",
-  projectId: "impossible-hunt",
-  storageBucket: "impossible-hunt.firebasestorage.app",
-  messagingSenderId: "741286845376",
-  appId: "1:741286845376:web:a15e33ebc2f8c7b0b5b527"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-const provider = new GoogleAuthProvider();
-
-onAuthStateChanged(auth, user => {
-  window._ihUser = user;
-  const el = document.getElementById('userDisplay');
-  if (el) el.textContent = user ? user.displayName || user.email : 'Guest';
-});
-
-document.getElementById('loginBtn')?.addEventListener('click', async () => {
-  try { await signInWithPopup(auth, provider); } catch(e) { console.warn(e); }
-});
-document.getElementById('logoutBtn')?.addEventListener('click', () => auth.signOut());
+import { initializeApp }               from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
+import { getFirestore, doc, setDoc, getDoc, collection, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
 
 const HUNT_ID = 'hunt-2';
+const LS_KEY  = 'ih_progress_' + HUNT_ID;
 
-window._ihSubmitLeaderboard = async function(name, score, seconds) {
+const app = initializeApp({
+  apiKey:            "AIzaSyAfd15maH07AH9P-dRehUkACx48VofFq-I",
+  authDomain:        "impossible-9ac8d.firebaseapp.com",
+  projectId:         "impossible-9ac8d",
+  storageBucket:     "impossible-9ac8d.firebasestorage.app",
+  messagingSenderId: "93504469684",
+  appId:             "1:93504469684:web:d0c3ef054df765d5fd35e1",
+  measurementId:     "G-YYC9HPYBDC",
+});
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+window._ihUser = null;
+
+/* Save: logged-in → Firestore only. Guest → localStorage only. */
+window._ihSave = async function(data) {
+  if (window._ihUser) {
+    try {
+      await setDoc(
+        doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID),
+        { ...data, huntId: HUNT_ID, updatedAt: serverTimestamp() },
+        { merge: true }
+      );
+    } catch(e) { console.error('Firestore save failed:', e); }
+  } else {
+    try {
+      const prev = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+      localStorage.setItem(LS_KEY, JSON.stringify({ ...prev, ...data, huntId: HUNT_ID }));
+    } catch(e) {}
+  }
+};
+
+/* Clear: used by repeatHunt */
+window._ihClearProgress = async function() {
+  if (window._ihUser) {
+    try {
+      await setDoc(
+        doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID),
+        { huntId: HUNT_ID, currentSlide: 1, slideSolved: [], chipsFilled: [],
+          clueCount: 0, timerSecs: 0, completed: false, updatedAt: serverTimestamp() }
+      );
+    } catch(e) {}
+  }
+  try { localStorage.removeItem(LS_KEY); } catch(e) {}
+};
+
+onAuthStateChanged(auth, async (user) => {
+  window._ihUser = user;
+  const el = document.getElementById('userDisplay');
+  if (el) el.textContent = user ? (user.displayName || user.email) : 'Guest';
+
+  if (user) {
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID));
+      if (snap.exists() && window._ihApplyRestore) window._ihApplyRestore(snap.data());
+    } catch(e) { console.error('Firestore load failed:', e); }
+  } else {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw && window._ihApplyRestore) window._ihApplyRestore(JSON.parse(raw));
+    } catch(e) {}
+  }
+});
+
+/* Leaderboard submission → correct subcollection path */
+window._ihSubmitLeaderboard = async function(name, score, time, clues) {
   try {
-    await addDoc(collection(db, 'leaderboard'), {
-      huntId: HUNT_ID,
+    await setDoc(doc(collection(db, 'leaderboard', HUNT_ID, 'entries')), {
       name: name || 'Anonymous',
-      score,
-      seconds,
-      ts: Date.now()
+      score, time, cluesUsed: clues,
+      uid: window._ihUser ? window._ihUser.uid : null,
+      completedAt: serverTimestamp(),
     });
     return true;
   } catch(e) { console.error(e); return false; }
@@ -1127,13 +1167,16 @@ function buildSaveData(opts){
     elapsedSeconds: timerSecs,
     startTs,
     completed: isCompleted,
-    finalScore: isCompleted ? Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500) : undefined
+    finalScore: isCompleted ? Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500) : undefined,
+    bestScore:  isCompleted ? Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500) : undefined,
+    runScore:   isCompleted ? Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500) : undefined,
   };
 }
 function saveProgress(opts){
-  try{ localStorage.setItem(LS_KEY, JSON.stringify(buildSaveData(opts))); }catch(e){}
+  const data = buildSaveData(opts);
+  if(window._ihSave) window._ihSave(data);
+  else try{ localStorage.setItem(LS_KEY, JSON.stringify(data)); }catch(e){}
 }
-window._ihSave = saveProgress;
 
 window._ihApplyRestore = function(data){
   if(!data || data.huntId !== HUNT_ID) return;
@@ -1154,10 +1197,9 @@ window._ihApplyRestore = function(data){
 };
 
 function tryRestore(){
-  try{
-    const raw = localStorage.getItem(LS_KEY);
-    if(raw){ window._ihApplyRestore(JSON.parse(raw)); return; }
-  }catch(e){}
+  // Auth module handles restore via onAuthStateChanged.
+  // Only fall back to localStorage here if the module hasn't fired yet (very early load).
+  // The module will call _ihApplyRestore and overwrite if needed.
   updateClueDisplay();
   activateSlide(1);
 }
@@ -2785,12 +2827,12 @@ function initScene30(){
       if(user){
         const autoMsg = document.getElementById('lbAutoMsg30');
         if(autoMsg) autoMsg.style.display='block';
-        window._ihSubmitLeaderboard&&window._ihSubmitLeaderboard(user.displayName||user.email, score, timerSecs);
+        window._ihSubmitLeaderboard&&window._ihSubmitLeaderboard(user.displayName||user.email, score, timerSecs, clueCount);
       } else {
         if(lbArea) lbArea.style.display='block';
         document.getElementById('lbSubmitBtn30')?.addEventListener('click', async ()=>{
           const name=(document.getElementById('lbNameInput30')?.value||'').trim()||'Anonymous';
-          const ok = window._ihSubmitLeaderboard && await window._ihSubmitLeaderboard(name, score, timerSecs);
+          const ok = window._ihSubmitLeaderboard && await window._ihSubmitLeaderboard(name, score, timerSecs, clueCount);
           const msg=document.getElementById('lbSubmitMsg30');
           if(msg) msg.textContent = ok ? '✦ Score submitted!' : 'Could not submit — try again.';
         });
@@ -2811,8 +2853,9 @@ function initScene30(){
 // ── repeat hunt ───────────────────────────────────────────────────────────────
 window.repeatHunt = function(){
   if(!confirm('Start Hunt 2 from the beginning? Your current progress will be cleared.')) return;
-  try{ localStorage.removeItem(LS_KEY); }catch(e){}
-  location.reload();
+  const doReload = () => location.reload();
+  if(window._ihClearProgress) window._ihClearProgress().then(doReload).catch(doReload);
+  else { try{ localStorage.removeItem(LS_KEY); }catch(e){} doReload(); }
 };
 
 // ── bootstrap ─────────────────────────────────────────────────────────────────
