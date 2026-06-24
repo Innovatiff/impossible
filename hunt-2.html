@@ -2422,17 +2422,17 @@ function initScene23(){
   const fb  = document.getElementById('newsFeedback');
   if(!col) return;
 
-  // Article with 4 underlined target words woven in naturally
+  // ul must match exact substring in t (case-sensitive)
   const sentences = [
     {t:'The evening brought a peculiar stillness to the canal.'},
-    {t:'Residents noted that strangers had arrived by gondola.', ul:'MEET', w:'MEET'},
-    {t:'A lantern burned late in the merchant\'s upper window.'},
-    {t:'Witnesses could not confirm the hour of departure.', ul:'AT', w:'AT'},
-    {t:'The gazette correspondent pressed his source for details.'},
-    {t:'He was told only to return when the bells fell silent.', ul:'MIDNIGHT', w:'MIDNIGHT'},
-    {t:'Nothing further was recorded in the parish register.'},
-    {t:'The matter was closed, the parties having agreed to proceed', ul:'ALONE', w:'ALONE'},
-    {t:'without witnesses and without record.'},
+    {t:'Residents say the strangers were instructed to MEET at the water steps.', ul:'MEET', w:'MEET'},
+    {t:'A lantern burned late in the upper window of the merchant\'s palazzo.'},
+    {t:'They were observed once more AT the hour of the second bell.', ul:'AT', w:'AT'},
+    {t:'The gazette correspondent pressed his source but learned nothing more.'},
+    {t:'He was told only to return at MIDNIGHT, when the church bells fell silent.', ul:'MIDNIGHT', w:'MIDNIGHT'},
+    {t:'Nothing further was recorded in the parish register of San Marco.'},
+    {t:'The matter was closed — the parties had agreed to proceed ALONE.', ul:'ALONE', w:'ALONE'},
+    {t:'No witnesses. No record. The canal keeps its secrets.'},
   ];
 
   const TARGET = ['MEET','AT','MIDNIGHT','ALONE'];
@@ -2440,9 +2440,8 @@ function initScene23(){
 
   sentences.forEach(s=>{
     const p = document.createElement('p');
-    p.style.margin='0 0 0.4rem';
+    p.style.margin='0 0 0.5rem';
     if(s.ul){
-      // split sentence to insert underlined word
       const idx = s.t.indexOf(s.ul);
       if(idx>=0){
         p.appendChild(document.createTextNode(s.t.slice(0,idx)));
