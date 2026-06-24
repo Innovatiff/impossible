@@ -1447,7 +1447,7 @@
     const analytics = getAnalytics(app);
     const auth      = getAuth(app);
     const db        = getFirestore(app);
-    const fns       = getFunctions(app);
+    const fns       = getFunctions(app, 'us-central1');
     const createCheckoutSession = httpsCallable(fns, 'createCheckoutSession');
     const googleProvider = new GoogleAuthProvider();
 
