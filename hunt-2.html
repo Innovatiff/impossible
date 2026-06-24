@@ -997,15 +997,14 @@ const app = initializeApp({
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-window._ihUser      = null;
-window._ihAuthReady = false;
-let _pendingSave    = null; // holds last save data received before auth resolved
+window._ihUser = null;
 
-async function _flushSave(data, user) {
-  if (user) {
+/* Save: logged-in → Firestore. Guest → localStorage. */
+window._ihSave = async function(data) {
+  if (window._ihUser) {
     try {
       await setDoc(
-        doc(db, 'users', user.uid, 'progress', HUNT_ID),
+        doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID),
         { ...data, huntId: HUNT_ID, updatedAt: serverTimestamp() },
         { merge: true }
       );
@@ -1015,24 +1014,10 @@ async function _flushSave(data, user) {
       localStorage.setItem(LS_KEY, JSON.stringify({ ...data, huntId: HUNT_ID }));
     } catch(e) {}
   }
-}
-
-/* Save: if auth not ready yet, buffer to localStorage and queue for Firestore flush.
-   Once auth resolves, always route to the correct destination. */
-window._ihSave = async function(data) {
-  if (!window._ihAuthReady) {
-    /* Auth hasn't resolved yet — write to localStorage immediately as a safety net,
-       and keep this data queued so we can migrate it to Firestore if the user is logged in. */
-    _pendingSave = data;
-    try { localStorage.setItem(LS_KEY, JSON.stringify({ ...data, huntId: HUNT_ID })); } catch(e) {}
-    return;
-  }
-  await _flushSave(data, window._ihUser);
 };
 
 /* Clear: used by repeatHunt */
 window._ihClearProgress = async function() {
-  _pendingSave = null;
   if (window._ihUser) {
     try {
       await setDoc(
@@ -1046,18 +1031,9 @@ window._ihClearProgress = async function() {
 };
 
 onAuthStateChanged(auth, async (user) => {
-  window._ihUser      = user;
-  window._ihAuthReady = true;
-
+  window._ihUser = user;
   const el = document.getElementById('userDisplay');
   if (el) el.textContent = user ? (user.displayName || user.email) : 'Guest';
-
-  /* Flush any save that happened before auth resolved */
-  if (_pendingSave) {
-    const toFlush = _pendingSave;
-    _pendingSave  = null;
-    await _flushSave(toFlush, user);
-  }
 
   if (user) {
     try {
@@ -1065,14 +1041,18 @@ onAuthStateChanged(auth, async (user) => {
       if (snap.exists()) {
         if (window._ihApplyRestore) window._ihApplyRestore(snap.data());
       } else {
-        /* No Firestore data yet — check localStorage (e.g. guest played first) */
+        /* No Firestore data — check localStorage (guest→user migration) */
         try {
           const raw = localStorage.getItem(LS_KEY);
           if (raw) {
             const localData = JSON.parse(raw);
-            if (localData.huntId === HUNT_ID) {
-              /* Migrate localStorage → Firestore, then restore */
-              await _flushSave(localData, user);
+            if (localData.huntId === HUNT_ID &&
+                ((localData.solvedSlides || []).length > 0 || (localData.currentSlide || 1) > 1)) {
+              await setDoc(
+                doc(db, 'users', user.uid, 'progress', HUNT_ID),
+                { ...localData, updatedAt: serverTimestamp() },
+                { merge: true }
+              );
               if (window._ihApplyRestore) window._ihApplyRestore(localData);
             }
           }
@@ -1203,7 +1183,6 @@ function buildSaveData(opts){
     unlockedClueScenes: [...unlockedClueScenes],
     timerSecs,
     elapsedSeconds: timerSecs,
-    startTs,
     completed: isCompleted,
     finalScore: isCompleted ? Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500) : undefined,
     bestScore:  isCompleted ? Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500) : undefined,
@@ -1225,13 +1204,14 @@ window._ihApplyRestore = function(data){
   clueCount    = data.clueCount||0;
   unlockedClueScenes = new Set(data.unlockedClueScenes||[]);
   clueCredits  = data.clueCredits ?? Math.max(0, INITIAL_CLUE_CREDITS - clueCount);
-  timerSecs    = data.timerSecs||0;
-  startTs      = data.startTs||null;
+  timerSecs = data.timerSecs||0;
+  /* Reconstruct startTs so timer resumes from saved play time, not real elapsed time */
+  startTs   = timerSecs > 0 ? (Date.now() - timerSecs * 1000) : null;
   solvedSlides.forEach(n => markSlideSolved(n, true));
   chipsFilled.forEach(i => fillChip(i, true));
   updateClueDisplay();
   activateSlide(data.currentSlide||1, true);
-  if(startTs) startTimer();
+  if(timerSecs > 0) startTimer();
 };
 
 function tryRestore(){
