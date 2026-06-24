@@ -980,7 +980,7 @@
 <script type="module">
 import { initializeApp }               from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, collection, serverTimestamp }
+import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, deleteDoc, collection, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
 
 const HUNT_ID = 'hunt-2';
@@ -1017,15 +1017,11 @@ window._ihSave = async function(data) {
   }
 };
 
-/* Clear: used by repeatHunt */
+/* Clear: used by repeatHunt — delete so reload shows intro, not a "restored" state */
 window._ihClearProgress = async function() {
   if (window._ihUser) {
     try {
-      await setDoc(
-        doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID),
-        { huntId: HUNT_ID, currentSlide: 1, slideSolved: [], chipsFilled: [],
-          clueCount: 0, timerSecs: 0, completed: false, updatedAt: serverTimestamp() }
-      );
+      await deleteDoc(doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID));
     } catch(e) {}
   }
   try { localStorage.removeItem(LS_KEY); } catch(e) {}
