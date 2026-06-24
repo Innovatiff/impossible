@@ -132,12 +132,13 @@
     <section class="lb-section">
       <div class="container">
         <div class="lb-hunt-tabs">
-          <button class="lb-tab active" data-hunt="hunt-1">Hunt 01 — The Glass &amp; The Flame</button>
+          <button class="lb-tab active" data-hunt="hunt-1">The Glass &amp; The Flame</button>
+          <button class="lb-tab" data-hunt="hunt-2">The Whispering Page</button>
         </div>
 
         <div class="lb-table-wrap reveal">
           <div class="lb-loading" id="lbLoading">Loading scores…</div>
-          <table id="lbTable" style="display:none;" aria-label="Leaderboard — Hunt 01">
+          <table id="lbTable" style="display:none;" aria-label="Leaderboard">
             <thead>
               <tr>
                 <th scope="col">Rank</th>
@@ -156,7 +157,7 @@
         </div>
 
         <div style="text-align:center;margin-top:2.5rem;">
-          <a href="hunt-1.html" class="btn btn-primary">Begin Hunt 01 — Free</a>
+          <a id="lbCta" href="hunt-1.html" class="btn btn-primary">Begin The Glass &amp; The Flame — Free</a>
         </div>
       </div>
     </section>
@@ -202,19 +203,39 @@
     const auth = getAuth(app);
     const db   = getFirestore(app);
 
-    /* Seed data — real names, calculated scores, realistic times (min 3:13) */
-    const SEED = [
-      { name: 'Marco Rossi',    time: 193, cluesUsed: 0 }, // 3:13 → 4,210
-      { name: 'Elena Vasquez',  time: 218, cluesUsed: 0 }, // 3:38 → 3,460
-      { name: 'Sarah Chen',     time: 242, cluesUsed: 0 }, // 4:02 → 2,740
-      { name: 'James Harlow',   time: 238, cluesUsed: 1 }, // 3:58 → 2,060
-      { name: 'Priya Nair',     time: 255, cluesUsed: 1 }, // 4:15 → 1,550
-      { name: 'Lena Fischer',   time: 284, cluesUsed: 0 }, // 4:44 → 1,480
-      { name: 'Nadia Osei',     time: 263, cluesUsed: 2 }, // 4:23 →   310
-      { name: 'Daniel Okafor',  time: 271, cluesUsed: 2 }, // 4:31 →   170
-      { name: 'Yuki Tanaka',    time: 240, cluesUsed: 3 }, // 4:00 →   400
-      { name: 'Tariq Mansour',  time: 318, cluesUsed: 0 }, // 5:18 →   460
-    ].map(e => ({ ...e, score: Math.max(0, 10000 - e.time * 30 - e.cluesUsed * 800), seeded: true }));
+    /* Seed data per hunt */
+    const SEEDS = {
+      'hunt-1': [
+        { name: 'Marco Rossi',    time: 193, cluesUsed: 0 },
+        { name: 'Elena Vasquez',  time: 218, cluesUsed: 0 },
+        { name: 'Sarah Chen',     time: 242, cluesUsed: 0 },
+        { name: 'James Harlow',   time: 238, cluesUsed: 1 },
+        { name: 'Priya Nair',     time: 255, cluesUsed: 1 },
+        { name: 'Lena Fischer',   time: 284, cluesUsed: 0 },
+        { name: 'Nadia Osei',     time: 263, cluesUsed: 2 },
+        { name: 'Daniel Okafor',  time: 271, cluesUsed: 2 },
+        { name: 'Yuki Tanaka',    time: 240, cluesUsed: 3 },
+        { name: 'Tariq Mansour',  time: 318, cluesUsed: 0 },
+      ].map(e => ({ ...e, score: Math.max(0, 10000 - e.time * 30 - e.cluesUsed * 800), seeded: true })),
+
+      'hunt-2': [
+        { name: 'Isabelle Morel',  time: 1482, cluesUsed: 0 }, // 24:42
+        { name: 'Lucas Ferreira',  time: 1610, cluesUsed: 0 }, // 26:50
+        { name: 'Amara Diallo',    time: 1755, cluesUsed: 1 }, // 29:15
+        { name: 'Owen Blackwell',  time: 1923, cluesUsed: 0 }, // 32:03
+        { name: 'Selin Yıldız',    time: 2048, cluesUsed: 1 }, // 34:08
+        { name: 'Finn Eriksen',    time: 2134, cluesUsed: 0 }, // 35:34
+        { name: 'Chiara Romano',   time: 2310, cluesUsed: 2 }, // 38:30
+        { name: 'Rafael Moreau',   time: 2587, cluesUsed: 1 }, // 43:07
+        { name: 'Mei-Lin Chao',    time: 2740, cluesUsed: 2 }, // 45:40
+        { name: 'Kofi Asante',     time: 3062, cluesUsed: 0 }, // 51:02
+      ].map(e => ({ ...e, score: Math.max(0, 10000 - Math.floor(e.time / 8) - e.cluesUsed * 500), seeded: true })),
+    };
+
+    const HUNT_META = {
+      'hunt-1': { label: 'The Glass & The Flame', href: 'hunt-1.html', cta: 'Begin The Glass & The Flame — Free' },
+      'hunt-2': { label: 'The Whispering Page',   href: 'hunt-2.html', cta: 'Begin The Whispering Page'          },
+    };
 
     function fmt(s) {
       return String(Math.floor(s / 60)).padStart(2,'0') + ':' + String(s % 60).padStart(2,'0');
@@ -224,14 +245,11 @@
     let currentUserName = null;
 
     async function seed(huntId) {
-      /* Only seed if collection is empty */
       const snap = await getDocs(collection(db, 'leaderboard', huntId, 'entries'));
       if (!snap.empty) return;
-      for (const e of SEED) {
+      for (const e of (SEEDS[huntId] || [])) {
         await addDoc(collection(db, 'leaderboard', huntId, 'entries'), {
-          ...e,
-          completedAt: serverTimestamp(),
-          uid: null,
+          ...e, completedAt: serverTimestamp(), uid: null,
         });
       }
     }
@@ -300,6 +318,26 @@
       document.getElementById('lbTable').style.display = 'table';
     }
 
+    let activeHunt = 'hunt-1';
+
+    document.querySelectorAll('.lb-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.lb-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeHunt = btn.dataset.hunt;
+        loadLeaderboard(activeHunt);
+      });
+    });
+
+    function updateCta(huntId) {
+      const cta = document.getElementById('lbCta');
+      const meta = HUNT_META[huntId];
+      if (cta && meta) { cta.href = meta.href; cta.textContent = meta.cta; }
+    }
+
+    const _origRender = renderTable;
+    renderTable = (entries, huntId) => { _origRender(entries, huntId); updateCta(huntId); };
+
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
       if (user) {
@@ -308,7 +346,7 @@
           currentUserName = snap.exists() ? snap.data().displayName : (user.displayName || user.email.split('@')[0]);
         } catch(e) { currentUserName = user.displayName || 'You'; }
       }
-      loadLeaderboard('hunt-1');
+      loadLeaderboard(activeHunt);
     });
   </script>
 </body>
