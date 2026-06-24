@@ -3814,7 +3814,7 @@
           feedback.className = 'answer-feedback correct';
           feedback.textContent = 'The hunt is complete.';
           markSlideSolved(20);
-          const score = Math.max(0, 10000 - seconds * 30 - clueCount * 800);
+          const score = Math.max(0, 10000 - Math.floor(seconds / 6) - clueCount * 500);
           const finalSeconds = seconds;
           const finalClues = clueCount;
           saveProgress({ completed: true, finalScore: score });
@@ -3824,7 +3824,7 @@
           document.getElementById('victoryScore').textContent = score.toLocaleString();
           document.getElementById('victoryBreakdown').innerHTML =
             'Time: ' + formatTime(finalSeconds) + ' &nbsp;·&nbsp; Clues used: ' + finalClues + '<br>' +
-            'Base 10,000 − ' + (finalSeconds * 30) + ' (time) − ' + (finalClues * 800) + ' (clues)';
+            'Base 10,000 − ' + Math.floor(finalSeconds / 6) + ' (time) − ' + (finalClues * 500) + ' (clues)';
           window._ihSubmitLeaderboard(score, finalSeconds, finalClues);
         } else {
           feedback.className = 'answer-feedback wrong';
