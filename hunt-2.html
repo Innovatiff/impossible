@@ -1219,7 +1219,7 @@ window._ihApplyRestore = function(data){
   chipsFilled.forEach(i => fillChip(i, true));
   updateClueDisplay();
   activateSlide(data.currentSlide||1, true);
-  if(timerSecs > 0) startTimer();
+  if(!data.completed) startTimer();
 };
 
 if(window._ihPendingRestore){
