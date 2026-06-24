@@ -1321,7 +1321,8 @@ window._ihApplyRestore = function(data){
     solvedSlides.forEach(n => markSlideSolved(n, true));
     chipsFilled.forEach(i => fillChip(i, true));
     updateClueDisplay();
-    activateSlide(data.currentSlide||1, true);
+    /* Completed hunt always lands on the final slide so victory panel shows */
+    activateSlide(data.completed ? TOTAL_SLIDES : (data.currentSlide||1), true);
     if(!data.completed) startTimer();
   } catch(e){ console.error('[hunt-2] _ihApplyRestore failed:', e); }
 };
@@ -3006,17 +3007,46 @@ function initScene30(){
 // ── repeat hunt ───────────────────────────────────────────────────────────────
 window.repeatHunt = function(){
   if(!confirm('Start Hunt 2 from the beginning? Your current progress will be cleared.')) return;
-  const doReload = () => {
-    try { localStorage.removeItem(LS_KEY); } catch(e){}
-    location.href = location.pathname + '?r=1';
-  };
+  console.log('[hunt-2] repeatHunt: resetting game state in-place');
+
+  // 1. Stop timer
+  stopTimer();
+  timerSecs = 0;
+  startTs = null;
+
+  // 2. Reset all state variables
+  solvedSlides        = new Set();
+  chipsFilled         = new Set();
+  clueCount           = 0;
+  clueCredits         = INITIAL_CLUE_CREDITS;
+  unlockedClueScenes  = new Set();
+
+  // 3. Reset UI
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('solved'));
+  document.querySelectorAll('.word-chip').forEach(c => {
+    c.classList.remove('filled','unscrambled');
+    c.textContent = '';
+  });
+  const fill = document.querySelector('.hunt-progress-fill');
+  if(fill) fill.style.width = '0%';
+  const timerEl = document.getElementById('timerDisplay');
+  if(timerEl) timerEl.textContent = '00:00';
+  updateClueDisplay();
+
+  // 4. Show intro overlay
+  const overlay = document.getElementById('introOverlay');
+  if(overlay) overlay.style.display = 'flex';
+
+  // 5. Go to slide 1 without saving
+  activateSlide(1, true);
+
+  // 6. Clear Firestore in background — no timing dependency on reload
   if(window._ihClearProgress){
-    window._ihClearProgress().then(doReload).catch(e => {
-      console.error('[hunt-2] repeatHunt clearProgress failed:', e);
-      doReload();
-    });
+    window._ihClearProgress()
+      .then(() => console.log('[hunt-2] repeatHunt: Firestore cleared'))
+      .catch(e => console.error('[hunt-2] repeatHunt: Firestore clear failed:', e));
   } else {
-    doReload();
+    try { localStorage.removeItem(LS_KEY); } catch(e){}
   }
 };
 
