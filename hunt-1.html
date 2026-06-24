@@ -1128,6 +1128,75 @@
     .clue-close:hover { border-color: var(--mist); color: var(--parchment); }
 
     .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+    /* ── Responsive: touch-device cursor fix ── */
+    @media (pointer: coarse) {
+      .lantern-field { cursor: default; }
+    }
+
+    /* ── Responsive: tablet & mobile ── */
+    @media (max-width: 767px) {
+      /* Meta bar */
+      .hunt-meta { padding: 0.5rem 0.9rem; gap: 0.45rem; }
+      .hunt-name { font-size: clamp(0.72rem, 3vw, 0.9rem); }
+      .hunt-controls { gap: 0.45rem; }
+      .timer-display { font-size: 0.8rem; padding: 0.22rem 0.5rem; min-width: 56px; }
+      .clue-btn { padding: 0.44rem 0.65rem; font-size: 0.6rem; min-height: 36px; }
+      .slide-counter { display: none; }
+
+      /* Bottom nav */
+      .slide-nav { padding: 0.6rem 0.9rem; gap: 0.5rem; }
+      .slide-nav-fragment { font-size: 0.6rem; }
+      .chip { width: 26px; height: 26px; font-size: 0.75rem; }
+      .btn-next { font-size: 0.68rem; padding: 0.55rem 1rem; min-height: 40px; }
+
+      /* Slide padding */
+      .slide { padding: 1.2rem 0.9rem 5.5rem; }
+
+      /* Fragment banner */
+      .fragment-banner { min-width: min(220px, 85vw); padding: 1.1rem 1.6rem; }
+
+      /* Brazier buttons — 44px tap target */
+      .brazier-btn { width: 44px; height: 44px; font-size: 1.1rem; }
+
+      /* Ink document & letter */
+      .ink-document { padding: 1.4rem 1.1rem; font-size: 0.82rem; }
+      .letter-paper { padding: 1.3rem 1.1rem; font-size: 0.78rem; }
+
+      /* Assembly slots */
+      .assembly-slot { width: 50px; height: 70px; }
+      .assembly-slot .slot-letter { font-size: 1.45rem; }
+      .assembly-slot .slot-label { font-size: 0.38rem; }
+      .assembly-slots { gap: 0.45rem; }
+
+      /* Mirror box fill screen width */
+      .mirror-box { max-width: 100%; }
+
+      /* Answer controls */
+      .answer-submit, .play-btn { min-height: 44px; }
+
+      /* Fog panel min-height */
+      .fog-panel { min-height: 200px; }
+
+      /* Slide desc */
+      .slide-desc { font-size: 0.88rem; }
+    }
+
+    @media (max-width: 480px) {
+      .hunt-meta { flex-wrap: nowrap; }
+      .hunt-title-block { flex: 1; min-width: 0; overflow: hidden; }
+      .hunt-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .assembly-slot { width: 44px; height: 62px; }
+      .assembly-slot .slot-letter { font-size: 1.2rem; }
+      .assembly-slots { gap: 0.3rem; }
+      .fragment-chips { gap: 0.25rem; }
+      .chip { width: 22px; height: 22px; font-size: 0.65rem; }
+      .slide { padding: 1rem 0.75rem 5.5rem; }
+      .clue-modal-box { padding: 1.4rem 1.2rem; }
+    }
+
+    /* Focus-visible for keyboard nav */
+    :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
   </style>
 </head>
 <body>
@@ -1230,7 +1299,7 @@
               <svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" id="mirrorCircle"/></svg>
             </div>
           </div>
-          <p class="mirror-instruction">Move the cursor slowly — watch for where the reflection sharpens</p>
+          <p class="mirror-instruction">Move slowly across the glass — watch for where the reflection sharpens</p>
           <div class="answer-area" id="mirrorAnswerArea" style="display:none;">
             <div class="puzzle-instruction">What letter does the mirror reveal?</div>
             <input type="text" class="answer-input" id="mirrorInput" maxlength="6" placeholder="?" autocomplete="off">
@@ -1274,7 +1343,7 @@
             </div>
             <div class="fragment-found-badge" id="lanternBadge">Letters found ✦</div>
           </div>
-          <p class="lantern-instruction" id="lanternInstruction">Click each flame to light it — then move the lantern slowly to find the hidden ink</p>
+          <p class="lantern-instruction" id="lanternInstruction">Tap each flame to light it — then drag slowly to find the hidden ink</p>
         </div>
       </div>
 
@@ -1322,7 +1391,7 @@
             <div class="fog-hint-text">[ breathe on the glass ]</div>
             <div class="fog-hold-progress" id="fogProgress"></div>
           </div>
-          <p class="puzzle-instruction">Hover over the glass and hold — the fog clears as it warms</p>
+          <p class="puzzle-instruction">Press and hold on the glass — the fog clears as it warms</p>
           <div class="answer-area" id="fogAnswerArea" style="display:none;">
             <div class="puzzle-instruction">Name what the glass reveals:</div>
             <input type="text" class="answer-input" id="fogInput" maxlength="14" placeholder="TYPE YOUR ANSWER" autocomplete="off">
@@ -2063,9 +2132,13 @@
 
       box.addEventListener('mousemove', function (e) { handleMove(e.clientX, e.clientY); });
       box.addEventListener('touchmove', function (e) {
+        e.preventDefault();
         if (e.touches[0]) handleMove(e.touches[0].clientX, e.touches[0].clientY);
-      }, { passive: true });
+      }, { passive: false });
       box.addEventListener('mouseleave', function () {
+        if (!solved) { resetRing(); crosshair.style.display = 'none'; text.style.opacity = '0.08'; }
+      });
+      box.addEventListener('touchend', function () {
         if (!solved) { resetRing(); crosshair.style.display = 'none'; text.style.opacity = '0.08'; }
       });
 
@@ -2118,9 +2191,11 @@
 
       function activate() {
         active = true;
-        cursor.style.display = 'block';
+        if (!isTouch) cursor.style.display = 'block';
         glow.style.display = 'block';
-        instruction.textContent = 'Move the lantern slowly — the hidden ink reveals only within its light';
+        instruction.textContent = isTouch
+          ? 'Drag your finger slowly across the dark field — find the hidden ink'
+          : 'Move the lantern slowly — the hidden ink reveals only within its light';
       }
 
       function letterCenter(el) {
@@ -2137,15 +2212,17 @@
         const cd = letterCenter(inkD);
         const da = Math.hypot(x - ca.x, y - ca.y);
         const dd = Math.hypot(x - cd.x, y - cd.y);
-        inkA.style.opacity = da < 60 ? '1' : '0';
-        inkD.style.opacity = dd < 60 ? '1' : '0';
+        const revealR = isTouch ? 70 : 60;
+        const captureR = isTouch ? 35 : 15;
+        inkA.style.opacity = da < revealR ? '1' : '0';
+        inkD.style.opacity = dd < revealR ? '1' : '0';
 
-        if (!foundA && da < 15) {
+        if (!foundA && da < captureR) {
           foundA = true;
           fillChip(2, 'A');
           showFragmentBanner('A', 'Fragment A');
         }
-        if (!foundD && dd < 15) {
+        if (!foundD && dd < captureR) {
           foundD = true;
           fillChip(3, 'D');
           showFragmentBanner('D', 'Fragment D');
@@ -2156,24 +2233,35 @@
         }
       }
 
+      const isTouch = window.matchMedia('(pointer: coarse)').matches;
+      const spotRadius = isTouch ? 52 : 18;
+
       function handleMove(clientX, clientY) {
         if (!active) return;
         const r = field.getBoundingClientRect();
         const x = clientX - r.left;
         const y = clientY - r.top;
-        cursor.style.left = x + 'px';
-        cursor.style.top = y + 'px';
+        if (!isTouch) {
+          cursor.style.left = x + 'px';
+          cursor.style.top = y + 'px';
+        }
         glow.style.left = x + 'px';
         glow.style.top = y + 'px';
         spotlight.style.background =
-          'radial-gradient(circle 18px at ' + x + 'px ' + y + 'px, transparent 0%, rgba(7,5,16,0.98) 18px)';
+          'radial-gradient(circle ' + spotRadius + 'px at ' + x + 'px ' + y + 'px, transparent 0%, rgba(7,5,16,0.98) ' + spotRadius + 'px)';
         checkLetters(x, y);
       }
 
       field.addEventListener('mousemove', function (e) { handleMove(e.clientX, e.clientY); });
       field.addEventListener('touchmove', function (e) {
+        e.preventDefault();
         if (e.touches[0]) handleMove(e.touches[0].clientX, e.touches[0].clientY);
-      }, { passive: true });
+      }, { passive: false });
+      field.addEventListener('touchend', function () {
+        if (!active) return;
+        glow.style.left = '-999px';
+        spotlight.style.background = 'rgba(7,5,16,0.98)';
+      });
     }
 
     /* ════════════════ SCENE 4 — Disc ════════════════ */
@@ -2419,6 +2507,17 @@
           } catch (err) { /* ignore */ }
         }
         update();
+      });
+
+      /* Touch fallback: tap a hidden span to reveal it */
+      spans.forEach(function (span, i) {
+        span.addEventListener('click', function () {
+          if (found[i]) return;
+          found[i] = true;
+          span.classList.add('found');
+          update();
+        });
+        span.style.cursor = 'pointer';
       });
     }
 
