@@ -914,6 +914,7 @@
           <div id="lbAutoMsg30" style="margin-top:1.2rem;font-size:0.78rem;color:var(--gold);display:none;">✦ Your score has been recorded.</div>
           <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:1.5rem;">
             <a href="leaderboard.html" style="font-family:var(--font-display);font-size:0.72rem;letter-spacing:0.12em;color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(212,167,70,0.3);">View Leaderboard →</a>
+            <button id="repeatHuntBtn" onclick="repeatHunt()" style="font-family:var(--font-display);font-size:0.72rem;letter-spacing:0.12em;color:var(--parchment-dim);background:none;border:none;border-bottom:1px solid rgba(212,167,70,0.2);cursor:pointer;padding:0;">Repeat Hunt ↺</button>
             <a href="hunts.html" style="font-family:var(--font-display);font-size:0.72rem;letter-spacing:0.12em;color:var(--parchment-dim);text-decoration:none;border-bottom:1px solid rgba(212,167,70,0.2);">More Hunts →</a>
           </div>
         </div>
@@ -1082,19 +1083,27 @@ function formatTime(s){
 }
 
 // ── save / restore ────────────────────────────────────────────────────────────
-function buildSaveData(){
+function buildSaveData(opts){
+  const isCompleted = !!(opts && opts.completed) || solvedSlides.has(TOTAL_SLIDES);
   return {
     v:2, huntId:HUNT_ID,
     currentSlide,
+    totalSlides: TOTAL_SLIDES,
     solvedSlides:[...solvedSlides],
+    slideSolved: [...solvedSlides],
     chipsFilled:[...chipsFilled],
+    fragmentsFound: [...chipsFilled].map(i => WORDS[i].letter),
     clueCount,
+    cluesUsed: clueCount,
     timerSecs,
-    startTs
+    elapsedSeconds: timerSecs,
+    startTs,
+    completed: isCompleted,
+    finalScore: isCompleted ? Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500) : undefined
   };
 }
-function saveProgress(){
-  try{ localStorage.setItem(LS_KEY, JSON.stringify(buildSaveData())); }catch(e){}
+function saveProgress(opts){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(buildSaveData(opts))); }catch(e){}
 }
 window._ihSave = saveProgress;
 
@@ -2073,7 +2082,7 @@ function initScene30(){
       const score = Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500);
       if(vs) vs.textContent = score.toLocaleString();
       if(vb) vb.textContent = `Time: ${formatTime(timerSecs)} · Clues used: ${clueCount}`;
-      saveProgress();
+      saveProgress({completed:true, finalScore:score});
 
       // leaderboard
       const lbArea = document.getElementById('lbSubmitArea30');
@@ -2103,6 +2112,13 @@ function initScene30(){
     if(vb) vb.textContent = `Time: ${formatTime(timerSecs)} · Clues used: ${clueCount}`;
   }
 }
+
+// ── repeat hunt ───────────────────────────────────────────────────────────────
+window.repeatHunt = function(){
+  if(!confirm('Start Hunt 2 from the beginning? Your current progress will be cleared.')) return;
+  try{ localStorage.removeItem(LS_KEY); }catch(e){}
+  location.reload();
+};
 
 // ── bootstrap ─────────────────────────────────────────────────────────────────
 tryRestore();
