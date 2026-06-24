@@ -1075,6 +1075,119 @@
 
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .toast.error { color: var(--ember); border-color: rgba(226,87,43,0.3); }
+
+    /* ── Mobile / iPad responsive overrides ────────────────── */
+    @media (max-width: 900px) {
+      .hunt-grid { grid-template-columns: 1fr 1fr; }
+      .membership-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      /* Layout */
+      .account-main { padding: 1.2rem 0 5rem; }
+      .section-heading { margin-bottom: 1.2rem; }
+
+      /* Dashboard stats: 2-column grid on tablet */
+      .dashboard-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+      /* Last stat card (Credits) spans full width so it's not orphaned */
+      .dashboard-stats .stat-card:last-child { grid-column: 1 / -1; }
+      .stat-card { padding: 1rem 1.1rem; }
+      .stat-value { font-size: 1.5rem; }
+
+      /* Rank banner */
+      .rank-banner { padding: 0.85rem 1rem; margin-bottom: 1.2rem; gap: 0.7rem; }
+      .rank-banner-title { font-size: 0.9rem; }
+
+      /* Dashboard grid: single column */
+      .dashboard-grid { grid-template-columns: 1fr; gap: 1rem; }
+
+      /* Library grid: single column on mobile */
+      .hunt-grid { grid-template-columns: 1fr; gap: 1rem; }
+
+      /* Hunt card action buttons: ensure tap target size */
+      .btn-sm { padding: 0.55rem 1rem; font-size: 0.7rem; min-height: 44px; }
+      .hunt-card-actions { gap: 0.5rem; }
+      .hunt-card-actions-row { gap: 0.5rem; }
+
+      /* Membership plan cards: full-width vertical stack */
+      .membership-grid { grid-template-columns: 1fr; gap: 1rem; margin-bottom: 2rem; }
+      .plan-card { padding: 1.3rem; }
+      .plan-price .amount { font-size: 1.6rem; }
+
+      /* Clue pack cards: single column */
+      .clue-packs-section > div > div:last-child {
+        grid-template-columns: 1fr !important;
+      }
+      .clue-packs-section .dash-card { padding: 1rem 1.2rem; text-align: left !important; }
+      .clue-packs-section .btn-sm { width: 100%; justify-content: center; }
+
+      /* Plan buttons: full width */
+      .plan-card .btn { width: 100%; justify-content: center; font-size: 0.8rem; padding: 0.7rem 1rem; min-height: 44px; }
+
+      /* Progress item: stack vertically */
+      .progress-item {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+        padding: 1.1rem 1.2rem;
+      }
+      .progress-item > a.btn-sm { align-self: flex-start; width: 100%; justify-content: center; }
+
+      /* Settings: stack label + control vertically */
+      .settings-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 1rem 1.2rem;
+      }
+      .settings-inline-form { width: 100%; }
+      .settings-inline-form .form-input { max-width: 100% !important; width: 100%; }
+      .settings-inline-form .btn-sm { min-height: 44px; padding: 0.55rem 1.2rem; }
+      .btn-danger { min-height: 44px; padding: 0.55rem 1.2rem; }
+
+      /* Filter buttons: scrollable row */
+      .library-filters { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 0.25rem; -webkit-overflow-scrolling: touch; }
+      .filter-btn { flex-shrink: 0; min-height: 36px; }
+
+      /* Stripe note */
+      .stripe-note { padding: 1rem 1.2rem; }
+
+      /* Recent scores: hide time column on very small screens */
+      .rscore-time { display: none; }
+
+      /* Toast: full-width near bottom */
+      .toast { left: 1rem; right: 1rem; width: auto; transform: translateY(2rem); text-align: center; }
+      .toast.show { transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      /* Stats: stay 2-col but tighter */
+      .dashboard-stats { gap: 0.6rem; }
+      .stat-value { font-size: 1.35rem; }
+      .stat-label { font-size: 0.55rem; }
+
+      /* Hunt card tighter */
+      .hunt-card-header { padding: 1rem 1.1rem 0.6rem; }
+      .hunt-card-body { padding: 0.75rem 1.1rem; }
+      .hunt-card-actions { padding: 0.6rem 1.1rem; }
+      .hunt-card-name { font-size: 0.85rem; }
+
+      /* Sidebar user: compact */
+      .sidebar-name { font-size: 0.82rem; }
+
+      /* Section heading */
+      .section-heading h2 { font-size: 1.2rem; }
+
+      /* Progress meta: wrap gracefully */
+      .progress-meta-row { gap: 0.6rem; }
+
+      /* Auth card */
+      .auth-form { padding: 1.4rem 1.2rem; }
+      .auth-header { padding: 1.4rem 1.2rem 1rem; }
+    }
   </style>
 </head>
 <body>
