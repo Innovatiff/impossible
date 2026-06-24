@@ -491,16 +491,17 @@
           <h2 class="slide-title">Stars Do Not Lie</h2>
           <p class="slide-desc">Adjust the focus until the stars sharpen. Then connect them in the order: A → C → E → B → D.</p>
         </div>
-        <div style="position:relative;width:280px;height:280px;margin:0 auto;border-radius:50%;overflow:hidden;border:2px solid rgba(212,167,70,0.3);">
-          <div id="telescopeInner" style="width:100%;height:100%;background:#040208;position:relative;filter:blur(8px);transition:filter 0.3s;">
-            <!-- stars -->
-            <div class="tele-star" id="starA" data-star="A" style="position:absolute;left:60px;top:80px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);">A</div>
-            <div class="tele-star" id="starB" data-star="B" style="position:absolute;left:180px;top:60px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);">B</div>
-            <div class="tele-star" id="starC" data-star="C" style="position:absolute;left:120px;top:130px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);">C</div>
-            <div class="tele-star" id="starD" data-star="D" style="position:absolute;left:200px;top:190px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);">D</div>
-            <div class="tele-star" id="starE" data-star="E" style="position:absolute;left:50px;top:200px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);">E</div>
-            <svg id="starLines" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></svg>
-          </div>
+        <div style="position:relative;width:280px;height:280px;margin:0 auto;border-radius:50%;border:2px solid rgba(212,167,70,0.3);overflow:hidden;">
+          <!-- blur bg layer — pointer-events:none so stars above it stay clickable -->
+          <div id="bgLayer12" style="position:absolute;inset:0;background:#040208;filter:blur(8px);transition:filter 0.4s;pointer-events:none;z-index:0;"></div>
+          <!-- connection lines — above bg, below stars -->
+          <svg id="starLines" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;" viewBox="0 0 280 280"></svg>
+          <!-- stars — NOT inside a blurred element, always clickable -->
+          <div class="tele-star" id="starA" data-star="A" style="position:absolute;left:60px;top:80px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);z-index:2;">A</div>
+          <div class="tele-star" id="starB" data-star="B" style="position:absolute;left:180px;top:60px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);z-index:2;">B</div>
+          <div class="tele-star" id="starC" data-star="C" style="position:absolute;left:120px;top:130px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);z-index:2;">C</div>
+          <div class="tele-star" id="starD" data-star="D" style="position:absolute;left:200px;top:190px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);z-index:2;">D</div>
+          <div class="tele-star" id="starE" data-star="E" style="position:absolute;left:50px;top:200px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);z-index:2;">E</div>
         </div>
         <div style="display:flex;align-items:center;gap:1rem;justify-content:center;margin-top:1rem;flex-wrap:wrap;">
           <label style="font-family:var(--font-mono);font-size:0.65rem;color:var(--parchment-faint);">Focus:</label>
@@ -1905,88 +1906,74 @@ function initScene11(){
   }
 }
 
-// Scene 12 – Telescope focus + star sequence A→C→E→B→D → auto-solve ORION
+// Scene 12 – Telescope focus (cosmetic) + star sequence A→C→E→B→D → auto-solve ORION
 let s12done=false;
 function initScene12(){
   if(s12done)return; s12done=true;
-  const fb       = document.getElementById('teleFeedback');
-  const inner    = document.getElementById('telescopeInner');
-  const slider   = document.getElementById('focusSlider');
-  const focusPct = document.getElementById('focusPct');
-  const linesEl  = document.getElementById('starLines');
+  const fb      = document.getElementById('teleFeedback');
+  const bgLayer = document.getElementById('bgLayer12');
+  const slider  = document.getElementById('focusSlider');
+  const focusPct= document.getElementById('focusPct');
+  const linesEl = document.getElementById('starLines');
 
   const TARGET = ['A','C','E','B','D'];
+  // star centres (left+10, top+10 of each div)
+  const STAR_POS = {A:{x:70,y:90},B:{x:190,y:70},C:{x:130,y:140},D:{x:210,y:200},E:{x:60,y:210}};
   let seq = [];
-  let focusVal = 0;
 
-  // Wire focus slider
+  // Focus slider only affects the bg blur layer — stars remain clickable
   function applyFocus(v){
-    focusVal = v;
-    const blur = Math.max(0, 8 - v*0.08);
-    if(inner) inner.style.filter = `blur(${blur.toFixed(1)}px)`;
+    const blur = Math.max(0, 8 - v * 0.08);
+    if(bgLayer) bgLayer.style.filter = `blur(${blur.toFixed(1)}px)`;
     if(focusPct) focusPct.textContent = v + '%';
   }
   slider?.addEventListener('input', e => applyFocus(Number(e.target.value)));
 
-  // Draw lines between clicked stars in order
-  function drawLines(seq){
+  function drawLines(s){
     if(!linesEl) return;
     linesEl.innerHTML = '';
-    const stars = { A:{x:70,y:90}, B:{x:190,y:70}, C:{x:130,y:140}, D:{x:210,y:200}, E:{x:60,y:210} };
-    for(let i=1;i<seq.length;i++){
-      const a=stars[seq[i-1]], b=stars[seq[i]];
+    for(let i=1;i<s.length;i++){
+      const a=STAR_POS[s[i-1]], b=STAR_POS[s[i]];
       if(!a||!b) continue;
-      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-      line.setAttribute('x1',a.x+10); line.setAttribute('y1',a.y+10);
-      line.setAttribute('x2',b.x+10); line.setAttribute('y2',b.y+10);
-      line.setAttribute('stroke','rgba(212,167,70,0.6)');
-      line.setAttribute('stroke-width','1.5');
+      const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',a.x); line.setAttribute('y1',a.y);
+      line.setAttribute('x2',b.x); line.setAttribute('y2',b.y);
+      line.setAttribute('stroke','rgba(212,167,70,0.7)');
+      line.setAttribute('stroke-width','2');
       linesEl.appendChild(line);
     }
   }
 
-  // Wire star clicks
   document.querySelectorAll('#slide-12 .tele-star').forEach(star=>{
     star.addEventListener('click',()=>{
       if(solvedSlides.has(12)) return;
-      if(focusVal < 60){
-        if(fb){fb.textContent='Adjust the focus to at least 60% first.';fb.className='feedback err';}
-        return;
-      }
       const s = star.dataset.star;
-      const expected = TARGET[seq.length];
-      if(s !== expected){
-        // Wrong star — reset
-        seq = [];
+      if(s !== TARGET[seq.length]){
+        seq=[];
         drawLines(seq);
         document.querySelectorAll('#slide-12 .tele-star').forEach(st=>st.style.background='rgba(212,167,70,0.1)');
-        if(fb){fb.textContent=`Wrong order. Start again from A.`;fb.className='feedback err';}
+        if(fb){fb.textContent='Wrong order — start again from A.';fb.className='feedback err';}
         return;
       }
       seq.push(s);
-      star.style.background = 'rgba(212,167,70,0.45)';
+      star.style.background='rgba(212,167,70,0.5)';
       drawLines(seq);
-      if(seq.length === TARGET.length){
-        // Complete — auto-solve
+      if(seq.length===TARGET.length){
         markSlideSolved(12);
         flashSolved('✦ Orion — the hunter in the sky');
         updateNextBtn();
-        if(fb){fb.textContent='The stars form the constellation Orion.';fb.className='feedback ok';}
+        if(fb){fb.textContent='The stars form Orion — the hunter.';fb.className='feedback ok';}
       } else {
-        if(fb){fb.textContent=`${seq.length} / ${TARGET.length} — next: ${TARGET[seq.length]}`;fb.className='feedback ok';}
+        if(fb){fb.textContent=`${seq.length} of 5 — next: ${TARGET[seq.length]}`;fb.className='feedback ok';}
       }
     });
   });
 
   if(solvedSlides.has(12)){
-    applyFocus(65);
-    if(slider) slider.value = 65;
-    TARGET.forEach(s=>{
-      const el=document.getElementById('star'+s);
-      if(el) el.style.background='rgba(212,167,70,0.45)';
-    });
+    applyFocus(65); if(slider) slider.value=65;
+    TARGET.forEach(s=>{ const el=document.getElementById('star'+s); if(el) el.style.background='rgba(212,167,70,0.5)'; });
     drawLines(TARGET);
-    if(fb){fb.textContent='The stars form the constellation Orion.';fb.className='feedback ok';}
+    if(fb){fb.textContent='The stars form Orion — the hunter.';fb.className='feedback ok';}
   }
 }
 
