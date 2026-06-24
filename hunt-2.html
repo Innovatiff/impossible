@@ -1201,7 +1201,7 @@ function tryRestore(){
   // Only fall back to localStorage here if the module hasn't fired yet (very early load).
   // The module will call _ihApplyRestore and overwrite if needed.
   updateClueDisplay();
-  activateSlide(1);
+  activateSlide(1, true);
 }
 
 // ── clues ─────────────────────────────────────────────────────────────────────
