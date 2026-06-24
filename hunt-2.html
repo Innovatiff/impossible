@@ -170,6 +170,28 @@
   </style>
 </head>
 <body>
+<div id="introOverlay" style="position:fixed;inset:0;background:rgba(14,11,18,0.97);z-index:500;display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto;">
+  <div style="max-width:560px;width:100%;text-align:center;padding:2.5rem 2rem;border:1px solid rgba(212,167,70,0.25);border-radius:8px;background:rgba(20,15,25,0.95);box-shadow:0 0 60px rgba(212,167,70,0.08);">
+    <div style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:0.25em;color:var(--gold);opacity:0.7;margin-bottom:1rem;text-transform:uppercase;">Hunt 02 · The Whispering Page</div>
+    <h2 style="font-family:var(--font-display);font-size:clamp(1.4rem,4vw,2rem);color:var(--parchment);margin-bottom:1.2rem;letter-spacing:0.04em;">The Venturi Mystery</h2>
+    <p style="font-family:var(--font-body);font-style:italic;color:var(--parchment-dim);font-size:0.95rem;line-height:1.75;margin-bottom:1rem;">
+      A Victorian parlour. A locked private room. And somewhere between them — the secret life of <strong style="color:var(--parchment);">Signor Giacomo Venturi</strong>, an Italian man of letters who vanished without explanation.
+    </p>
+    <p style="font-family:var(--font-body);font-style:italic;color:var(--parchment-dim);font-size:0.92rem;line-height:1.75;margin-bottom:1rem;">
+      He left two rooms and thirty clues. Each room contains objects that whisper — if you know how to listen. Some whispers become <em>words</em>. Six words, each beginning with a letter. Together, those six letters spell the answer.
+    </p>
+    <div style="border-top:1px solid rgba(212,167,70,0.15);padding-top:1rem;margin-top:0.5rem;">
+      <div style="font-family:var(--font-mono);font-size:0.68rem;color:var(--gold);opacity:0.8;letter-spacing:0.14em;margin-bottom:0.8rem;">YOUR OBJECTIVE</div>
+      <p style="font-family:var(--font-body);color:var(--parchment-dim);font-size:0.88rem;line-height:1.6;">
+        Explore both rooms. Solve each puzzle. Collect the six <span style="color:var(--gold);">evidence words</span>. Use their first letters to deduce the final answer — a single word that names what Venturi concealed his entire life.
+      </p>
+    </div>
+    <div style="display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem;">
+      <button onclick="document.getElementById('introOverlay').style.display='none';startTimer();" style="font-family:var(--font-display);font-size:0.78rem;letter-spacing:0.14em;text-transform:uppercase;padding:0.7rem 2rem;background:var(--gold);color:var(--ink-deep);font-weight:700;border:none;border-radius:var(--radius-seal);cursor:pointer;box-shadow:0 0 20px rgba(212,167,70,0.3);">Enter the Parlour →</button>
+    </div>
+    <p style="font-family:var(--font-mono);font-size:0.58rem;color:var(--parchment-faint);opacity:0.4;margin-top:1rem;letter-spacing:0.08em;">Timer starts when you enter · Clue hints available at any time</p>
+  </div>
+</div>
 <div class="hunt-wrap">
   <div class="hunt-progress-rail"><div class="hunt-progress-fill" id="progressFill"></div></div>
   <div class="hunt-meta">
@@ -250,7 +272,7 @@
         </div>
         <div id="envelopeRow" style="display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap;margin:0.5rem 0;"></div>
         <div id="deskDrawer" style="display:none;max-width:320px;margin:1rem auto;border:1px solid var(--gold);border-radius:6px;padding:1.2rem;text-align:center;background:rgba(212,167,70,0.06);">
-          <p style="font-family:var(--font-display);font-size:1.2rem;color:var(--gold);letter-spacing:0.2em;">CANDLE</p>
+          <p style="font-family:var(--font-display);font-size:1.2rem;color:var(--gold);letter-spacing:0.2em;">INKWELL</p>
           <p style="font-family:var(--font-mono);font-size:0.72rem;color:var(--parchment-faint);margin-top:0.5rem;">The first whisper is collected.</p>
         </div>
         <p class="puzzle-instruction" id="envInstruction">Click each envelope to inspect its seal, then click in order I → II → III → IV → V</p>
@@ -360,6 +382,7 @@
           <line x1="100" y1="195" x2="100" y2="240" stroke="rgba(212,167,70,0.4)" stroke-width="2" id="pendulum" style="transform-origin:100px 195px;"/>
           <circle id="pendBob" cx="100" cy="240" r="10" fill="rgba(212,167,70,0.4)" stroke="rgba(212,167,70,0.6)" stroke-width="1"/>
         </svg>
+        <div style="text-align:center;margin-top:0.8rem;"><button class="answer-submit" id="clockSubmit">Confirm Time</button></div>
         <div class="answer-feedback" id="clockFeedback" style="text-align:center;margin-top:0.8rem;"></div>
         <p class="puzzle-instruction">Drag the clock hands to the correct time</p>
       </div>
@@ -1109,6 +1132,8 @@ window._ihSave = saveProgress;
 
 window._ihApplyRestore = function(data){
   if(!data || data.huntId !== HUNT_ID) return;
+  const overlay = document.getElementById('introOverlay');
+  if(overlay) overlay.style.display='none';
   solvedSlides = new Set(data.solvedSlides||[]);
   chipsFilled  = new Set(data.chipsFilled||[]);
   clueCount    = data.clueCount||0;
@@ -1141,26 +1166,21 @@ window._ihUseClue = function(slideNum){
   clueCount++;
   updateClueDisplay();
   saveProgress();
-  const el = document.querySelector(`#slide-${slideNum} .clue-text`);
-  if(el){ el.textContent = txt; el.style.display='block'; }
+  const slideEl = document.getElementById(`slide-${slideNum}`);
+  if(!slideEl) return;
+  let el = slideEl.querySelector('.clue-reveal');
+  if(!el){
+    el = document.createElement('div');
+    el.className = 'clue-reveal';
+    el.style.cssText = 'background:rgba(14,11,18,0.92);border:1px solid rgba(226,87,43,0.5);border-radius:6px;padding:0.9rem 1.3rem;font-family:var(--font-body);font-style:italic;color:var(--ember);font-size:0.88rem;line-height:1.6;max-width:480px;margin:0.8rem auto;text-align:center;';
+    const frame = slideEl.querySelector('.slide-frame');
+    if(frame) frame.appendChild(el);
+  }
+  el.textContent = '❆ Hint: ' + txt;
 };
 
 document.getElementById('clueBtn')?.addEventListener('click', ()=>{
-  const creditsModal = document.getElementById('creditsModal');
-  // check credits via window._ihUseClue after credits confirmed
-  const body = document.getElementById('creditsModalBody');
-  if(body) body.textContent = `Reveal a hint for scene ${currentSlide}? This uses 1 clue credit.`;
-  const btn  = document.getElementById('creditsModalBtn');
-  if(btn){
-    btn.textContent = 'Use Credit';
-    btn.onclick = ()=>{
-      window._ihUseClue(currentSlide);
-      creditsModal.classList.remove('open');
-    };
-    btn.href = '#';
-    btn.style.background = 'var(--gold)';
-  }
-  creditsModal.classList.add('open');
+  window._ihUseClue(currentSlide);
 });
 
 // ── chips ─────────────────────────────────────────────────────────────────────
@@ -1190,6 +1210,9 @@ function markSlideSolved(n, silent){
   solvedSlides.add(n);
   const slide = document.getElementById(`slide-${n}`);
   if(slide) slide.classList.add('solved');
+  // update progress rail
+  const fill = document.querySelector('.hunt-progress-fill');
+  if(fill) fill.style.width = Math.round((solvedSlides.size/TOTAL_SLIDES)*100)+'%';
   if(!silent) saveProgress();
 }
 
@@ -1207,7 +1230,7 @@ function updateNextBtn(){
   if(!btn) return;
   const solved = solvedSlides.has(currentSlide);
   btn.disabled = !solved;
-  btn.style.opacity = solved ? '1' : '0.35';
+  btn.classList.toggle('unlocked', solved);
 }
 
 function activateSlide(n, restoring){
@@ -1276,7 +1299,6 @@ document.getElementById('btnPrev')?.addEventListener('click', ()=>{
 let s1done=false;
 function initScene1(){
   if(s1done)return; s1done=true;
-  startTimer();
   const card  = document.getElementById('breathCard');
   const frost = document.getElementById('frostLayer');
   const txt   = document.getElementById('cardText');
@@ -1331,171 +1353,354 @@ let s2done=false;
 function initScene2(){
   if(s2done)return; s2done=true;
   const fb = document.getElementById('lampFeedback');
-  document.querySelectorAll('#lampSvg .shadow-arm').forEach(arm=>{
+  let shadowSeq=[];
+  const SHADOW_ORDER=[2,3,4,6];
+  document.querySelectorAll('#lampSvg .lamp-shadow').forEach(arm=>{
     arm.addEventListener('click',()=>{
+      if(solvedSlides.has(2)) return;
       const num = parseInt(arm.dataset.num||'0');
-      if(num===4){
+      shadowSeq.push(num);
+      const ok = SHADOW_ORDER.slice(0,shadowSeq.length).every((v,i)=>v===shadowSeq[i]);
+      if(!ok){ shadowSeq=[]; if(fb){fb.textContent='Wrong order — start from II.';fb.className='feedback err';} return; }
+      if(shadowSeq.length===SHADOW_ORDER.length){
         markSlideSolved(2);
-        flashSolved('✦ Correct — 4 shadows');
+        flashSolved('✦ Correct — shadows in sequence');
         updateNextBtn();
-        if(fb){fb.textContent='The lamp with four shadows points the way.';fb.className='feedback ok';}
-      } else {
-        if(fb){fb.textContent='Not this one — count more carefully.';fb.className='feedback err';}
+        if(fb){fb.textContent='The shadows II→III→IV→VI reveal the path.';fb.className='feedback ok';}
       }
     });
   });
-  if(solvedSlides.has(2) && fb){fb.textContent='The lamp with four shadows points the way.';fb.className='feedback ok';}
+  if(solvedSlides.has(2) && fb){fb.textContent='The shadows II→III→IV→VI reveal the path.';fb.className='feedback ok';}
 }
 
 // Scene 3 – Envelope / wax seal (INKWELL I) word chip
 let s3done=false;
 function initScene3(){
   if(s3done)return; s3done=true;
+  const row = document.getElementById('envelopeRow');
+  const fb  = document.getElementById('envFeedback');
   const drawer = document.getElementById('deskDrawer');
-  const fb     = document.getElementById('envFeedback');
-  if(!drawer) return;
+  if(!row) return;
 
-  drawer.addEventListener('click',()=>{
-    if(solvedSlides.has(3)) return;
-    drawer.classList.add('open');
-    document.getElementById('envInstruction').style.display='block';
+  const ROMAN = ['I','II','III','IV','V'];
+  const colors = ['#8B6914','#6B4A10','#9B7A24','#7B5A18','#5B3A08'];
+  let nextExpected = 0;
+
+  ROMAN.forEach((r, idx) => {
+    const env = document.createElement('div');
+    env.style.cssText = 'width:80px;height:56px;background:'+colors[idx]+';border:1px solid rgba(212,167,70,0.3);border-radius:3px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:var(--font-display);font-size:0.8rem;color:rgba(235,217,180,0.8);transition:all 0.2s;position:relative;';
+    env.textContent = r;
+    env.dataset.idx = idx;
+    env.addEventListener('click', () => {
+      if(solvedSlides.has(3)) return;
+      if(idx === nextExpected) {
+        env.style.background = 'rgba(212,167,70,0.3)';
+        env.style.borderColor = 'var(--gold)';
+        nextExpected++;
+        if(nextExpected === 5) {
+          drawer.style.display = 'block';
+          markSlideSolved(3);
+          fillChip(1);
+          flashSolved('✦ INKWELL revealed');
+          updateNextBtn();
+          if(fb){fb.textContent='The envelopes form a message. INKWELL — the first whisper.';fb.className='feedback ok';}
+        }
+      } else {
+        nextExpected = 0;
+        row.querySelectorAll('div').forEach(e => {
+          e.style.background = colors[parseInt(e.dataset.idx)];
+          e.style.borderColor = 'rgba(212,167,70,0.3)';
+        });
+        if(fb){fb.textContent='Wrong order. Start from I again.';fb.className='feedback err';}
+      }
+    });
+    row.appendChild(env);
   });
 
-  document.getElementById('envSubmit')?.addEventListener('click',()=>{
-    const val = (document.getElementById('envInput')?.value||'').trim().toUpperCase();
-    if(val==='7' || val==='SEVEN'){
-      markSlideSolved(3);
-      fillChip(1);
-      flashSolved('✦ INKWELL revealed');
-      updateNextBtn();
-      if(fb){fb.textContent='The wax seal bears the number 7.';fb.className='feedback ok';}
-    } else {
-      if(fb){fb.textContent='Look more carefully at the seal impression.';fb.className='feedback err';}
-    }
-  });
   if(solvedSlides.has(3)){
-    if(drawer) drawer.classList.add('open');
-    if(fb){fb.textContent='The wax seal bears the number 7.';fb.className='feedback ok';}
+    row.querySelectorAll('div').forEach(e => { e.style.background='rgba(212,167,70,0.3)'; e.style.borderColor='var(--gold)'; });
+    drawer.style.display = 'block';
+    if(fb){fb.textContent='INKWELL — the first whisper.';fb.className='feedback ok';}
   }
 }
 
-// Scene 4 – Chalk symbols under rug (answer: GHOST)
+// Scene 4 – Chalk symbols under rug (click in sequence)
 let s4done=false;
 function initScene4(){
   if(s4done)return; s4done=true;
   const rug = document.getElementById('rugDiv');
   const fb  = document.getElementById('rugFeedback');
-  if(!rug) return;
+  let rugMoved = false;
+  let nextOrder = 1;
 
-  rug.addEventListener('click',()=>{ rug.classList.toggle('lifted'); });
-
-  document.getElementById('rugSubmit')?.addEventListener('click',()=>{
-    const val=(document.getElementById('rugInput')?.value||'').trim().toUpperCase();
-    if(val==='GHOST'){
-      markSlideSolved(4);
-      flashSolved('✦ GHOST — the chalk message revealed');
-      updateNextBtn();
-      if(fb){fb.textContent='The chalk symbols spell GHOST.';fb.className='feedback ok';}
-    } else {
-      if(fb){fb.textContent='Trace the symbols in order — what do they spell?';fb.className='feedback err';}
-    }
+  // Rug drag to reveal
+  let dragStartX = 0;
+  rug.addEventListener('mousedown', e=>{dragStartX=e.clientX; rug.style.cursor='grabbing';});
+  rug.addEventListener('mousemove', e=>{
+    if(e.buttons!==1) return;
+    const dx = e.clientX - dragStartX;
+    if(dx > 60 && !rugMoved){ rugMoved=true; rug.style.transform='translateX(110%)'; rug.style.transition='transform 0.5s ease'; }
   });
-  if(solvedSlides.has(4) && fb){fb.textContent='The chalk symbols spell GHOST.';fb.className='feedback ok';}
+  rug.addEventListener('touchstart', e=>{dragStartX=e.touches[0].clientX;},{passive:true});
+  rug.addEventListener('touchmove', e=>{
+    const dx = e.touches[0].clientX - dragStartX;
+    if(dx > 60 && !rugMoved){ rugMoved=true; rug.style.transform='translateX(110%)'; rug.style.transition='transform 0.5s ease'; }
+  },{passive:true});
+
+  document.querySelectorAll('#floorboard .chalk-sym').forEach(sym=>{
+    sym.addEventListener('click', ()=>{
+      if(solvedSlides.has(4)) return;
+      if(!rugMoved){ if(fb){fb.textContent='Drag the rug away first.';fb.className='feedback err';} return; }
+      const order = parseInt(sym.dataset.order);
+      if(order === nextOrder){
+        sym.style.color='var(--gold)';
+        sym.style.borderColor='var(--gold)';
+        sym.style.background='rgba(212,167,70,0.15)';
+        nextOrder++;
+        if(nextOrder > 6){
+          markSlideSolved(4);
+          flashSolved('✦ The chalk pattern reveals a message');
+          updateNextBtn();
+          if(fb){fb.textContent='The symbols are activated in sequence. The floor speaks.';fb.className='feedback ok';}
+        }
+      } else {
+        nextOrder=1;
+        document.querySelectorAll('#floorboard .chalk-sym').forEach(s=>{
+          s.style.color='rgba(235,217,180,0.7)';
+          s.style.borderColor='rgba(235,217,180,0.3)';
+          s.style.background='';
+        });
+        if(fb){fb.textContent='Wrong sequence. Start from ① again.';fb.className='feedback err';}
+      }
+    });
+  });
+
+  if(solvedSlides.has(4)){
+    rugMoved=true; rug.style.transform='translateX(110%)';
+    document.querySelectorAll('#floorboard .chalk-sym').forEach(s=>{s.style.color='var(--gold)';s.style.borderColor='var(--gold)';});
+    if(fb){fb.textContent='The symbols are activated.';fb.className='feedback ok';}
+  }
 }
 
-// Scene 5 – Portrait eyes (answer: G and V → GV → "Giacomo Venturi")
+// Scene 5 – Portrait eyes (hover to reveal G and V)
 let s5done=false;
 function initScene5(){
   if(s5done)return; s5done=true;
   const fb = document.getElementById('portraitMsg');
-  const svgEl = document.getElementById('portraitSvg');
-  if(!svgEl) return;
+  const leftEye  = document.getElementById('leftEyeG');
+  const rightEye = document.getElementById('rightEyeG');
+  const leftL    = document.getElementById('leftLetter');
+  const rightL   = document.getElementById('rightLetter');
+  const gSt      = document.getElementById('gStatus');
+  const vSt      = document.getElementById('vStatus');
 
-  document.getElementById('portraitSubmit')?.addEventListener('click',()=>{
-    const val=(document.getElementById('portraitInput')?.value||'').trim().toUpperCase();
-    if(val==='GV' || val==='GIACOMO VENTURI' || val==='VENTURI'){
-      markSlideSolved(5);
-      flashSolved('✦ The initials G.V. — Giacomo Venturi');
-      updateNextBtn();
-      if(fb){fb.textContent='The eyes reveal G.V. — Giacomo Venturi.';fb.className='feedback ok';}
-    } else {
-      if(fb){fb.textContent='Compare the two irises closely — one hides a letter.';fb.className='feedback err';}
+  let leftRevealed=false, rightRevealed=false;
+  let leftTimer=null, rightTimer=null;
+
+  function revealLeft(){
+    leftRevealed=true;
+    if(leftL) leftL.setAttribute('fill','rgba(212,167,70,0.9)');
+    if(gSt) gSt.style.color='var(--gold)';
+    checkBoth();
+  }
+  function revealRight(){
+    rightRevealed=true;
+    if(rightL) rightL.setAttribute('fill','rgba(212,167,70,0.9)');
+    if(vSt) vSt.style.color='var(--gold)';
+    checkBoth();
+  }
+  function checkBoth(){
+    if(leftRevealed && rightRevealed && !solvedSlides.has(5)){
+      const msg = document.getElementById('portraitMsg');
+      if(msg) msg.setAttribute('fill','rgba(212,167,70,0.8)');
+      setTimeout(()=>{
+        markSlideSolved(5);
+        flashSolved('✦ G.V. — Giacomo Venturi');
+        updateNextBtn();
+      },800);
     }
-  });
-  if(solvedSlides.has(5) && fb){fb.textContent='The eyes reveal G.V. — Giacomo Venturi.';fb.className='feedback ok';}
+  }
+
+  leftEye?.addEventListener('mouseenter',()=>{ leftTimer=setTimeout(revealLeft,1500); });
+  leftEye?.addEventListener('mouseleave',()=>{ clearTimeout(leftTimer); });
+  leftEye?.addEventListener('touchstart',e=>{e.preventDefault();leftTimer=setTimeout(revealLeft,1500);},{passive:false});
+  leftEye?.addEventListener('touchend',()=>clearTimeout(leftTimer));
+
+  rightEye?.addEventListener('mouseenter',()=>{ rightTimer=setTimeout(revealRight,1500); });
+  rightEye?.addEventListener('mouseleave',()=>{ clearTimeout(rightTimer); });
+  rightEye?.addEventListener('touchstart',e=>{e.preventDefault();rightTimer=setTimeout(revealRight,1500);},{passive:false});
+  rightEye?.addEventListener('touchend',()=>clearTimeout(rightTimer));
+
+  if(solvedSlides.has(5)){
+    revealLeft(); revealRight();
+    const msg = document.getElementById('portraitMsg');
+    if(msg) msg.setAttribute('fill','rgba(212,167,70,0.8)');
+  }
 }
 
-// Scene 6 – Bookshelf call numbers → VENTU (clue to Venturi)
+// Scene 6 – Bookshelf tilted spines → VENTURI
 let s6done=false;
 function initScene6(){
   if(s6done)return; s6done=true;
+  const shelf = document.getElementById('bookshelf');
   const fb = document.getElementById('bookFeedback');
+  if(!shelf) return;
+
+  const books = [
+    {title:'Almanac of Shadows', tilted:false, color:'#4a2a0a'},
+    {title:'Visions of the Night', tilted:true, color:'#6b3a15'},
+    {title:'Echoes in Stone', tilted:false, color:'#3a1a05'},
+    {title:'Epistles of the Unseen', tilted:true, color:'#5a3010'},
+    {title:'Notes on Darkness', tilted:false, color:'#4a2510'},
+    {title:'Tides of Memory', tilted:true, color:'#7a4520'},
+    {title:'Upon the Meridian', tilted:false, color:'#3a1808'},
+    {title:'Rites of the Pale', tilted:false, color:'#5a2a10'},
+    {title:'Unto the Seventh', tilted:true, color:'#6a3818'},
+    {title:'Ruins of the Heart', tilted:false, color:'#4a2008'},
+    {title:'Instructions for Grief', tilted:true, color:'#7a3a18'},
+    {title:'Nocturnes', tilted:false, color:'#3a1505'},
+  ];
+  books.forEach(b=>{
+    const el = document.createElement('div');
+    el.className = 'book' + (b.tilted?' tilted':'');
+    el.style.background = b.color;
+    el.style.height = (90 + Math.floor(Math.random()*40))+'px';
+    const span = document.createElement('span');
+    span.className = 'spine-text';
+    span.style.color = b.tilted ? 'rgba(212,167,70,0.9)' : 'rgba(235,217,180,0.35)';
+    span.textContent = b.title;
+    el.appendChild(span);
+    shelf.appendChild(el);
+  });
+
   document.getElementById('bookSubmit')?.addEventListener('click',()=>{
     const val=(document.getElementById('bookInput')?.value||'').trim().toUpperCase();
-    if(val==='VENTURI' || val==='VENTU'){
+    if(val==='VENTURI'){
       markSlideSolved(6);
-      flashSolved('✦ The shelves name Venturi');
+      flashSolved('✦ VENTURI — the name on the spines');
       updateNextBtn();
-      if(fb){fb.textContent='The call numbers spell V-E-N-T-U-R-I.';fb.className='feedback ok';}
+      if(fb){fb.textContent='The tilted books spell V-E-N-T-U-R-I.';fb.className='feedback ok';}
     } else {
-      if(fb){fb.textContent='Read the first letter of each shelf label top to bottom.';fb.className='feedback err';}
+      if(fb){fb.textContent='Read the first letter of each tilted book, left to right.';fb.className='feedback err';}
     }
   });
-  if(solvedSlides.has(6) && fb){fb.textContent='The call numbers spell V-E-N-T-U-R-I.';fb.className='feedback ok';}
+  if(solvedSlides.has(6)&&fb){fb.textContent='The tilted books spell V-E-N-T-U-R-I.';fb.className='feedback ok';}
 }
 
-// Scene 7 – Clock puzzle (answer: 11:47)
+// Scene 7 – Clock puzzle (answer: 6:00 — ravens cry at dusk)
 let s7done=false;
 function initScene7(){
   if(s7done)return; s7done=true;
-  const fb = document.getElementById('clockFeedback');
-  let hAngle=0, mAngle=0;
-  const hHand = document.getElementById('hourHand');
-  const mHand = document.getElementById('minHand');
+  const fb   = document.getElementById('clockFeedback');
+  const svg  = document.getElementById('clockSvg');
+  const hHand= document.getElementById('hourHand');
+  const mHand= document.getElementById('minHand');
 
-  function updateClock(){
-    if(hHand) hHand.setAttribute('transform',`rotate(${hAngle},200,200)`);
-    if(mHand) mHand.setAttribute('transform',`rotate(${mAngle},200,200)`);
+  // build hour marks
+  const marks = document.getElementById('clockMarks');
+  if(marks){ for(let i=0;i<12;i++){
+    const a=(i/12)*Math.PI*2-Math.PI/2;
+    const r=60, cx=100,cy=120;
+    const x1=cx+Math.cos(a)*r, y1=cy+Math.sin(a)*r;
+    const x2=cx+Math.cos(a)*(r-8), y2=cy+Math.sin(a)*(r-8);
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',x1);line.setAttribute('y1',y1);
+    line.setAttribute('x2',x2);line.setAttribute('y2',y2);
+    line.setAttribute('stroke','rgba(212,167,70,0.5)');line.setAttribute('stroke-width','1.5');
+    marks.appendChild(line);
+  }}
+
+  let hAngle=0, mAngle=0;
+  function setHands(){
+    if(hHand) hHand.style.transform=`rotate(${hAngle}deg)`;
+    if(mHand) mHand.style.transform=`rotate(${mAngle}deg)`;
   }
 
-  document.getElementById('hourPlus')?.addEventListener('click',()=>{hAngle=(hAngle+30)%360;updateClock();});
-  document.getElementById('hourMinus')?.addEventListener('click',()=>{hAngle=(hAngle-30+360)%360;updateClock();});
-  document.getElementById('minPlus')?.addEventListener('click',()=>{mAngle=(mAngle+6)%360;updateClock();});
-  document.getElementById('minMinus')?.addEventListener('click',()=>{mAngle=(mAngle-6+360)%360;updateClock();});
+  let dragging=null;
+  svg?.addEventListener('mousedown',e=>{
+    const r=svg.getBoundingClientRect();
+    const cx=r.left+r.width/2, cy=r.top+r.height*120/260;
+    const dx=e.clientX-cx, dy=e.clientY-cy;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    dragging = dist<35 ? 'hour' : 'min';
+  });
+  svg?.addEventListener('mousemove',e=>{
+    if(!dragging) return;
+    const r=svg.getBoundingClientRect();
+    const cx=r.left+r.width/2, cy=r.top+r.height*120/260;
+    const angle=(Math.atan2(e.clientY-cy, e.clientX-cx)*180/Math.PI)+90;
+    if(dragging==='hour') hAngle=Math.round(angle/30)*30;
+    else mAngle=Math.round(angle/6)*6;
+    setHands();
+  });
+  svg?.addEventListener('mouseup',()=>dragging=null);
+  svg?.addEventListener('mouseleave',()=>dragging=null);
 
-  document.getElementById('clockSubmit')?.addEventListener('click',()=>{
-    // 11:47 → hour hand at 11*30+47*0.5=330+23.5=353.5 ≈354, min hand at 47*6=282
-    const hOk = Math.abs(((hAngle%360)+360)%360 - 354) < 20;
-    const mOk = Math.abs(((mAngle%360)+360)%360 - 282) < 15;
+  document.getElementById('clockSubmit')?.addEventListener('click', checkClock);
+
+  function checkClock(){
+    const hNorm = ((hAngle%360)+360)%360;
+    const mNorm = ((mAngle%360)+360)%360;
+    // 6:00 → hour=180, min=0 or 360
+    const hOk = Math.abs(hNorm-180)<25;
+    const mOk = mNorm < 15 || mNorm > 345;
     if(hOk && mOk){
       markSlideSolved(7);
-      flashSolved('✦ 11:47 — the appointed hour');
+      flashSolved('✦ 6 o\'clock — the raven\'s hour');
       updateNextBtn();
-      if(fb){fb.textContent='The clock reads 11:47 — the time on the portrait.';fb.className='feedback ok';}
+      if(fb){fb.textContent='The clock reads 6:00 — the raven\'s hour.';fb.className='feedback ok';}
     } else {
-      if(fb){fb.textContent='Set the hands to the time shown in the parlour portrait.';fb.className='feedback err';}
+      if(fb){fb.textContent='Not quite — set the hands to the raven\'s dusk hour.';fb.className='feedback err';}
     }
-  });
-  if(solvedSlides.has(7) && fb){fb.textContent='The clock reads 11:47.';fb.className='feedback ok';}
+  }
+
+  if(solvedSlides.has(7)){
+    hAngle=180; mAngle=0; setHands();
+    if(fb){fb.textContent='The clock reads 6:00.';fb.className='feedback ok';}
+  }
 }
 
-// Scene 8 – Musical notes (answer: FADE)
+// Scene 8 – Musical notes click sequence G-E-A-B-C-E
 let s8done=false;
 function initScene8(){
   if(s8done)return; s8done=true;
-  const fb = document.getElementById('noteFeedback');
-  document.getElementById('noteSubmit')?.addEventListener('click',()=>{
-    const val=(document.getElementById('noteInput')?.value||'').trim().toUpperCase();
-    if(val==='FADE'){
-      markSlideSolved(8);
-      flashSolved('✦ The melody spells FADE');
-      updateNextBtn();
-      if(fb){fb.textContent='F-A-D-E — the notes fade like a memory.';fb.className='feedback ok';}
-    } else {
-      if(fb){fb.textContent='Map each musical note to its letter name.';fb.className='feedback err';}
-    }
+  const row = document.getElementById('noteRow');
+  const log = document.getElementById('noteLog');
+  const fb  = document.getElementById('noteFeedback');
+  if(!row) return;
+
+  const NOTES = ['A','B','C','D','E','F','G'];
+  const TARGET = ['G','E','A','B','C','E'];
+  let seq = [];
+
+  NOTES.forEach(n=>{
+    const tile = document.createElement('div');
+    tile.className='note-tile';
+    tile.textContent=n;
+    tile.addEventListener('click',()=>{
+      if(solvedSlides.has(8)) return;
+      seq.push(n);
+      if(log) log.textContent=seq.join(' — ');
+      const ok = TARGET.slice(0,seq.length).every((t,i)=>t===seq[i]);
+      if(!ok){ seq=[]; if(log)log.textContent='·'; if(fb){fb.textContent='Wrong note. Try again from G.';fb.className='feedback err';} return; }
+      if(seq.length===TARGET.length){
+        markSlideSolved(8);
+        flashSolved('✦ The melody plays');
+        updateNextBtn();
+        if(fb){fb.textContent='G-E-A-B-C-E — the music box drawer opens.';fb.className='feedback ok';}
+        tile.classList.add('correct-flash');
+      }
+    });
+    row.appendChild(tile);
   });
-  if(solvedSlides.has(8) && fb){fb.textContent='F-A-D-E — the notes fade like a memory.';fb.className='feedback ok';}
+
+  document.getElementById('noteReset')?.addEventListener('click',()=>{
+    seq=[];
+    if(log) log.textContent='·';
+    if(fb) fb.textContent='';
+  });
+
+  if(solvedSlides.has(8)&&fb){fb.textContent='G-E-A-B-C-E — the music box opens.';fb.className='feedback ok';}
 }
 
 // Scene 9 – Fog canvas wipe → VENTURI
@@ -1524,10 +1729,22 @@ function initScene9(){
   }
   canvas.addEventListener('mousedown',()=>{painting=true;});
   canvas.addEventListener('mousemove',wipe);
-  canvas.addEventListener('mouseup',()=>{painting=false;});
+  canvas.addEventListener('mouseup',()=>{painting=false;checkReveal();});
   canvas.addEventListener('touchstart',e=>{e.preventDefault();painting=true;},{passive:false});
   canvas.addEventListener('touchmove',e=>{e.preventDefault();wipe(e.touches[0]||e);},{passive:false});
-  canvas.addEventListener('touchend',()=>{painting=false;});
+  canvas.addEventListener('touchend',()=>{painting=false;checkReveal();});
+
+  function checkReveal(){
+    if(solvedSlides.has(9)) return;
+    const data = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+    let transparent=0;
+    for(let i=3;i<data.length;i+=4){ if(data[i]<128) transparent++; }
+    const pct = transparent/(canvas.width*canvas.height);
+    if(pct > 0.45){
+      const area = document.getElementById('fogAnswerArea');
+      if(area) area.style.display='flex';
+    }
+  }
 
   document.getElementById('fogSubmit')?.addEventListener('click',()=>{
     const val=(document.getElementById('fogInput')?.value||'').trim().toUpperCase();
@@ -1607,7 +1824,7 @@ function initScene12(){
   if(solvedSlides.has(12) && fb){fb.textContent='The stars form the constellation Orion.';fb.className='feedback ok';}
 }
 
-// Scene 13 – Chaise cushion → hidden note (answer: 372)
+// Scene 13 – Chaise cushion → auto-solve (note points to portrait eyes)
 let s13done=false;
 function initScene13(){
   if(s13done)return; s13done=true;
@@ -1618,51 +1835,63 @@ function initScene13(){
     cushion.addEventListener('click',()=>{
       cushion.style.display='none';
       note.style.display='block';
+      if(!solvedSlides.has(13)){
+        setTimeout(()=>{
+          markSlideSolved(13);
+          flashSolved('✦ A clue is revealed — read the note');
+          updateNextBtn();
+          if(fb){fb.textContent='"Look into his eyes — they remember." (Hint: return to the portrait in Scene V)';fb.className='feedback ok';}
+        }, 800);
+      }
     });
   }
-  document.getElementById('chaiseSubmit')?.addEventListener('click',()=>{
-    const val=(document.getElementById('chaiseInput')?.value||'').trim();
-    if(val==='372'){
-      markSlideSolved(13);
-      flashSolved('✦ 372 — the combination is found');
-      updateNextBtn();
-      if(fb){fb.textContent='The hidden note reads: 372.';fb.className='feedback ok';}
-    } else {
-      if(fb){fb.textContent='The note has three digits — what does it say?';fb.className='feedback err';}
-    }
-  });
-  if(solvedSlides.has(13) && fb){fb.textContent='The hidden note reads: 372.';fb.className='feedback ok';}
+  if(solvedSlides.has(13)){
+    if(cushion) cushion.style.display='none';
+    if(note) note.style.display='block';
+    if(fb){fb.textContent='"Look into his eyes — they remember."';fb.className='feedback ok';}
+  }
 }
 
-// Scene 14 – Cabinet dials (HOLLOW H) combo 3,7,2 word chip
+// Scene 14 – Cabinet dials (HOLLOW H) combo 3,7,2 — build dials dynamically
 let s14done=false;
 function initScene14(){
   if(s14done)return; s14done=true;
-  const fb = document.getElementById('cabinet14Feedback');
+  const fb   = document.getElementById('cabinet14Feedback');
   const door = document.getElementById('cabinet14Door');
-  const dials = document.querySelectorAll('#cabinetDials14 .dial-display');
-  const vals  = [0,0,0];
-  const COMBO = [3,7,2];
+  const container = document.getElementById('cabinetDials14');
+  if(!container) return;
+  const COMBO=[3,7,2];
+  const vals=[0,0,0];
+  const disps=[];
 
-  document.querySelectorAll('#cabinetDials14 .dial-btn').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const di = parseInt(btn.dataset.di||'0');
-      const dir= parseInt(btn.dataset.dir||'1');
-      vals[di] = (vals[di]+dir+10)%10;
-      if(dials[di]) dials[di].textContent = vals[di];
-      // check
-      if(vals[0]===COMBO[0]&&vals[1]===COMBO[1]&&vals[2]===COMBO[2]){
-        if(door) door.classList.add('open');
+  COMBO.forEach((_,di)=>{
+    const group = document.createElement('div');
+    group.className='dial-group';
+    const btnUp = document.createElement('button'); btnUp.className='dial-btn'; btnUp.textContent='▲';
+    const disp  = document.createElement('div');   disp.className='dial-display'; disp.textContent='0';
+    const btnDn = document.createElement('button'); btnDn.className='dial-btn'; btnDn.textContent='▼';
+    group.appendChild(btnUp); group.appendChild(disp); group.appendChild(btnDn);
+    container.appendChild(group);
+    disps.push(disp);
+    function update(dir){
+      vals[di]=(vals[di]+dir+10)%10;
+      disp.textContent=vals[di];
+      if(vals[0]===COMBO[0]&&vals[1]===COMBO[1]&&vals[2]===COMBO[2]&&!solvedSlides.has(14)){
+        if(door){door.textContent='[ open ]';door.style.color='var(--gold)';}
         markSlideSolved(14);
         fillChip(3);
         flashSolved('✦ HOLLOW revealed — cabinet opens');
         updateNextBtn();
-        if(fb){fb.textContent='The cabinet swings open.';fb.className='feedback ok';}
+        if(fb){fb.textContent='The cabinet swings open. A fragment of evidence falls out.';fb.className='feedback ok';}
       }
-    });
+    }
+    btnUp.addEventListener('click',()=>update(1));
+    btnDn.addEventListener('click',()=>update(-1));
   });
+
   if(solvedSlides.has(14)){
-    if(door) door.classList.add('open');
+    COMBO.forEach((v,di)=>{ vals[di]=v; disps[di].textContent=v; });
+    if(door){door.textContent='[ open ]';door.style.color='var(--gold)';}
     if(fb){fb.textContent='The cabinet swings open.';fb.className='feedback ok';}
   }
 }
@@ -1939,112 +2168,167 @@ function initScene25(){
   if(solvedSlides.has(25) && fb){fb.textContent='"Carta" is the only Italian label.';fb.className='feedback ok';}
 }
 
-// Scene 26 – Raven perch puzzle (RAVEN R) → place seeds on E,D,G,A,R word chip
+// Scene 26 – Raven perch puzzle (RAVEN R) — build perches dynamically
 let s26done=false;
 function initScene26(){
   if(s26done)return; s26done=true;
   const fb = document.getElementById('ravenFeedback');
-  const TARGET = ['E','D','G','A','R'];
-  let placed = new Set();
+  const row = document.getElementById('perchRow');
+  const drawer = document.getElementById('ravenDrawer');
+  if(!row) return;
+  const LETTERS = ['E','D','G','A','R','S'];
+  const TARGET  = new Set(['E','D','G','A','R']);
+  let seeded = new Set();
 
-  document.querySelectorAll('#perchRow .perch').forEach(perch=>{
-    perch.addEventListener('click',()=>{
-      const ltr = perch.dataset.letter;
-      if(TARGET.includes(ltr)){
-        perch.classList.add('seeded');
-        placed.add(ltr);
-        if(TARGET.every(l=>placed.has(l)) && !solvedSlides.has(26)){
+  LETTERS.forEach(l=>{
+    const p = document.createElement('div');
+    p.dataset.letter = l;
+    p.style.cssText = 'width:44px;height:60px;border:1px solid rgba(212,167,70,0.3);border-radius:4px 4px 0 0;background:rgba(60,35,15,0.6);display:inline-flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:4px;cursor:pointer;font-family:var(--font-mono);font-size:0.7rem;color:rgba(212,167,70,0.5);margin:4px;vertical-align:bottom;';
+    p.innerHTML = '<div style="width:36px;height:4px;background:rgba(212,167,70,0.4);border-radius:2px;margin-bottom:4px;"></div>'+l;
+    p.addEventListener('click',()=>{
+      if(solvedSlides.has(26)) return;
+      if(TARGET.has(l) && !seeded.has(l)){
+        seeded.add(l);
+        p.style.borderColor='var(--gold)'; p.style.background='rgba(212,167,70,0.15)'; p.style.color='var(--gold)';
+        if(seeded.size===TARGET.size){
+          if(drawer) drawer.style.display='block';
           markSlideSolved(26);
           fillChip(5);
           flashSolved('✦ RAVEN revealed — Edgar the raven');
           updateNextBtn();
-          if(fb){fb.textContent='The raven lands on E-D-G-A-R — Edgar.';fb.className='feedback ok';}
+          if(fb){fb.textContent='The raven lands on E-D-G-A-R — his name is Edgar.';fb.className='feedback ok';}
         }
-      } else {
+      } else if(!TARGET.has(l)){
         if(fb){fb.textContent='The raven is not drawn to this perch.';fb.className='feedback err';}
       }
     });
+    row.appendChild(p);
   });
+
   if(solvedSlides.has(26)){
     TARGET.forEach(l=>{
-      const p = document.querySelector(`#perchRow .perch[data-letter="${l}"]`);
-      if(p) p.classList.add('seeded');
+      const p = row.querySelector(`[data-letter="${l}"]`);
+      if(p){p.style.borderColor='var(--gold)';p.style.background='rgba(212,167,70,0.15)';p.style.color='var(--gold)';}
     });
-    if(fb){fb.textContent='The raven lands on E-D-G-A-R — Edgar.';fb.className='feedback ok';}
+    if(drawer) drawer.style.display='block';
+    if(fb){fb.textContent='The raven lands on E-D-G-A-R.';fb.className='feedback ok';}
   }
 }
 
-// Scene 27 – Star chart → CYGNUS
+// Scene 27 – Star chart — click stars 1→6 in order to auto-solve
 let s27done=false;
 function initScene27(){
   if(s27done)return; s27done=true;
   const fb = document.getElementById('starFeedback');
-  document.getElementById('starSubmit')?.addEventListener('click',()=>{
-    const val=(document.getElementById('starInput')?.value||'').trim().toUpperCase();
-    if(val==='CYGNUS'){
-      markSlideSolved(27);
-      flashSolved('✦ Cygnus — the swan constellation');
-      updateNextBtn();
-      if(fb){fb.textContent='The stars form the constellation Cygnus.';fb.className='feedback ok';}
-    } else {
-      if(fb){fb.textContent='Connect the numbered stars — what constellation do they form?';fb.className='feedback err';}
-    }
+  const linesG = document.getElementById('starLinesG');
+  let nextStar = 1;
+  const pos = {};
+
+  document.querySelectorAll('#starChartSvg .chart-star').forEach(s=>{
+    const sn = parseInt(s.dataset.sn);
+    const cx = parseFloat(s.querySelector('circle').getAttribute('cx'));
+    const cy = parseFloat(s.querySelector('circle').getAttribute('cy'));
+    pos[sn] = {cx, cy};
+    s.addEventListener('click',()=>{
+      if(solvedSlides.has(27)) return;
+      if(sn === nextStar){
+        s.querySelector('circle').setAttribute('fill','rgba(212,167,70,0.5)');
+        if(nextStar > 1 && linesG){
+          const prev = pos[nextStar-1];
+          const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+          line.setAttribute('x1',prev.cx); line.setAttribute('y1',prev.cy);
+          line.setAttribute('x2',cx);      line.setAttribute('y2',cy);
+          line.setAttribute('stroke','rgba(212,167,70,0.7)'); line.setAttribute('stroke-width','1.5');
+          linesG.appendChild(line);
+        }
+        nextStar++;
+        if(nextStar > 6){
+          const msg = document.getElementById('starMsg');
+          if(msg) msg.setAttribute('fill','rgba(212,167,70,0.9)');
+          markSlideSolved(27);
+          flashSolved('✦ Constellation complete — Cygnus');
+          updateNextBtn();
+          if(fb){fb.textContent='The six stars trace Cygnus — the Swan.';fb.className='feedback ok';}
+        }
+      } else {
+        nextStar = 1;
+        if(linesG) linesG.innerHTML='';
+        document.querySelectorAll('#starChartSvg .chart-star circle').forEach(c=>c.setAttribute('fill','rgba(212,167,70,0.1)'));
+        if(fb){fb.textContent='Click stars in order: 1 → 2 → 3 → 4 → 5 → 6.';fb.className='feedback err';}
+      }
+    });
   });
-  if(solvedSlides.has(27) && fb){fb.textContent='The stars form Cygnus.';fb.className='feedback ok';}
+  if(solvedSlides.has(27) && fb){fb.textContent='The six stars trace Cygnus.';fb.className='feedback ok';}
 }
 
-// Scene 28 – Safe dials combo 6,7,2,0
+// Scene 28 – Safe dials combo 6,7,2,0 — build dials dynamically
 let s28done=false;
 function initScene28(){
   if(s28done)return; s28done=true;
   const fb   = document.getElementById('safeFeedback');
   const door = document.getElementById('safe28Door');
-  const dials= document.querySelectorAll('#safeDials28 .dial-display');
-  const vals = [0,0,0,0];
-  const COMBO= [6,7,2,0];
+  const container = document.getElementById('safeDials28');
+  if(!container) return;
+  const COMBO=[6,7,2,0];
+  const vals=[0,0,0,0];
+  const disps=[];
 
-  document.querySelectorAll('#safeDials28 .dial-btn').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      const di = parseInt(btn.dataset.di||'0');
-      const dir= parseInt(btn.dataset.dir||'1');
-      vals[di]=(vals[di]+dir+10)%10;
-      if(dials[di]) dials[di].textContent=vals[di];
-      if(vals[0]===COMBO[0]&&vals[1]===COMBO[1]&&vals[2]===COMBO[2]&&vals[3]===COMBO[3]){
-        if(door) door.classList.add('open');
-        markSlideSolved(28);
-        flashSolved('✦ Safe opens — 1672');
-        updateNextBtn();
-        if(fb){fb.textContent='The safe opens. The year 1672 was on the gravestone.';fb.className='feedback ok';}
+  COMBO.forEach((_,di)=>{
+    const group=document.createElement('div'); group.className='dial-group';
+    const btnUp=document.createElement('button'); btnUp.className='dial-btn'; btnUp.textContent='▲';
+    const disp=document.createElement('div');   disp.className='dial-display'; disp.textContent='0';
+    const btnDn=document.createElement('button'); btnDn.className='dial-btn'; btnDn.textContent='▼';
+    group.appendChild(btnUp); group.appendChild(disp); group.appendChild(btnDn);
+    container.appendChild(group); disps.push(disp);
+    function update(dir){
+      vals[di]=(vals[di]+dir+10)%10; disp.textContent=vals[di];
+      if(vals[0]===COMBO[0]&&vals[1]===COMBO[1]&&vals[2]===COMBO[2]&&vals[3]===COMBO[3]&&!solvedSlides.has(28)){
+        if(door){door.textContent='[ open ]';door.style.color='var(--gold)';}
+        markSlideSolved(28); flashSolved('✦ Safe opens — 6720'); updateNextBtn();
+        if(fb){fb.textContent='The safe opens. The combination was hidden through both rooms.';fb.className='feedback ok';}
       }
-    });
+    }
+    btnUp.addEventListener('click',()=>update(1)); btnDn.addEventListener('click',()=>update(-1));
   });
   if(solvedSlides.has(28)){
-    if(door) door.classList.add('open');
-    if(fb){fb.textContent='The safe opens. 1672.';fb.className='feedback ok';}
+    COMBO.forEach((v,di)=>{vals[di]=v;disps[di].textContent=v;});
+    if(door){door.textContent='[ open ]';door.style.color='var(--gold)';}
+    if(fb){fb.textContent='The safe is open.';fb.className='feedback ok';}
   }
 }
 
-// Scene 29 – Evidence board (arrange 6 words)
+// Scene 29 – Evidence board — build dynamically, unscramble to auto-solve
 let s29done=false;
 function initScene29(){
   if(s29done)return; s29done=true;
-  const fb = document.getElementById('evFeedback29')||document.querySelector('#slide-29 .feedback');
-  // auto-populate from chipsFilled
+  const board   = document.getElementById('evBoard29');
+  const letters = document.getElementById('evLetters29');
+  if(!board) return;
+
   WORDS.forEach((w,i)=>{
-    const el = document.getElementById(`ev-word-${i}`);
-    if(el) el.textContent = chipsFilled.has(i) ? w.real : '?????';
+    const card=document.createElement('div'); card.className='ev-card'+(chipsFilled.has(i)?' solved':'');
+    const scr=document.createElement('div'); scr.className='ev-scramble'; scr.textContent=w.scrambled; scr.style.display=chipsFilled.has(i)?'none':'block';
+    const inp=document.createElement('input'); inp.className='ev-input';
+    inp.style.cssText='display:'+(chipsFilled.has(i)?'none':'block')+';width:90%;background:rgba(14,11,18,0.9);border:1px solid rgba(212,167,70,0.3);border-radius:3px;color:var(--parchment);font-family:var(--font-mono);font-size:0.75rem;padding:0.3rem 0.5rem;text-align:center;text-transform:uppercase;letter-spacing:0.1em;';
+    inp.placeholder='unscramble…'; inp.maxLength=8;
+    const big=document.createElement('div'); big.className='ev-big'; big.style.display=chipsFilled.has(i)?'block':'none'; big.textContent=w.letter;
+    const real=document.createElement('div'); real.className='ev-real'; real.style.display=chipsFilled.has(i)?'block':'none'; real.textContent=w.real;
+    card.appendChild(scr); card.appendChild(inp); card.appendChild(big); card.appendChild(real);
+    board.appendChild(card);
+    inp.addEventListener('input',()=>{
+      if(inp.value.toUpperCase()===w.real){
+        card.classList.add('solved'); scr.style.display='none'; inp.style.display='none'; big.style.display='block'; real.style.display='block';
+        fillChip(i);
+        if(chipsFilled.size===6&&!solvedSlides.has(29)){
+          if(letters){letters.style.display='block';letters.textContent=WORDS.map(x=>x.letter).join(' · ');}
+          markSlideSolved(29); flashSolved('✦ All evidence collected'); updateNextBtn();
+        }
+      }
+    });
   });
-  document.getElementById('evSubmit29')?.addEventListener('click',()=>{
-    if(chipsFilled.size === 6){
-      markSlideSolved(29);
-      flashSolved('✦ All evidence gathered');
-      updateNextBtn();
-      if(fb){fb.textContent='All six words collected. The final answer awaits.';fb.className='feedback ok';}
-    } else {
-      if(fb){fb.textContent=`Still missing ${6-chipsFilled.size} word(s). Keep searching.`;fb.className='feedback err';}
-    }
-  });
-  if(solvedSlides.has(29) && fb){fb.textContent='All six words collected.';fb.className='feedback ok';}
+  if(solvedSlides.has(29)){
+    if(letters){letters.style.display='block';letters.textContent=WORDS.map(x=>x.letter).join(' · ');}
+  }
 }
 
 // Scene 30 – Final answer CIPHER
