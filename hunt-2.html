@@ -971,15 +971,16 @@
 </div>
 <div class="credits-modal" id="creditsModal">
   <div class="credits-modal-box">
-    <h4>No Clue Credits</h4>
-    <p>The room will not whisper for free. You have spent all your clue credits for this hunt.</p>
-    <button class="credits-modal-close" onclick="document.getElementById('creditsModal').classList.remove('open')">Understood</button>
+    <h4 id="creditsModalTitle">No Clue Credits</h4>
+    <p id="creditsModalBody">The room will not whisper for free. You have spent all your clue credits for this hunt.</p>
+    <a id="creditsModalBtn" href="pricing.html#clues" style="display:inline-block;font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.5rem 1.2rem;background:var(--gold);color:var(--ink-deep);font-weight:700;border-radius:var(--radius-seal);text-decoration:none;margin-bottom:0.6rem;">Buy Credits</a>
+    <button class="credits-modal-close" id="creditsClose">Close</button>
   </div>
 </div>
 <script type="module">
 import { initializeApp }               from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc, collection, serverTimestamp }
+import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, collection, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
 
 const HUNT_ID = 'hunt-2';
@@ -1086,6 +1087,54 @@ window._ihSubmitLeaderboard = async function(name, score, time, clues) {
     });
     return true;
   } catch(e) { console.error(e); return false; }
+};
+
+/* ── Clue credit gate (Firestore-backed, matches hunt-1) ── */
+window._ihUseClue = async function(slideNum) {
+  function showCreditsModal(title, body, btnText, btnHref) {
+    document.getElementById('creditsModalTitle').textContent = title;
+    document.getElementById('creditsModalBody').textContent  = body;
+    const btn = document.getElementById('creditsModalBtn');
+    btn.textContent = btnText;
+    btn.href        = btnHref;
+    document.getElementById('creditsModal').classList.add('open');
+  }
+
+  if (!window._ihUser) {
+    showCreditsModal(
+      'Sign In to Use Clues',
+      'Create a free account, then use clue credits during hunts.',
+      'Sign In / Create Account',
+      'account.html'
+    );
+    return;
+  }
+
+  // Already unlocked for this slide — show again for free
+  if (window._ihIsClueUnlocked && window._ihIsClueUnlocked(slideNum)) {
+    window._ihShowClueInline && window._ihShowClueInline(slideNum);
+    return;
+  }
+
+  try {
+    const snap    = await getDoc(doc(db, 'users', window._ihUser.uid));
+    const credits = snap.data()?.clueCredits || 0;
+    if (credits <= 0) {
+      showCreditsModal(
+        'No Credits Remaining',
+        'You have used all your clue credits. Purchase a pack to continue.',
+        'Buy Credits',
+        'pricing.html#clues'
+      );
+      return;
+    }
+    await updateDoc(doc(db, 'users', window._ihUser.uid), { clueCredits: increment(-1) });
+  } catch(e) {
+    console.error('Clue credit check failed:', e);
+    // Fall through — allow clue if Firestore is unreachable
+  }
+
+  window._ihShowClueInline && window._ihShowClueInline(slideNum);
 };
 </script>
 <script>
@@ -1241,37 +1290,13 @@ function updateClueDisplay(){
   if(btn) btn.textContent = `Clue (${clueCredits})`;
 }
 
-window._ihUseClue = function(slideNum){
+function showClueInline(slideNum){
   const txt = CLUES[slideNum];
   if(!txt) return;
-
   const slideEl = document.getElementById(`slide-${slideNum}`);
-  const frame   = slideEl?.querySelector('.slide-frame');
-  let el = slideEl?.querySelector('.clue-reveal');
-
-  const alreadyUnlocked = unlockedClueScenes.has(slideNum);
-
-  if(!alreadyUnlocked){
-    if(clueCredits <= 0){
-      // No credits — show a styled denial message, no hint text
-      if(!el){
-        el = document.createElement('div');
-        el.className = 'clue-reveal';
-        if(frame) frame.appendChild(el);
-      }
-      el.style.cssText = 'background:rgba(14,11,18,0.92);border:1px solid rgba(143,166,189,0.35);border-radius:6px;padding:0.9rem 1.3rem;font-family:var(--font-body);font-style:italic;color:var(--mist);font-size:0.88rem;line-height:1.6;max-width:480px;margin:0.8rem auto;text-align:center;';
-      el.textContent = '✦ The room will not whisper for free. No clue credits remain.';
-      return;
-    }
-    // Spend one credit
-    clueCredits--;
-    clueCount++;
-    unlockedClueScenes.add(slideNum);
-    updateClueDisplay();
-    saveProgress();
-  }
-
   if(!slideEl) return;
+  const frame = slideEl.querySelector('.slide-frame');
+  let el = slideEl.querySelector('.clue-reveal');
   if(!el){
     el = document.createElement('div');
     el.className = 'clue-reveal';
@@ -1279,10 +1304,46 @@ window._ihUseClue = function(slideNum){
   }
   el.style.cssText = 'background:rgba(14,11,18,0.92);border:1px solid rgba(226,87,43,0.5);border-radius:6px;padding:0.9rem 1.3rem;font-family:var(--font-body);font-style:italic;color:var(--ember);font-size:0.88rem;line-height:1.6;max-width:480px;margin:0.8rem auto;text-align:center;';
   el.textContent = '✦ Hint: ' + txt;
+}
+
+// Exposed so module's Firestore gate can query/trigger inline display
+window._ihIsClueUnlocked = function(slideNum){ return unlockedClueScenes.has(slideNum); };
+window._ihShowClueInline = function(slideNum){
+  if(!unlockedClueScenes.has(slideNum)){
+    clueCount++;
+    clueCredits = Math.max(0, clueCredits - 1);
+    unlockedClueScenes.add(slideNum);
+    updateClueDisplay();
+    saveProgress();
+  }
+  showClueInline(slideNum);
 };
 
-document.getElementById('clueBtn')?.addEventListener('click', ()=>{
-  window._ihUseClue(currentSlide);
+// Local-credits fallback — module overwrites this with Firestore-backed version
+window._ihUseClue = function(slideNum){
+  if(!unlockedClueScenes.has(slideNum)){
+    if(clueCredits <= 0){
+      document.getElementById('creditsModal').classList.add('open');
+      return;
+    }
+    clueCredits--;
+    clueCount++;
+    unlockedClueScenes.add(slideNum);
+    updateClueDisplay();
+    saveProgress();
+  }
+  showClueInline(slideNum);
+};
+
+document.getElementById('clueBtn')?.addEventListener('click', async ()=>{
+  await window._ihUseClue(currentSlide);
+});
+
+document.getElementById('creditsClose')?.addEventListener('click', ()=>{
+  document.getElementById('creditsModal').classList.remove('open');
+});
+document.getElementById('creditsModal')?.addEventListener('click', function(e){
+  if(e.target === this) this.classList.remove('open');
 });
 
 // ── chips ─────────────────────────────────────────────────────────────────────
