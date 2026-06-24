@@ -1546,19 +1546,23 @@ function initScene6(){
   const fb = document.getElementById('bookFeedback');
   if(!shelf) return;
 
+  // Tilted books first-letters: V·E·N·T·U·R·I = VENTURI
   const books = [
-    {title:'Almanac of Shadows', tilted:false, color:'#4a2a0a'},
-    {title:'Visions of the Night', tilted:true, color:'#6b3a15'},
-    {title:'Echoes in Stone', tilted:false, color:'#3a1a05'},
-    {title:'Epistles of the Unseen', tilted:true, color:'#5a3010'},
-    {title:'Notes on Darkness', tilted:false, color:'#4a2510'},
-    {title:'Tides of Memory', tilted:true, color:'#7a4520'},
-    {title:'Upon the Meridian', tilted:false, color:'#3a1808'},
-    {title:'Rites of the Pale', tilted:false, color:'#5a2a10'},
-    {title:'Unto the Seventh', tilted:true, color:'#6a3818'},
-    {title:'Ruins of the Heart', tilted:false, color:'#4a2008'},
-    {title:'Instructions for Grief', tilted:true, color:'#7a3a18'},
-    {title:'Nocturnes', tilted:false, color:'#3a1505'},
+    {title:'A Study in Ash',           tilted:false, color:'#4a2a0a'},
+    {title:'Vengeance & the Pale',     tilted:true,  color:'#6b3a15'},
+    {title:'The Locked Door',          tilted:false, color:'#4a2510'},
+    {title:'Echoes in Amber',          tilted:true,  color:'#5a3010'},
+    {title:'A Sovereign Lie',          tilted:false, color:'#3a1808'},
+    {title:'Nights of the Departed',   tilted:true,  color:'#7a4520'},
+    {title:'The Clockwork Confession', tilted:false, color:'#3a1a05'},
+    {title:'Tidings from the East',    tilted:true,  color:'#6a3818'},
+    {title:'The Broken Compass',       tilted:false, color:'#4a2008'},
+    {title:'Under the Glass',          tilted:true,  color:'#7a3a18'},
+    {title:'The Amber Meridian',       tilted:false, color:'#3a1505'},
+    {title:'Rites of the Fallen',      tilted:false, color:'#5a2a10'},
+    {title:'Ruin of the Seventh',      tilted:true,  color:'#6b4a15'},
+    {title:'The Correspondence',       tilted:false, color:'#4a2a0a'},
+    {title:'Ink & Oblivion',           tilted:true,  color:'#5a3515'},
   ];
   books.forEach(b=>{
     const el = document.createElement('div');
