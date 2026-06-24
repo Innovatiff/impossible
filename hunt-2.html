@@ -1030,11 +1030,20 @@ window._ihSave = async function(data) {
   }
 };
 
-/* Clear: write clean doc with restarted:true and wait for server ACK */
+/* Clear: write clean doc with restarted:true, preserving bestScore across restarts */
 window._ihClearProgress = async function() {
   if (window._ihUser) {
     console.log('[hunt-2] _ihClearProgress: writing restart doc for uid', window._ihUser.uid);
     try {
+      /* Read existing bestScore so it survives the restart */
+      let bestScore = null;
+      try {
+        const existing = await getDoc(doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID));
+        if (existing.exists()) {
+          bestScore = existing.data().bestScore || existing.data().runScore || null;
+        }
+      } catch(e) { console.warn('[hunt-2] could not read bestScore before clear:', e); }
+
       await setDoc(doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID), {
         huntId: HUNT_ID,
         restarted: true,
@@ -1044,6 +1053,7 @@ window._ihClearProgress = async function() {
         clueCount: 0,
         timerSecs: 0,
         completed: false,
+        bestScore,          // preserved across restarts
         updatedAt: serverTimestamp(),
       });
       console.log('[hunt-2] _ihClearProgress: setDoc done, waiting for server ACK');
