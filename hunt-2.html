@@ -189,7 +189,7 @@
     <div style="display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem;">
       <button onclick="document.getElementById('introOverlay').style.display='none';startTimer();" style="font-family:var(--font-display);font-size:0.78rem;letter-spacing:0.14em;text-transform:uppercase;padding:0.7rem 2rem;background:var(--gold);color:var(--ink-deep);font-weight:700;border:none;border-radius:var(--radius-seal);cursor:pointer;box-shadow:0 0 20px rgba(212,167,70,0.3);">Enter the Parlour →</button>
     </div>
-    <p style="font-family:var(--font-mono);font-size:0.58rem;color:var(--parchment-faint);opacity:0.4;margin-top:1rem;letter-spacing:0.08em;">Timer starts when you enter · Clue hints available at any time</p>
+    <p style="font-family:var(--font-mono);font-size:0.58rem;color:var(--parchment-faint);opacity:0.4;margin-top:1rem;letter-spacing:0.08em;">Timer starts when you enter · 3 clue credits included · Use them wisely</p>
   </div>
 </div>
 <div class="hunt-wrap">
@@ -970,10 +970,9 @@
 </div>
 <div class="credits-modal" id="creditsModal">
   <div class="credits-modal-box">
-    <h4 id="creditsModalTitle">Clue Credits</h4>
-    <p id="creditsModalBody">Purchase clue credits to reveal hints.</p>
-    <a id="creditsModalBtn" href="pricing.html" style="display:inline-block;background:var(--gold);color:var(--ink-deep);font-family:var(--font-display);font-size:0.72rem;font-weight:700;letter-spacing:0.12em;padding:0.55rem 1.4rem;border-radius:var(--radius-seal);text-decoration:none;margin-bottom:0.5rem;">Get Credits</a><br>
-    <button class="credits-modal-close" onclick="document.getElementById('creditsModal').classList.remove('open')">Close</button>
+    <h4>No Clue Credits</h4>
+    <p>The room will not whisper for free. You have spent all your clue credits for this hunt.</p>
+    <button class="credits-modal-close" onclick="document.getElementById('creditsModal').classList.remove('open')">Understood</button>
   </div>
 </div>
 <script type="module">
@@ -1043,35 +1042,35 @@ const WORDS = [
 const CLUES = [
   null,
   'Breathe slowly onto the card to reveal the hidden inscription.',
-  'Count the candles on the lamp that cast more than one shadow.',
+  'Four shadows cast Roman numerals on the wall. Click them in ascending order, lowest to highest.',
   'The torn envelope hides a number — find it in the wax seal.',
   'The chalk symbols beneath the rug spell a word — trace them in order.',
-  'One portrait eye is different. Compare left and right carefully.',
-  'The library call numbers form initials — read them top to bottom.',
-  'Set the clock to the time shown in the portrait downstairs.',
-  'The musical notes map to letters A–G. Read the melody.',
-  'Wipe away the frost to reveal what is written behind.',
-  'The globe marks a city — find it on the map index.',
-  'The ash letters on the floor spell something when read correctly.',
-  'Align the telescope — when stars connect, read the constellation name.',
-  'Lift the chaise cushion — the note beneath gives the combination.',
-  'The cabinet dials must match the date on the letter inside.',
-  'Read the door plate carefully — the name is the answer.',
-  'Hold the candle to the manuscript to reveal the hidden ink.',
-  'Count the blots on the desk blotter — one for each letter.',
-  'The cipher wheel shifts letters by the number of candles lit.',
-  'Hold the mirror up — the backwards text will read forward.',
-  'Play the music box sequence — the notes spell a word.',
-  'Read the first letter of each line in the hidden letter.',
-  'The anatomy diagram labels body parts — first letters spell a name.',
-  'The underlined words in the newspaper form a phrase.',
-  'Read the garment labels left to right — they spell a name.',
-  'One jar label is not in English — that is the odd one out.',
-  'Place seeds on the perches that spell the bird\'s name.',
-  'Connect the stars in order — the constellation is the answer.',
-  'The safe combination is the year on the gravestone outside.',
-  'Arrange the evidence words in the order they were collected.',
-  'The first letter of each evidence word spells the final answer.',
+  'One portrait eye is different from the rest. Compare both sides carefully.',
+  'Some books lean away from the others on the shelf. Gather their opening letters, left to right.',
+  'Set the clock hands to the hour when ravens call at dusk.',
+  'The musical notes map to letters A through G. Read the melody left to right.',
+  'Wipe away the frost to uncover what has been written behind it.',
+  'The globe marks a precise location — name the city that lies at those coordinates.',
+  'The ash on the floor forms letters — read what is written there.',
+  'Align the telescope carefully. When the stars connect, recognise the shape they form.',
+  'The chaise holds more than cushions. Something lies beneath the surface.',
+  'The portrait\'s eyes were meant to be remembered. Three looks, three digits — trust what you saw in the parlour.',
+  'Whose study lies beyond this door? His surname has appeared elsewhere in the parlour.',
+  'Hold the candle close to the manuscript — warmth alone can reveal what was written in hidden ink.',
+  'Count the blots on the desk blotter — one for each letter of the hidden word.',
+  'The cipher wheel shifts each letter by a fixed number. Find the shift that makes the message readable.',
+  'Hold the mirror to the reversed inscription — the glass will set it right.',
+  'Play the sequence written in the music box — the notes unlock what is hidden inside.',
+  'Read the opening letter of each line in the concealed message, in order.',
+  'The anatomy diagram labels parts of the body. Take only the first letter of each label, in sequence.',
+  'The underlined words scattered through the newspaper belong together — read them in sequence.',
+  'The garments on the rail carry labels. Read the labels from left to right.',
+  'One jar label is written in a different language. That one does not belong.',
+  'Place the seed letters onto the perches to spell the name of the bird that watches.',
+  'The stars above have a pattern. Connect them in numbered order and name the shape you see.',
+  'The safe opens to a four-digit year. Look for it carved into something old and stone.',
+  'Lay out your six evidence words in the order you collected them. Something reveals itself.',
+  'You have gathered six words across two rooms. Look only at the opening letter of each.',
 ];
 
 // ── state ────────────────────────────────────────────────────────────────────
@@ -1079,6 +1078,9 @@ let currentSlide = 1;
 let solvedSlides = new Set();
 let chipsFilled  = new Set();
 let clueCount    = 0;
+const INITIAL_CLUE_CREDITS = 3;
+let clueCredits  = INITIAL_CLUE_CREDITS;
+let unlockedClueScenes = new Set();
 let timerSecs    = 0;
 let timerInterval= null;
 let timerRunning = false;
@@ -1118,6 +1120,8 @@ function buildSaveData(opts){
     fragmentsFound: [...chipsFilled].map(i => WORDS[i].letter),
     clueCount,
     cluesUsed: clueCount,
+    clueCredits,
+    unlockedClueScenes: [...unlockedClueScenes],
     timerSecs,
     elapsedSeconds: timerSecs,
     startTs,
@@ -1137,6 +1141,8 @@ window._ihApplyRestore = function(data){
   solvedSlides = new Set(data.solvedSlides||[]);
   chipsFilled  = new Set(data.chipsFilled||[]);
   clueCount    = data.clueCount||0;
+  unlockedClueScenes = new Set(data.unlockedClueScenes||[]);
+  clueCredits  = data.clueCredits ?? Math.max(0, INITIAL_CLUE_CREDITS - clueCount);
   timerSecs    = data.timerSecs||0;
   startTs      = data.startTs||null;
   solvedSlides.forEach(n => markSlideSolved(n, true));
@@ -1151,31 +1157,53 @@ function tryRestore(){
     const raw = localStorage.getItem(LS_KEY);
     if(raw){ window._ihApplyRestore(JSON.parse(raw)); return; }
   }catch(e){}
+  updateClueDisplay();
   activateSlide(1);
 }
 
 // ── clues ─────────────────────────────────────────────────────────────────────
 function updateClueDisplay(){
-  const el = document.getElementById('clueCount');
-  if(el) el.textContent = clueCount;
+  const btn = document.getElementById('clueBtn');
+  if(btn) btn.textContent = `Clue (${clueCredits})`;
 }
 
 window._ihUseClue = function(slideNum){
   const txt = CLUES[slideNum];
   if(!txt) return;
-  clueCount++;
-  updateClueDisplay();
-  saveProgress();
+
   const slideEl = document.getElementById(`slide-${slideNum}`);
+  const frame   = slideEl?.querySelector('.slide-frame');
+  let el = slideEl?.querySelector('.clue-reveal');
+
+  const alreadyUnlocked = unlockedClueScenes.has(slideNum);
+
+  if(!alreadyUnlocked){
+    if(clueCredits <= 0){
+      // No credits — show a styled denial message, no hint text
+      if(!el){
+        el = document.createElement('div');
+        el.className = 'clue-reveal';
+        if(frame) frame.appendChild(el);
+      }
+      el.style.cssText = 'background:rgba(14,11,18,0.92);border:1px solid rgba(143,166,189,0.35);border-radius:6px;padding:0.9rem 1.3rem;font-family:var(--font-body);font-style:italic;color:var(--mist);font-size:0.88rem;line-height:1.6;max-width:480px;margin:0.8rem auto;text-align:center;';
+      el.textContent = '✦ The room will not whisper for free. No clue credits remain.';
+      return;
+    }
+    // Spend one credit
+    clueCredits--;
+    clueCount++;
+    unlockedClueScenes.add(slideNum);
+    updateClueDisplay();
+    saveProgress();
+  }
+
   if(!slideEl) return;
-  let el = slideEl.querySelector('.clue-reveal');
   if(!el){
     el = document.createElement('div');
     el.className = 'clue-reveal';
-    el.style.cssText = 'background:rgba(14,11,18,0.92);border:1px solid rgba(226,87,43,0.5);border-radius:6px;padding:0.9rem 1.3rem;font-family:var(--font-body);font-style:italic;color:var(--ember);font-size:0.88rem;line-height:1.6;max-width:480px;margin:0.8rem auto;text-align:center;';
-    const frame = slideEl.querySelector('.slide-frame');
     if(frame) frame.appendChild(el);
   }
+  el.style.cssText = 'background:rgba(14,11,18,0.92);border:1px solid rgba(226,87,43,0.5);border-radius:6px;padding:0.9rem 1.3rem;font-family:var(--font-body);font-style:italic;color:var(--ember);font-size:0.88rem;line-height:1.6;max-width:480px;margin:0.8rem auto;text-align:center;';
   el.textContent = '✦ Hint: ' + txt;
 };
 
@@ -1768,25 +1796,25 @@ function initScene9(){
   }
 }
 
-// Scene 10 – Globe → VENICE (PLUME P) word chip
+// Scene 10 – Globe → ROME / ITALY (PLUME P) word chip
 let s10done=false;
 function initScene10(){
   if(s10done)return; s10done=true;
   const fb = document.getElementById('globeFeedback');
   document.getElementById('globeSubmit')?.addEventListener('click',()=>{
     const val=(document.getElementById('globeInput')?.value||'').trim().toUpperCase();
-    if(val==='VENICE'){
+    if(val==='ROME'||val==='ITALY'){
       markSlideSolved(10);
       fillChip(2);
-      flashSolved('✦ PLUME revealed — Venice marked on the globe');
+      flashSolved('✦ PLUME revealed — Rome marked on the globe');
       updateNextBtn();
-      if(fb){fb.textContent='The globe marks Venice — Venturi\'s home city.';fb.className='feedback ok';}
+      if(fb){fb.textContent='The pins mark Rome, 41°N 12°E — Venturi\'s city of study.';fb.className='feedback ok';}
     } else {
-      if(fb){fb.textContent='Find the pin on the globe and name the city.';fb.className='feedback err';}
+      if(fb){fb.textContent='Look at the coordinates on the globe and name the city they mark.';fb.className='feedback err';}
     }
   });
   if(solvedSlides.has(10)){
-    if(fb){fb.textContent='The globe marks Venice — Venturi\'s home city.';fb.className='feedback ok';}
+    if(fb){fb.textContent='The pins mark Rome, 41°N 12°E — Venturi\'s city of study.';fb.className='feedback ok';}
   }
 }
 
