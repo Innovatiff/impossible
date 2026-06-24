@@ -1030,6 +1030,14 @@ window._ihClearProgress = async function() {
   try { localStorage.removeItem(LS_KEY); } catch(e) {}
 };
 
+function deliver(data) {
+  if (window._ihApplyRestore) {
+    window._ihApplyRestore(data);
+  } else {
+    window._ihPendingRestore = data;
+  }
+}
+
 onAuthStateChanged(auth, async (user) => {
   window._ihUser = user;
   const el = document.getElementById('userDisplay');
@@ -1039,7 +1047,7 @@ onAuthStateChanged(auth, async (user) => {
     try {
       const snap = await getDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID));
       if (snap.exists()) {
-        if (window._ihApplyRestore) window._ihApplyRestore(snap.data());
+        deliver(snap.data());
       } else {
         /* No Firestore data — check localStorage (guest→user migration) */
         try {
@@ -1053,7 +1061,7 @@ onAuthStateChanged(auth, async (user) => {
                 { ...localData, updatedAt: serverTimestamp() },
                 { merge: true }
               );
-              if (window._ihApplyRestore) window._ihApplyRestore(localData);
+              deliver(localData);
             }
           }
         } catch(e) {}
@@ -1062,7 +1070,7 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     try {
       const raw = localStorage.getItem(LS_KEY);
-      if (raw && window._ihApplyRestore) window._ihApplyRestore(JSON.parse(raw));
+      if (raw) deliver(JSON.parse(raw));
     } catch(e) {}
   }
 });
@@ -1156,6 +1164,7 @@ function startTimer(){
     if(el) el.textContent = formatTime(timerSecs);
   }, 1000);
 }
+window.startTimer = startTimer; // exposed for inline onclick
 function stopTimer(){
   clearInterval(timerInterval);
   timerRunning = false;
@@ -1213,6 +1222,11 @@ window._ihApplyRestore = function(data){
   activateSlide(data.currentSlide||1, true);
   if(timerSecs > 0) startTimer();
 };
+
+if(window._ihPendingRestore){
+  window._ihApplyRestore(window._ihPendingRestore);
+  window._ihPendingRestore = null;
+}
 
 function tryRestore(){
   // Auth module handles restore via onAuthStateChanged.
