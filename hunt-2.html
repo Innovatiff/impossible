@@ -1192,9 +1192,9 @@ function buildSaveData(opts){
     timerSecs,
     elapsedSeconds: timerSecs,
     completed: isCompleted,
-    finalScore: isCompleted ? Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500) : undefined,
-    bestScore:  isCompleted ? Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500) : undefined,
-    runScore:   isCompleted ? Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500) : undefined,
+    finalScore: isCompleted ? Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500) : null,
+    bestScore:  isCompleted ? Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500) : null,
+    runScore:   isCompleted ? Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500) : null,
   };
 }
 function saveProgress(opts){
