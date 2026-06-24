@@ -993,7 +993,7 @@
 <script type="module">
 import { initializeApp }               from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, deleteDoc, collection, serverTimestamp, waitForPendingWrites }
+import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, deleteField, collection, serverTimestamp, waitForPendingWrites }
   from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
 
 const HUNT_ID = 'hunt-2';
@@ -1030,29 +1030,37 @@ window._ihSave = async function(data) {
   }
 };
 
-/* Clear: used by repeatHunt — delete doc so reload starts fresh */
+/* Clear: write clean doc with restarted:true — setDoc updates local cache immediately
+   so the next getDoc on reload sees the blank state, not the old completed one */
 window._ihClearProgress = async function() {
   if (window._ihUser) {
     try {
-      await deleteDoc(doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID));
-      try { await waitForPendingWrites(db); } catch(we) { console.warn('waitForPendingWrites:', we); }
-    } catch(e) { console.error('_ihClearProgress Firestore failed:', e); }
+      await setDoc(doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID), {
+        huntId: HUNT_ID,
+        restarted: true,
+        currentSlide: 1,
+        solvedSlides: [],
+        chipsFilled: [],
+        clueCount: 0,
+        timerSecs: 0,
+        completed: false,
+        updatedAt: serverTimestamp(),
+      });
+      try { await waitForPendingWrites(db); } catch(we) { console.warn('[hunt-2] waitForPendingWrites:', we); }
+    } catch(e) { console.error('[hunt-2] _ihClearProgress Firestore failed:', e); }
   }
   try { localStorage.removeItem(LS_KEY); } catch(e) {}
 };
 
 const IS_RESTART = new URLSearchParams(location.search).has('r');
-const LS_RESTART_KEY = 'ih_restart_' + HUNT_ID;
 
 function deliver(data) {
-  const pendingRestart = IS_RESTART || !!localStorage.getItem(LS_RESTART_KEY);
-  if (pendingRestart) {
-    console.log('[hunt-2] restart flag set — skipping restore, deleting stale Firestore doc');
-    try { localStorage.removeItem(LS_RESTART_KEY); } catch(e) {}
-    /* Also delete the Firestore doc now in case the earlier delete didn't propagate */
-    if (window._ihUser) {
-      deleteDoc(doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID))
-        .catch(e => console.warn('[hunt-2] post-restart deleteDoc failed:', e));
+  /* restarted:true is written by _ihClearProgress into Firestore — skip restore and clear the flag */
+  if (IS_RESTART || data.restarted) {
+    console.log('[hunt-2] restart detected — skipping restore');
+    if (data.restarted && window._ihUser) {
+      updateDoc(doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID), { restarted: deleteField() })
+        .catch(e => console.warn('[hunt-2] clear restart marker failed:', e));
     }
     return;
   }
@@ -2992,7 +3000,6 @@ window.repeatHunt = function(){
   if(!confirm('Start Hunt 2 from the beginning? Your current progress will be cleared.')) return;
   const doReload = () => {
     try { localStorage.removeItem(LS_KEY); } catch(e){}
-    try { localStorage.setItem('ih_restart_' + HUNT_ID, '1'); } catch(e){}
     location.href = location.pathname + '?r=1';
   };
   if(window._ihClearProgress){
