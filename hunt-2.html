@@ -2192,11 +2192,74 @@ function initScene19(){
   if(solvedSlides.has(19) && fb){fb.textContent='The mirror text reads: THE SEVENTH SEAL.';fb.className='feedback ok';}
 }
 
-// Scene 20 – Music box sequence (ECHO E) E,C,H,O → ECHO word chip
+// Scene 20 – Music sheets click → E C H O → ECHO word chip
 let s20done=false;
 function initScene20(){
   if(s20done)return; s20done=true;
-  const fb = document.getElementById('sheetFeedback');
+  const row      = document.getElementById('sheetRow');
+  const seqEl    = document.getElementById('sheetSeq');
+  const ansArea  = document.getElementById('sheetAnswerArea');
+  const fb       = document.getElementById('sheetFeedback');
+  if(!row) return;
+
+  const NOTES = ['E','C','H','O'];
+  const LABELS = ['Andante','Cantabile','Harmonico','Ostinato'];
+  let clicked = [];
+
+  NOTES.forEach((note, idx)=>{
+    const card = document.createElement('div');
+    card.style.cssText = 'width:72px;height:90px;border:1px solid rgba(212,167,70,0.3);border-radius:6px;background:rgba(235,217,180,0.05);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.3rem;cursor:pointer;transition:all 0.2s;user-select:none;';
+    // Mini staff
+    const staff = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    staff.setAttribute('viewBox','0 0 60 40');
+    staff.style.cssText='width:56px;height:36px;pointer-events:none;';
+    // Staff lines
+    for(let i=0;i<5;i++){
+      const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+      l.setAttribute('x1','4'); l.setAttribute('x2','56');
+      const y=8+i*6; l.setAttribute('y1',y); l.setAttribute('y2',y);
+      l.setAttribute('stroke','rgba(235,217,180,0.35)'); l.setAttribute('stroke-width','0.8');
+      staff.appendChild(l);
+    }
+    // Note head (circled) at different heights per note
+    const noteY = [14, 17, 20, 14][idx];
+    const circle=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+    circle.setAttribute('cx','30'); circle.setAttribute('cy',noteY);
+    circle.setAttribute('rx','5'); circle.setAttribute('ry','3.5');
+    circle.setAttribute('fill','rgba(212,167,70,0.0)');
+    circle.setAttribute('stroke','rgba(212,167,70,0.6)'); circle.setAttribute('stroke-width','1.2');
+    staff.appendChild(circle);
+    // Ring around circled note
+    const ring=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    ring.setAttribute('cx','30'); ring.setAttribute('cy',noteY);
+    ring.setAttribute('r','7'); ring.setAttribute('fill','none');
+    ring.setAttribute('stroke','rgba(226,87,43,0.5)'); ring.setAttribute('stroke-width','1');
+    staff.appendChild(ring);
+    card.appendChild(staff);
+    // Label
+    const lbl = document.createElement('div');
+    lbl.style.cssText='font-family:var(--font-mono);font-size:7px;color:rgba(212,167,70,0.4);text-align:center;letter-spacing:0.04em;';
+    lbl.textContent = LABELS[idx];
+    card.appendChild(lbl);
+
+    card.addEventListener('click',()=>{
+      if(solvedSlides.has(20)) return;
+      if(clicked.includes(idx)) return;
+      clicked.push(idx);
+      card.style.borderColor='rgba(212,167,70,0.7)';
+      card.style.background='rgba(212,167,70,0.08)';
+      // Update sequence display
+      const shown = clicked.map(i=>NOTES[i]);
+      if(seqEl) seqEl.textContent = shown.join(' · ') + (shown.length<4?' · _'.repeat(4-shown.length):'');
+      if(clicked.length===4 && ansArea) ansArea.style.display='flex';
+    });
+
+    row.appendChild(card);
+  });
+
+  // Update seqEl display helper
+  if(seqEl) seqEl.textContent = '_ · _ · _ · _';
+
   document.getElementById('sheetSubmit')?.addEventListener('click',()=>{
     const val=(document.getElementById('sheetInput')?.value||'').trim().toUpperCase();
     if(val==='ECHO'){
@@ -2204,121 +2267,312 @@ function initScene20(){
       fillChip(4);
       flashSolved('✦ ECHO revealed — the music fades');
       updateNextBtn();
-      if(fb){fb.textContent='The music box plays E-C-H-O.';fb.className='feedback ok';}
+      if(fb){fb.textContent='The four sheets play E·C·H·O.';fb.className='feedback ok';}
     } else {
-      if(fb){fb.textContent='Play the sequence and note each musical letter.';fb.className='feedback err';}
+      if(fb){fb.textContent='Read the circled note letter on each sheet, left to right.';fb.className='feedback err';}
     }
   });
+
   if(solvedSlides.has(20)){
-    if(fb){fb.textContent='The music box plays E-C-H-O.';fb.className='feedback ok';}
+    NOTES.forEach((_,i)=>clicked.push(i));
+    row.querySelectorAll('div').forEach(c=>{ c.style.borderColor='rgba(212,167,70,0.7)'; c.style.background='rgba(212,167,70,0.08)'; });
+    if(seqEl) seqEl.textContent='E · C · H · O';
+    if(ansArea) ansArea.style.display='flex';
+    if(fb){fb.textContent='The four sheets play E·C·H·O.';fb.className='feedback ok';}
   }
 }
 
-// Scene 21 – Hidden letter acrostic → VENTI
+// Scene 21 – Sealed letters hold-to-open → first letters spell VENTI
 let s21done=false;
 function initScene21(){
   if(s21done)return; s21done=true;
-  const fb = document.getElementById('letterBoxFeedback');
+  const row    = document.getElementById('letterBoxRow');
+  const phrase = document.getElementById('letterBoxPhrase');
+  const ans    = document.getElementById('letterBoxAnswer');
+  const fb     = document.getElementById('letterBoxFeedback');
+  if(!row) return;
+
+  const LINES = [
+    {letter:'V', text:'Venturi has carried this secret since his youth in Rome.'},
+    {letter:'E', text:'Each room holds one fragment of the truth he concealed.'},
+    {letter:'N', text:'No soul must learn what lies sealed in his private chamber.'},
+    {letter:'T', text:'The cipher was the armour he wore against the world.'},
+    {letter:'I', text:'I leave this for the one patient enough to find it.'},
+  ];
+  let opened = new Set();
+
+  LINES.forEach((entry, idx)=>{
+    const card = document.createElement('div');
+    card.style.cssText='border:1px solid rgba(212,167,70,0.25);border-radius:6px;padding:0.8rem 0.6rem;background:rgba(14,11,18,0.7);min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.4rem;cursor:pointer;user-select:none;position:relative;overflow:hidden;';
+
+    const seal = document.createElement('div');
+    seal.style.cssText='width:32px;height:32px;border-radius:50%;background:rgba(226,87,43,0.3);border:2px solid rgba(226,87,43,0.5);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:0.6rem;color:var(--ember);transition:all 0.3s;';
+    seal.textContent='SEAL';
+
+    const prog = document.createElement('div');
+    prog.style.cssText='position:absolute;bottom:0;left:0;height:3px;width:0%;background:var(--gold);transition:width 0.1s linear;';
+
+    const txt = document.createElement('div');
+    txt.style.cssText='font-family:var(--font-body);font-style:italic;font-size:0.72rem;color:var(--parchment-dim);line-height:1.5;text-align:center;display:none;padding:0 0.2rem;';
+    txt.textContent=entry.text;
+
+    card.appendChild(seal); card.appendChild(txt); card.appendChild(prog);
+    row.appendChild(card);
+
+    let holdTimer=null, holdPct=0;
+    function startHold(){
+      if(opened.has(idx)) return;
+      holdTimer=setInterval(()=>{
+        holdPct=Math.min(100,holdPct+5);
+        prog.style.width=holdPct+'%';
+        if(holdPct>=100){ clearInterval(holdTimer); revealCard(); }
+      },80);
+    }
+    function stopHold(){ clearInterval(holdTimer); if(!opened.has(idx)){ holdPct=0; prog.style.width='0%'; } }
+    function revealCard(){
+      opened.add(idx);
+      seal.style.display='none'; txt.style.display='block';
+      card.style.borderColor='rgba(212,167,70,0.5)';
+      if(opened.size===LINES.length && ans) ans.style.display='flex';
+    }
+
+    card.addEventListener('mousedown', startHold);
+    card.addEventListener('mouseup',   stopHold);
+    card.addEventListener('mouseleave',stopHold);
+    card.addEventListener('touchstart',e=>{e.preventDefault();startHold();},{passive:false});
+    card.addEventListener('touchend',  stopHold);
+
+    if(solvedSlides.has(21)){ opened.add(idx); seal.style.display='none'; txt.style.display='block'; }
+  });
+
+  if(phrase) phrase.textContent='Read the first letter of each line in order.';
+
   document.getElementById('letterBoxSubmit')?.addEventListener('click',()=>{
     const val=(document.getElementById('letterBoxInput')?.value||'').trim().toUpperCase();
     if(val==='VENTI'||val==='VENTURI'){
       markSlideSolved(21);
-      flashSolved('✦ The letter names Venti');
+      flashSolved('✦ The letters name Venti');
       updateNextBtn();
-      if(fb){fb.textContent='The first letters spell V-E-N-T-I.';fb.className='feedback ok';}
+      if(fb){fb.textContent='The opening letters spell V·E·N·T·I.';fb.className='feedback ok';}
     } else {
-      if(fb){fb.textContent='Read the first letter of each line in the hidden letter.';fb.className='feedback err';}
+      if(fb){fb.textContent='Read the first letter of each opened card, top-left to bottom-right.';fb.className='feedback err';}
     }
   });
-  if(solvedSlides.has(21) && fb){fb.textContent='The first letters spell V-E-N-T-I.';fb.className='feedback ok';}
+
+  if(solvedSlides.has(21)){
+    if(ans) ans.style.display='flex';
+    if(fb){fb.textContent='The opening letters spell V·E·N·T·I.';fb.className='feedback ok';}
+  }
 }
 
-// Scene 22 – Anatomy labels → VENTI → Venturi
+// Scene 22 – Anatomy click sequence 1→2→3→4→5 → first letters V·E·N·T·I → answer area
 let s22done=false;
 function initScene22(){
   if(s22done)return; s22done=true;
-  const fb = document.getElementById('anatomyFeedback');
+  const fb    = document.getElementById('anatomyFeedback');
+  const ansEl = document.getElementById('anatomyAnswer');
+  const svg   = document.getElementById('anatomySvg');
+  let seq=[], needed=[1,2,3,4,5];
+
+  svg?.querySelectorAll('.organ').forEach(organ=>{
+    organ.addEventListener('click',()=>{
+      if(solvedSlides.has(22)) return;
+      const n = Number(organ.dataset.num);
+      if(n !== needed[seq.length]){
+        seq=[];
+        svg.querySelectorAll('.organ circle').forEach(c=>c.setAttribute('fill','rgba(226,87,43,0.15)'));
+        if(fb){fb.textContent='Wrong order — start from organ 1.';fb.className='feedback err';}
+        return;
+      }
+      seq.push(n);
+      organ.querySelector('circle')?.setAttribute('fill','rgba(226,87,43,0.45)');
+      if(seq.length===5){
+        if(ansEl) ansEl.style.display='flex';
+        if(fb){fb.textContent='All five circled. Read their first letters: V·E·N·T·I';fb.className='feedback ok';}
+      } else {
+        if(fb){fb.textContent=`${seq.length} of 5 — next: organ ${needed[seq.length]}`;fb.className='feedback ok';}
+      }
+    });
+  });
+
   document.getElementById('anatomySubmit')?.addEventListener('click',()=>{
     const val=(document.getElementById('anatomyInput')?.value||'').trim().toUpperCase();
     if(val==='VENTI'||val==='VENTURI'){
       markSlideSolved(22);
       flashSolved('✦ The anatomy names Venturi');
       updateNextBtn();
-      if(fb){fb.textContent='The labels: Vertex, Extensor, Nodus, Tibia, Iris → V.E.N.T.I.';fb.className='feedback ok';}
+      if(fb){fb.textContent='Vertex · Extensor · Nodus · Tibia · Iris → V·E·N·T·I';fb.className='feedback ok';}
     } else {
-      if(fb){fb.textContent='Read the first letter of each anatomical label.';fb.className='feedback err';}
+      if(fb){fb.textContent='Take the first letter of each organ label in numbered order.';fb.className='feedback err';}
     }
   });
-  if(solvedSlides.has(22) && fb){fb.textContent='The labels spell V.E.N.T.I.';fb.className='feedback ok';}
+
+  if(solvedSlides.has(22)){
+    svg?.querySelectorAll('.organ circle').forEach(c=>c.setAttribute('fill','rgba(226,87,43,0.45)'));
+    if(ansEl) ansEl.style.display='flex';
+    if(fb){fb.textContent='Vertex · Extensor · Nodus · Tibia · Iris → V·E·N·T·I';fb.className='feedback ok';}
+  }
 }
 
-// Scene 23 – Newspaper underlines → "MEET AT MIDNIGHT"
+// Scene 23 – Newspaper underlines — build content, click 4 words → auto-solve
 let s23done=false;
 function initScene23(){
   if(s23done)return; s23done=true;
-  const fb = document.getElementById('newsFeedback');
-  document.getElementById('newsSubmit')?.addEventListener('click',()=>{
-    const val=(document.getElementById('newsInput')?.value||'').trim().toUpperCase();
-    if(val==='MEET AT MIDNIGHT'||val==='MIDNIGHT'){
-      markSlideSolved(23);
-      flashSolved('✦ Meet at midnight');
-      updateNextBtn();
-      if(fb){fb.textContent='The underlined words read: MEET AT MIDNIGHT.';fb.className='feedback ok';}
-    } else {
-      if(fb){fb.textContent='Find the underlined words and read them in order.';fb.className='feedback err';}
-    }
+  const col = document.getElementById('newspaperCol');
+  const fb  = document.getElementById('newsFeedback');
+  if(!col) return;
+
+  // Article with 4 underlined target words woven in naturally
+  const sentences = [
+    {t:'The evening brought a peculiar stillness to the canal.'},
+    {t:'Residents noted that strangers had arrived by gondola.', ul:'MEET', w:'MEET'},
+    {t:'A lantern burned late in the merchant\'s upper window.'},
+    {t:'Witnesses could not confirm the hour of departure.', ul:'AT', w:'AT'},
+    {t:'The gazette correspondent pressed his source for details.'},
+    {t:'He was told only to return when the bells fell silent.', ul:'MIDNIGHT', w:'MIDNIGHT'},
+    {t:'Nothing further was recorded in the parish register.'},
+    {t:'The matter was closed, the parties having agreed to proceed', ul:'ALONE', w:'ALONE'},
+    {t:'without witnesses and without record.'},
+  ];
+
+  const TARGET = ['MEET','AT','MIDNIGHT','ALONE'];
+  let clicked = new Set();
+
+  sentences.forEach(s=>{
+    const p = document.createElement('p');
+    p.style.margin='0 0 0.4rem';
+    if(s.ul){
+      // split sentence to insert underlined word
+      const idx = s.t.indexOf(s.ul);
+      if(idx>=0){
+        p.appendChild(document.createTextNode(s.t.slice(0,idx)));
+        const span=document.createElement('span');
+        span.className='underlined';
+        span.dataset.word=s.w;
+        span.textContent=s.ul;
+        span.addEventListener('click',()=>{
+          if(clicked.has(s.w)) return;
+          span.classList.add('clicked');
+          clicked.add(s.w);
+          if(clicked.size===TARGET.length){
+            markSlideSolved(23);
+            flashSolved('✦ Meet at midnight — alone');
+            updateNextBtn();
+            if(fb){fb.textContent='The underlined words: MEET · AT · MIDNIGHT · ALONE.';fb.className='feedback ok';}
+          } else {
+            if(fb){fb.textContent=`${clicked.size} of 4 underlined words found.`;fb.className='feedback ok';}
+          }
+        });
+        p.appendChild(span);
+        p.appendChild(document.createTextNode(s.t.slice(idx+s.ul.length)));
+      } else { p.textContent=s.t; }
+    } else { p.textContent=s.t; }
+    col.appendChild(p);
   });
-  if(solvedSlides.has(23) && fb){fb.textContent='The underlined words: MEET AT MIDNIGHT.';fb.className='feedback ok';}
+
+  if(solvedSlides.has(23)){
+    col.querySelectorAll('.underlined').forEach(s=>s.classList.add('clicked'));
+    if(fb){fb.textContent='The underlined words: MEET · AT · MIDNIGHT · ALONE.';fb.className='feedback ok';}
+  }
 }
 
-// Scene 24 – Wardrobe garment labels → GIACOMO
+// Scene 24 – Wardrobe → build garments G·I·A·C·O·M·O → type GIACOMO
 let s24done=false;
 function initScene24(){
   if(s24done)return; s24done=true;
-  const fb = document.getElementById('wardrobeFeedback');
-  const doorL = document.getElementById('wardrobeDoorL');
-  const doorR = document.getElementById('wardrobeDoorR');
-  const inner = document.getElementById('wardrobeInner');
+  const fb     = document.getElementById('wardrobeFeedback');
+  const doorL  = document.getElementById('wardrobeDoorL');
+  const doorR  = document.getElementById('wardrobeDoorR');
+  const inner  = document.getElementById('wardrobeInner');
+  const gRow   = document.getElementById('garmentRow');
+  const ansArea= document.getElementById('wardrobeAnswer');
 
-  if(doorL) doorL.addEventListener('click',()=>{ doorL.classList.add('open'); if(doorR) doorR.classList.add('open'); if(inner) inner.style.display='flex'; });
+  const LETTERS='GIACOMO'.split('');
+  LETTERS.forEach(l=>{
+    const g=document.createElement('div');
+    g.className='garment';
+    const span=document.createElement('span');
+    span.className='mono-letter';
+    span.textContent=l;
+    g.appendChild(span);
+    gRow?.appendChild(g);
+  });
+
+  function openDoors(){
+    if(doorL) doorL.style.transform='rotateY(-80deg)';
+    if(doorR) doorR.style.transform='rotateY(80deg)';
+    if(inner) inner.style.display='flex';
+    setTimeout(()=>{ gRow?.querySelectorAll('.garment').forEach(g=>g.classList.add('revealed')); }, 400);
+    if(ansArea) setTimeout(()=>ansArea.style.display='flex', 600);
+  }
+
+  doorL?.addEventListener('click', openDoors);
+  doorR?.addEventListener('click', openDoors);
 
   document.getElementById('wardrobeSubmit')?.addEventListener('click',()=>{
     const val=(document.getElementById('wardrobeInput')?.value||'').trim().toUpperCase();
     if(val==='GIACOMO'){
       markSlideSolved(24);
-      flashSolved('✦ GIACOMO — his name in cloth');
+      flashSolved('✦ GIACOMO — his given name');
       updateNextBtn();
-      if(fb){fb.textContent='The garment labels spell G-I-A-C-O-M-O.';fb.className='feedback ok';}
+      if(fb){fb.textContent='The monograms spell G·I·A·C·O·M·O — Giacomo.';fb.className='feedback ok';}
     } else {
-      if(fb){fb.textContent='Open the wardrobe and read the garment tag letters in order.';fb.className='feedback err';}
+      if(fb){fb.textContent='Read each garment tag letter from left to right.';fb.className='feedback err';}
     }
   });
+
   if(solvedSlides.has(24)){
-    if(doorL) doorL.classList.add('open');
-    if(doorR) doorR.classList.add('open');
-    if(inner) inner.style.display='flex';
-    if(fb){fb.textContent='The garment labels spell G-I-A-C-O-M-O.';fb.className='feedback ok';}
+    openDoors();
+    if(fb){fb.textContent='The monograms spell G·I·A·C·O·M·O — Giacomo.';fb.className='feedback ok';}
   }
 }
 
-// Scene 25 – Jars anomaly → "Carta" (Italian for paper/charter)
+// Scene 25 – Specimen jars → build 8 jars, one Italian label → click odd one out
 let s25done=false;
 function initScene25(){
   if(s25done)return; s25done=true;
-  const fb = document.getElementById('jarsFeedback');
-  document.querySelectorAll('#jarsRow .jar').forEach(jar=>{
+  const row = document.getElementById('jarsRow');
+  const fb  = document.getElementById('jarsFeedback');
+  if(!row) return;
+
+  const JARS = [
+    {label:'Sulphur',   odd:false},
+    {label:'Mercury',   odd:false},
+    {label:'Arsenic',   odd:false},
+    {label:'Carta',     odd:true },   // Italian for "paper/document"
+    {label:'Copper',    odd:false},
+    {label:'Lead',      odd:false},
+    {label:'Borax',     odd:false},
+    {label:'Saltpetre', odd:false},
+  ];
+
+  JARS.forEach(j=>{
+    const jar=document.createElement('div');
+    jar.className='jar'+(j.odd?' anomaly':'');
+    jar.dataset.odd=j.odd;
+    const lbl=document.createElement('div');
+    lbl.className='jar-label';
+    lbl.textContent=j.label;
+    jar.appendChild(lbl);
     jar.addEventListener('click',()=>{
-      if(jar.dataset.odd==='true'){
+      if(solvedSlides.has(25)) return;
+      if(j.odd){
         markSlideSolved(25);
         flashSolved('✦ Carta — the Italian outlier');
         updateNextBtn();
-        if(fb){fb.textContent='"Carta" is the only Italian label — it means paper.';fb.className='feedback ok';}
+        jar.style.borderColor='var(--gold)';
+        if(fb){fb.textContent='"Carta" is Italian for paper — it does not belong with the chemicals.';fb.className='feedback ok';}
       } else {
-        if(fb){fb.textContent='One jar is labelled differently — find the odd one out.';fb.className='feedback err';}
+        if(fb){fb.textContent='One label is not in the same language as the others.';fb.className='feedback err';}
       }
     });
+    row.appendChild(jar);
   });
-  if(solvedSlides.has(25) && fb){fb.textContent='"Carta" is the only Italian label.';fb.className='feedback ok';}
+
+  if(solvedSlides.has(25)){
+    row.querySelectorAll('.jar.anomaly').forEach(j=>j.style.borderColor='var(--gold)');
+    if(fb){fb.textContent='"Carta" is Italian for paper — it does not belong.';fb.className='feedback ok';}
+  }
 }
 
 // Scene 26 – Raven perch puzzle (RAVEN R) — build perches dynamically
