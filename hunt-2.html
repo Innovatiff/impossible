@@ -1905,23 +1905,89 @@ function initScene11(){
   }
 }
 
-// Scene 12 – Telescope / stars → ORION
+// Scene 12 – Telescope focus + star sequence A→C→E→B→D → auto-solve ORION
 let s12done=false;
 function initScene12(){
   if(s12done)return; s12done=true;
-  const fb = document.getElementById('teleFeedback');
-  document.getElementById('teleSubmit')?.addEventListener('click',()=>{
-    const val=(document.getElementById('teleInput')?.value||'').trim().toUpperCase();
-    if(val==='ORION'){
-      markSlideSolved(12);
-      flashSolved('✦ Orion — the hunter in the sky');
-      updateNextBtn();
-      if(fb){fb.textContent='The stars form the constellation Orion.';fb.className='feedback ok';}
-    } else {
-      if(fb){fb.textContent='Focus the telescope and trace the star pattern.';fb.className='feedback err';}
+  const fb       = document.getElementById('teleFeedback');
+  const inner    = document.getElementById('telescopeInner');
+  const slider   = document.getElementById('focusSlider');
+  const focusPct = document.getElementById('focusPct');
+  const linesEl  = document.getElementById('starLines');
+
+  const TARGET = ['A','C','E','B','D'];
+  let seq = [];
+  let focusVal = 0;
+
+  // Wire focus slider
+  function applyFocus(v){
+    focusVal = v;
+    const blur = Math.max(0, 8 - v*0.08);
+    if(inner) inner.style.filter = `blur(${blur.toFixed(1)}px)`;
+    if(focusPct) focusPct.textContent = v + '%';
+  }
+  slider?.addEventListener('input', e => applyFocus(Number(e.target.value)));
+
+  // Draw lines between clicked stars in order
+  function drawLines(seq){
+    if(!linesEl) return;
+    linesEl.innerHTML = '';
+    const stars = { A:{x:70,y:90}, B:{x:190,y:70}, C:{x:130,y:140}, D:{x:210,y:200}, E:{x:60,y:210} };
+    for(let i=1;i<seq.length;i++){
+      const a=stars[seq[i-1]], b=stars[seq[i]];
+      if(!a||!b) continue;
+      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',a.x+10); line.setAttribute('y1',a.y+10);
+      line.setAttribute('x2',b.x+10); line.setAttribute('y2',b.y+10);
+      line.setAttribute('stroke','rgba(212,167,70,0.6)');
+      line.setAttribute('stroke-width','1.5');
+      linesEl.appendChild(line);
     }
+  }
+
+  // Wire star clicks
+  document.querySelectorAll('#slide-12 .tele-star').forEach(star=>{
+    star.addEventListener('click',()=>{
+      if(solvedSlides.has(12)) return;
+      if(focusVal < 60){
+        if(fb){fb.textContent='Adjust the focus to at least 60% first.';fb.className='feedback err';}
+        return;
+      }
+      const s = star.dataset.star;
+      const expected = TARGET[seq.length];
+      if(s !== expected){
+        // Wrong star — reset
+        seq = [];
+        drawLines(seq);
+        document.querySelectorAll('#slide-12 .tele-star').forEach(st=>st.style.background='rgba(212,167,70,0.1)');
+        if(fb){fb.textContent=`Wrong order. Start again from A.`;fb.className='feedback err';}
+        return;
+      }
+      seq.push(s);
+      star.style.background = 'rgba(212,167,70,0.45)';
+      drawLines(seq);
+      if(seq.length === TARGET.length){
+        // Complete — auto-solve
+        markSlideSolved(12);
+        flashSolved('✦ Orion — the hunter in the sky');
+        updateNextBtn();
+        if(fb){fb.textContent='The stars form the constellation Orion.';fb.className='feedback ok';}
+      } else {
+        if(fb){fb.textContent=`${seq.length} / ${TARGET.length} — next: ${TARGET[seq.length]}`;fb.className='feedback ok';}
+      }
+    });
   });
-  if(solvedSlides.has(12) && fb){fb.textContent='The stars form the constellation Orion.';fb.className='feedback ok';}
+
+  if(solvedSlides.has(12)){
+    applyFocus(65);
+    if(slider) slider.value = 65;
+    TARGET.forEach(s=>{
+      const el=document.getElementById('star'+s);
+      if(el) el.style.background='rgba(212,167,70,0.45)';
+    });
+    drawLines(TARGET);
+    if(fb){fb.textContent='The stars form the constellation Orion.';fb.className='feedback ok';}
+  }
 }
 
 // Scene 13 – Chaise cushion → auto-solve (note points to portrait eyes)
