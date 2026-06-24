@@ -2732,6 +2732,11 @@ function initScene29(){
       }
     });
   });
+  // If all chips already earned before reaching this scene, auto-solve immediately
+  if(chipsFilled.size===6&&!solvedSlides.has(29)){
+    if(letters){letters.style.display='block';letters.textContent=WORDS.map(x=>x.letter).join(' · ');}
+    markSlideSolved(29); flashSolved('✦ All evidence collected'); updateNextBtn();
+  }
   if(solvedSlides.has(29)){
     if(letters){letters.style.display='block';letters.textContent=WORDS.map(x=>x.letter).join(' · ');}
   }
