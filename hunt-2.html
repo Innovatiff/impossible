@@ -1,0 +1,2113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hunt 02: The Whispering Page — Impossible Hunt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { overflow-x: hidden; }
+    .hunt-wrap { min-height:100vh; padding-top:clamp(60px,8vw,72px); display:flex; flex-direction:column; }
+    .hunt-progress-rail { height:3px; background:rgba(212,167,70,0.1); position:relative; }
+    .hunt-progress-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--ember),var(--gold)); transition:width 0.6s ease; box-shadow:0 0 8px rgba(212,167,70,0.5); }
+    .hunt-meta { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; padding:0.75rem clamp(1rem,4vw,2.5rem); background:var(--ink-mid); border-bottom:1px solid rgba(212,167,70,0.12); }
+    .hunt-title-block { display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; }
+    .hunt-number { font-family:var(--font-mono); font-size:0.62rem; color:var(--gold); opacity:0.7; letter-spacing:0.16em; text-transform:uppercase; }
+    .hunt-name { font-family:var(--font-display); font-size:clamp(0.85rem,2.5vw,1.05rem); font-weight:600; color:var(--parchment); letter-spacing:0.04em; }
+    .hunt-controls { display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; }
+    .timer-display { font-family:var(--font-mono); font-size:1rem; color:var(--gold); letter-spacing:0.1em; background:rgba(14,11,18,0.8); padding:0.28rem 0.7rem; border:1px solid rgba(212,167,70,0.2); border-radius:3px; min-width:72px; text-align:center; }
+    .clue-btn { font-family:var(--font-mono); font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.38rem 0.9rem; border:1px solid rgba(226,87,43,0.4); border-radius:var(--radius-seal); background:transparent; color:var(--ember); cursor:pointer; transition:all var(--transition); }
+    .clue-btn:hover { background:rgba(226,87,43,0.1); border-color:var(--ember); }
+    .room-label { font-family:var(--font-mono); font-size:0.58rem; color:var(--mist); opacity:0.6; letter-spacing:0.12em; white-space:nowrap; }
+    .slide-counter { font-family:var(--font-mono); font-size:0.62rem; color:var(--parchment-faint); opacity:0.55; letter-spacing:0.12em; white-space:nowrap; }
+    .slide-stage { flex:1; position:relative; overflow:hidden; }
+    .slide { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:clamp(2rem,5vw,3.5rem) clamp(1rem,4vw,2.5rem) 6rem; overflow-y:auto; opacity:0; pointer-events:none; transform:translateX(60px); transition:opacity 0.45s ease,transform 0.45s ease; }
+    .slide.active { opacity:1; pointer-events:auto; transform:translateX(0); }
+    .slide.exit-left { opacity:0; transform:translateX(-60px); pointer-events:none; }
+    @media (prefers-reduced-motion:reduce) { .slide { transition:opacity 0.01ms; transform:none !important; } * { animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
+    .slide-frame { width:100%; max-width:860px; display:flex; flex-direction:column; gap:1.6rem; }
+    .slide-header { text-align:center; }
+    .slide-eyebrow { font-family:var(--font-mono); font-size:0.65rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--gold); opacity:0.7; display:block; margin-bottom:0.5rem; }
+    .slide-title { font-size:clamp(1.5rem,4vw,2.4rem); margin-bottom:0.5rem; }
+    .slide-desc { font-style:italic; color:var(--parchment-dim); font-size:1rem; max-width:560px; margin:0 auto; line-height:1.65; }
+    .slide-nav { position:fixed; bottom:0; left:0; right:0; display:flex; align-items:center; justify-content:space-between; padding:0.8rem clamp(1rem,4vw,2.5rem); background:rgba(14,11,18,0.95); border-top:1px solid rgba(212,167,70,0.12); backdrop-filter:blur(8px); z-index:50; gap:1rem; }
+    .fragment-chips { display:flex; gap:0.3rem; flex-wrap:wrap; }
+    .word-chip { height:26px; min-width:44px; padding:0 5px; border:1px solid rgba(212,167,70,0.18); border-radius:3px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:0.52rem; font-weight:700; color:rgba(212,167,70,0.18); background:rgba(14,11,18,0.7); transition:all 0.5s ease; letter-spacing:0.04em; }
+    .word-chip.filled { color:var(--gold); border-color:rgba(212,167,70,0.5); box-shadow:0 0 8px rgba(212,167,70,0.15); }
+    .word-chip.unscrambled { border-color:var(--gold); background:rgba(212,167,70,0.06); }
+    .btn-next { font-family:var(--font-display); font-size:0.75rem; letter-spacing:0.14em; text-transform:uppercase; padding:0.6rem 1.6rem; background:var(--gold); color:var(--ink-deep); font-weight:700; border:none; border-radius:var(--radius-seal); cursor:pointer; transition:all var(--transition); box-shadow:0 0 14px rgba(212,167,70,0.3); opacity:0; pointer-events:none; transform:translateY(4px); }
+    .btn-next.unlocked { opacity:1; pointer-events:auto; transform:translateY(0); }
+    .btn-next:hover { background:var(--parchment); transform:translateY(-1px); }
+    .solved-flash { position:fixed; inset:0; background:rgba(212,167,70,0.06); border:2px solid rgba(212,167,70,0.3); pointer-events:none; opacity:0; z-index:200; transition:opacity 0.3s ease; }
+    .solved-flash.show { opacity:1; }
+    .fragment-banner { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.85); background:var(--ink-mid); border:1px solid var(--gold); border-radius:var(--radius-card); padding:1.5rem 2.5rem; text-align:center; z-index:300; opacity:0; pointer-events:none; transition:all 0.35s cubic-bezier(0.175,0.885,0.32,1.275); box-shadow:var(--shadow-glow); min-width:260px; }
+    .fragment-banner.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
+    .fragment-banner .big-letter { font-family:var(--font-mono); font-size:1.6rem; font-weight:900; color:var(--gold); text-shadow:0 0 20px rgba(212,167,70,0.5); display:block; margin:0.3rem 0; }
+    .fragment-banner .label { font-family:var(--font-mono); font-size:0.65rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--parchment-faint); opacity:0.7; }
+    .puzzle-instruction { font-family:var(--font-mono); font-size:0.68rem; color:var(--parchment-faint); opacity:0.5; text-align:center; letter-spacing:0.06em; line-height:1.6; }
+    .answer-area { display:flex; flex-direction:column; align-items:center; gap:0.8rem; margin-top:0.5rem; }
+    .answer-input { font-family:var(--font-mono); font-size:1.05rem; letter-spacing:0.22em; text-transform:uppercase; background:rgba(14,11,18,0.8); border:1px solid rgba(212,167,70,0.3); border-radius:var(--radius-seal); color:var(--parchment); padding:0.65rem 1.1rem; width:260px; max-width:90vw; text-align:center; transition:border-color var(--transition),box-shadow var(--transition); }
+    .answer-input:focus { border-color:var(--gold); box-shadow:0 0 12px rgba(212,167,70,0.2); outline:none; }
+    .answer-submit { font-family:var(--font-display); font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.55rem 1.4rem; background:var(--gold); color:var(--ink-deep); font-weight:700; border:none; border-radius:var(--radius-seal); cursor:pointer; transition:all var(--transition); }
+    .answer-submit:hover { background:var(--parchment); }
+    .answer-feedback { font-family:var(--font-mono); font-size:0.78rem; letter-spacing:0.06em; text-align:center; min-height:1.4em; }
+    .answer-feedback.correct { color:var(--gold); }
+    .answer-feedback.wrong { color:var(--ember); }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+    .shake { animation:shake 0.4s ease; }
+    @keyframes pulse-gold { 0%,100%{box-shadow:0 0 4px rgba(212,167,70,0.3)} 50%{box-shadow:0 0 20px rgba(212,167,70,0.8)} }
+
+    /* Breath card */
+    .breath-card { position:relative; max-width:420px; width:100%; height:210px; margin:0 auto; border:1px solid rgba(212,167,70,0.2); border-radius:6px; overflow:hidden; cursor:pointer; user-select:none; -webkit-user-select:none; }
+    .frost-layer { position:absolute; inset:0; background:rgba(143,166,189,0.82); transition:opacity 0.15s linear; pointer-events:none; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:0.65rem; color:rgba(14,11,18,0.6); letter-spacing:0.1em; }
+    .card-text { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:1.5rem; text-align:center; font-family:var(--font-display); font-size:0.85rem; color:var(--parchment); line-height:1.7; opacity:0; transition:opacity 1s ease; pointer-events:none; }
+    .breath-progress { position:absolute; bottom:8px; left:50%; transform:translateX(-50%); height:3px; width:80%; background:rgba(14,11,18,0.4); border-radius:2px; overflow:hidden; }
+    .breath-fill { height:100%; width:0%; background:var(--gold); transition:width 0.1s linear; }
+
+    /* Dial */
+    .dials-row { display:flex; gap:1.5rem; justify-content:center; margin:1rem 0; }
+    .dial-group { display:flex; flex-direction:column; align-items:center; gap:0.3rem; }
+    .dial-btn { background:rgba(212,167,70,0.1); border:1px solid rgba(212,167,70,0.3); color:var(--gold); border-radius:3px; width:2.5rem; height:1.6rem; cursor:pointer; font-size:1rem; line-height:1; transition:background 0.2s; }
+    .dial-btn:hover { background:rgba(212,167,70,0.25); }
+    .dial-display { font-family:var(--font-mono); font-size:2rem; color:var(--gold); width:3rem; text-align:center; background:rgba(14,11,18,0.8); border:1px solid rgba(212,167,70,0.3); border-radius:4px; padding:0.2rem; }
+
+    /* Note tiles */
+    .note-row { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; }
+    .note-tile { width:54px; height:70px; border:1px solid rgba(212,167,70,0.3); border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:1.4rem; color:var(--gold); cursor:pointer; background:rgba(212,167,70,0.06); transition:all 0.2s; user-select:none; }
+    .note-tile:hover { background:rgba(212,167,70,0.18); transform:scale(1.05); }
+    .note-tile.correct-flash { background:rgba(212,167,70,0.45); border-color:var(--gold); }
+
+    /* Bookshelf */
+    .shelf { display:flex; gap:3px; align-items:flex-end; padding:0.5rem; background:rgba(60,35,15,0.4); border-radius:4px; overflow-x:auto; min-height:130px; }
+    .book { width:26px; min-height:100px; border-radius:2px 2px 0 0; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .book .spine-text { writing-mode:vertical-rl; text-orientation:mixed; font-family:var(--font-display); font-size:7px; letter-spacing:0.05em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-height:90px; padding:4px 2px; }
+    .book.tilted { transform:rotate(-8deg); transform-origin:bottom center; filter:brightness(1.5); }
+
+    /* Fog canvas */
+    .fog-wrap { position:relative; max-width:400px; margin:0 auto; border:1px solid rgba(212,167,70,0.2); border-radius:6px; overflow:hidden; }
+    .fog-wrap canvas { display:block; cursor:crosshair; touch-action:none; }
+    .fog-behind { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:2rem; letter-spacing:0.3em; color:var(--gold); transform:scaleX(-1); pointer-events:none; }
+
+    /* Evidence */
+    .ev-board { display:grid; grid-template-columns:repeat(3,1fr); gap:0.8rem; max-width:520px; margin:0 auto; }
+    .ev-card { border:1px solid rgba(212,167,70,0.22); border-radius:6px; padding:1rem 0.8rem; text-align:center; cursor:pointer; background:rgba(14,11,18,0.6); transition:all 0.3s; min-height:90px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4rem; }
+    .ev-card:hover { border-color:rgba(212,167,70,0.5); }
+    .ev-card.solved { border-color:var(--gold); background:rgba(212,167,70,0.08); cursor:default; }
+    .ev-scramble { font-family:var(--font-mono); font-size:0.78rem; letter-spacing:0.14em; color:var(--parchment-faint); }
+    .ev-input { width:100%; background:rgba(14,11,18,0.9); border:1px solid rgba(212,167,70,0.3); border-radius:3px; color:var(--parchment); font-family:var(--font-mono); font-size:0.75rem; padding:0.3rem 0.5rem; text-align:center; text-transform:uppercase; letter-spacing:0.12em; display:none; }
+    .ev-big { font-family:var(--font-mono); font-size:1.4rem; font-weight:900; color:var(--gold); display:none; }
+    .ev-real { font-family:var(--font-mono); font-size:0.68rem; color:var(--gold); display:none; }
+
+    /* Final letters */
+    .final-letters { display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap; margin:1.5rem 0; }
+    .final-letter { font-family:var(--font-mono); font-size:2.2rem; font-weight:900; color:var(--gold); opacity:0; transform:translateY(-20px); transition:opacity 0.5s ease,transform 0.5s ease; border-bottom:2px solid rgba(212,167,70,0.4); padding:0 0.3rem; min-width:2.5rem; text-align:center; }
+    .final-letter.drop { opacity:1; transform:translateY(0); }
+
+    /* Victory */
+    .victory-panel { display:none; flex-direction:column; align-items:center; gap:1rem; text-align:center; padding:2rem; border:1px solid var(--gold); border-radius:var(--radius-card); background:var(--ink-mid); box-shadow:var(--shadow-glow); max-width:460px; margin:2rem auto 0; }
+    .victory-panel.show { display:flex; }
+    .victory-panel h3 { font-size:clamp(1.3rem,3vw,1.8rem); color:var(--gold); }
+    .victory-score { font-family:var(--font-mono); font-size:2.5rem; font-weight:700; color:var(--gold); letter-spacing:0.08em; }
+    .victory-breakdown { font-family:var(--font-mono); font-size:0.7rem; color:var(--parchment-faint); opacity:0.7; line-height:1.7; }
+
+    /* Garments */
+    .garment-row { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; }
+    .garment { width:60px; height:90px; border:1px solid rgba(212,167,70,0.2); border-radius:4px; background:rgba(30,20,40,0.8); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .garment .mono-letter { font-family:var(--font-display); font-size:1.3rem; color:rgba(212,167,70,0.1); transition:color 0.5s; }
+    .garment.revealed .mono-letter { color:var(--gold); }
+
+    /* Jars */
+    .jars-row { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; }
+    .jar { width:54px; min-height:80px; border:1px solid rgba(212,167,70,0.2); border-radius:4px 4px 2px 2px; background:rgba(14,11,18,0.7); display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding-bottom:4px; cursor:pointer; transition:all 0.2s; }
+    .jar:hover { border-color:rgba(212,167,70,0.5); }
+    .jar.anomaly { background:rgba(235,217,180,0.07); }
+    .jar .jar-label { font-family:var(--font-mono); font-size:7px; color:var(--parchment-faint); text-align:center; padding:2px; }
+
+    /* Newspaper */
+    .newspaper-col { background:rgba(235,217,180,0.06); border:1px solid rgba(235,217,180,0.14); border-radius:4px; padding:1rem 1.2rem; max-width:440px; margin:0 auto; font-family:var(--font-body); font-size:0.88rem; color:var(--parchment-dim); line-height:1.8; font-style:italic; }
+    .underlined { text-decoration:underline; cursor:pointer; text-underline-offset:3px; color:var(--parchment); font-style:normal; font-weight:500; }
+    .underlined.clicked { color:var(--gold); text-decoration-color:var(--gold); }
+
+    /* Seed/perch */
+    .perch-row { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; margin:0.8rem 0; }
+    .perch { width:48px; height:48px; border:1px dashed rgba(212,167,70,0.3); border-radius:4px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:1rem; color:rgba(212,167,70,0.4); cursor:pointer; transition:all 0.2s; }
+    .perch.filled { border-color:var(--gold); color:var(--gold); background:rgba(212,167,70,0.08); border-style:solid; }
+    .seed-tray { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; }
+    .seed { width:36px; height:36px; border-radius:50%; background:rgba(212,167,70,0.15); border:1px solid rgba(212,167,70,0.4); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--gold); font-family:var(--font-mono); transition:all 0.2s; }
+    .seed.selected { background:rgba(212,167,70,0.5); transform:scale(1.15); border-color:var(--gold); }
+    .seed.used { opacity:0.2; pointer-events:none; }
+
+    /* Manuscript */
+    .manuscript { position:relative; max-width:400px; width:100%; min-height:240px; margin:0 auto; background:rgba(235,217,180,0.06); border:1px solid rgba(235,217,180,0.18); border-radius:6px; padding:1.5rem; overflow:hidden; }
+    .flame-overlay { position:absolute; inset:0; background:radial-gradient(circle at 50% 50%, rgba(212,167,70,0.18) 0%, transparent 70%); opacity:0; transition:opacity 0.2s; pointer-events:none; }
+    .ink-text { font-family:var(--font-body); font-style:italic; color:var(--parchment-dim); font-size:0.88rem; opacity:0; transition:opacity 1.2s ease; line-height:1.7; margin-bottom:0.5rem; }
+
+    /* Cipher wheel */
+    .cipher-controls { display:flex; align-items:center; gap:1rem; justify-content:center; margin:0.8rem 0; flex-wrap:wrap; }
+    .cipher-offset { font-family:var(--font-mono); font-size:1.1rem; color:var(--gold); min-width:2rem; text-align:center; }
+    .cipher-decoded { font-family:var(--font-mono); font-size:1.4rem; letter-spacing:0.3em; color:var(--parchment); text-align:center; margin:0.8rem 0; padding:0.5rem; border-bottom:1px solid rgba(212,167,70,0.2); }
+
+    /* Clock */
+    .clock-svg { max-width:220px; margin:0 auto; display:block; cursor:grab; touch-action:none; }
+
+    /* Room 2 tint */
+    #slide-16,#slide-17,#slide-18,#slide-19,#slide-20,
+    #slide-21,#slide-22,#slide-23,#slide-24,#slide-25,
+    #slide-26,#slide-27,#slide-28,#slide-29,#slide-30 {
+      background:radial-gradient(ellipse at center top, rgba(40,15,55,0.35) 0%, transparent 70%);
+    }
+
+    /* Credits modal */
+    .credits-modal { position:fixed; inset:0; background:rgba(14,11,18,0.85); display:none; align-items:center; justify-content:center; z-index:500; backdrop-filter:blur(4px); }
+    .credits-modal.open { display:flex; }
+    .credits-modal-box { background:var(--ink-mid); border:1px solid var(--gold); border-radius:var(--radius-card); padding:2rem 2.5rem; max-width:380px; text-align:center; box-shadow:var(--shadow-glow); }
+    .credits-modal-box h4 { font-size:1.1rem; color:var(--gold); margin-bottom:0.8rem; }
+    .credits-modal-box p { font-family:var(--font-body); font-size:0.9rem; color:var(--parchment-dim); line-height:1.6; margin-bottom:1.2rem; }
+    .credits-modal-close { font-family:var(--font-mono); font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.4rem 1rem; border:1px solid rgba(212,167,70,0.3); border-radius:var(--radius-seal); background:transparent; color:var(--parchment-faint); cursor:pointer; margin-top:0.5rem; }
+  </style>
+</head>
+<body>
+<div class="hunt-wrap">
+  <div class="hunt-progress-rail"><div class="hunt-progress-fill" id="progressFill"></div></div>
+  <div class="hunt-meta">
+    <div class="hunt-title-block">
+      <span class="hunt-number">Hunt 02</span>
+      <span class="hunt-name">The Whispering Page</span>
+    </div>
+    <div class="hunt-controls">
+      <span class="room-label" id="roomLabel">Room I — The Living Room</span>
+      <span class="timer-display" id="timerDisplay">00:00</span>
+      <button class="clue-btn" id="clueBtn">Clue ▾</button>
+      <span class="slide-counter" id="slideCounter">1 / 30</span>
+    </div>
+  </div>
+
+  <div class="slide-stage">
+
+    <!-- SLIDE 1 -->
+    <div class="slide active" id="slide-1">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene I — The Mantelpiece</span>
+          <h2 class="slide-title">A Breath Upon the Glass</h2>
+          <p class="slide-desc">The ornate card above the fireplace is frosted over. Something is written beneath the ice.</p>
+        </div>
+        <div class="breath-card" id="breathCard">
+          <div class="frost-layer" id="frostLayer">Hold here to breathe on the glass</div>
+          <div class="card-text" id="cardText">Seven whispers sleep within these walls.<br>Signor Venturi left in haste —<br>his private chamber holds the final cipher.</div>
+          <div class="breath-progress"><div class="breath-fill" id="breathFill"></div></div>
+        </div>
+        <p class="puzzle-instruction">Press and hold the card for 4 seconds.</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide" id="slide-2">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene II — The Gas Lamp</span>
+          <h2 class="slide-title">Shadows Speak in Flicker</h2>
+          <p class="slide-desc">The gas lamp casts shifting shadows. Each shadow conceals a Roman numeral. Click them in ascending order.</p>
+        </div>
+        <svg id="lampSvg" viewBox="0 0 400 300" style="max-width:400px;width:100%;margin:0 auto;display:block;">
+          <rect width="400" height="300" fill="rgba(14,11,18,0.9)" rx="6"/>
+          <!-- lamp -->
+          <ellipse cx="200" cy="30" rx="18" ry="12" fill="rgba(212,167,70,0.6)"/>
+          <rect x="196" y="42" width="8" height="40" fill="rgba(212,167,70,0.4)"/>
+          <!-- shadow silhouettes -->
+          <g class="lamp-shadow" id="shadow-II" data-num="2" style="cursor:pointer">
+            <ellipse cx="80" cy="200" rx="38" ry="55" fill="rgba(80,60,100,0.55)"/>
+            <text x="80" y="205" text-anchor="middle" font-family="serif" font-size="18" fill="rgba(235,217,180,0.22)" font-weight="bold">II</text>
+          </g>
+          <g class="lamp-shadow" id="shadow-III" data-num="3" style="cursor:pointer">
+            <rect x="160" y="155" width="50" height="90" rx="6" fill="rgba(80,60,100,0.55)"/>
+            <text x="185" y="210" text-anchor="middle" font-family="serif" font-size="18" fill="rgba(235,217,180,0.22)" font-weight="bold">III</text>
+          </g>
+          <g class="lamp-shadow" id="shadow-IV" data-num="4" style="cursor:pointer">
+            <polygon points="270,155 310,155 330,245 250,245" fill="rgba(80,60,100,0.55)"/>
+            <text x="290" y="210" text-anchor="middle" font-family="serif" font-size="18" fill="rgba(235,217,180,0.22)" font-weight="bold">IV</text>
+          </g>
+          <g class="lamp-shadow" id="shadow-VI" data-num="6" style="cursor:pointer">
+            <rect x="340" y="170" width="44" height="70" rx="4" fill="rgba(80,60,100,0.55)"/>
+            <text x="362" y="213" text-anchor="middle" font-family="serif" font-size="18" fill="rgba(235,217,180,0.22)" font-weight="bold">VI</text>
+          </g>
+          <text id="lampMsg" x="200" y="290" text-anchor="middle" font-family="monospace" font-size="11" fill="rgba(235,217,180,0.5)">Click shadows: II → III → IV → VI</text>
+        </svg>
+        <div class="answer-feedback" id="lampFeedback" style="text-align:center"></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="slide" id="slide-3">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene III — The Writing Desk</span>
+          <h2 class="slide-title">The Sealed Envelopes</h2>
+          <p class="slide-desc">Five wax-sealed letters lie scattered. Each seal bears a faint Roman numeral. Click them in order.</p>
+        </div>
+        <div id="envelopeRow" style="display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap;margin:0.5rem 0;"></div>
+        <div id="deskDrawer" style="display:none;max-width:320px;margin:1rem auto;border:1px solid var(--gold);border-radius:6px;padding:1.2rem;text-align:center;background:rgba(212,167,70,0.06);">
+          <p style="font-family:var(--font-display);font-size:1.2rem;color:var(--gold);letter-spacing:0.2em;">CANDLE</p>
+          <p style="font-family:var(--font-mono);font-size:0.72rem;color:var(--parchment-faint);margin-top:0.5rem;">The first whisper is collected.</p>
+        </div>
+        <p class="puzzle-instruction" id="envInstruction">Click each envelope to inspect its seal, then click in order I → II → III → IV → V</p>
+        <div class="answer-feedback" id="envFeedback" style="text-align:center"></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="slide" id="slide-4">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene IV — The Hearthrug</span>
+          <h2 class="slide-title">What the Rug Conceals</h2>
+          <p class="slide-desc">The hearthrug sits unevenly. Drag it to the right to reveal what lies beneath, then click the chalk symbols in the numbered order.</p>
+        </div>
+        <div style="position:relative;max-width:400px;width:100%;height:200px;margin:0 auto;overflow:hidden;border:1px solid rgba(212,167,70,0.2);border-radius:6px;">
+          <div id="floorboard" style="position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(80,50,20,0.6) 0px,rgba(80,50,20,0.6) 28px,rgba(60,35,10,0.6) 28px,rgba(60,35,10,0.6) 30px);display:flex;align-items:center;justify-content:center;gap:1.5rem;" id="chalks">
+            <div class="chalk-sym" data-order="1" style="color:rgba(235,217,180,0.7);font-family:var(--font-mono);font-size:1.2rem;cursor:pointer;padding:8px;border:1px dashed rgba(235,217,180,0.3);border-radius:4px;">① ✦</div>
+            <div class="chalk-sym" data-order="2" style="color:rgba(235,217,180,0.7);font-family:var(--font-mono);font-size:1.2rem;cursor:pointer;padding:8px;border:1px dashed rgba(235,217,180,0.3);border-radius:4px;">② ◈</div>
+            <div class="chalk-sym" data-order="3" style="color:rgba(235,217,180,0.7);font-family:var(--font-mono);font-size:1.2rem;cursor:pointer;padding:8px;border:1px dashed rgba(235,217,180,0.3);border-radius:4px;">③ ◆</div>
+            <div class="chalk-sym" data-order="4" style="color:rgba(235,217,180,0.7);font-family:var(--font-mono);font-size:1.2rem;cursor:pointer;padding:8px;border:1px dashed rgba(235,217,180,0.3);border-radius:4px;">④ ▲</div>
+            <div class="chalk-sym" data-order="5" style="color:rgba(235,217,180,0.7);font-family:var(--font-mono);font-size:1.2rem;cursor:pointer;padding:8px;border:1px dashed rgba(235,217,180,0.3);border-radius:4px;">⑤ ●</div>
+            <div class="chalk-sym" data-order="6" style="color:rgba(235,217,180,0.7);font-family:var(--font-mono);font-size:1.2rem;cursor:pointer;padding:8px;border:1px dashed rgba(235,217,180,0.3);border-radius:4px;">⑥ ☽</div>
+          </div>
+          <div id="rugDiv" style="position:absolute;inset:0;background:repeating-conic-gradient(rgba(139,90,43,0.8) 0% 25%,rgba(100,60,20,0.8) 0% 50%) 0 0/20px 20px;cursor:grab;touch-action:none;"></div>
+        </div>
+        <p class="puzzle-instruction">Drag the rug right, then click symbols ①→②→③→④→⑤→⑥</p>
+        <div class="answer-feedback" id="rugFeedback" style="text-align:center"></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5 -->
+    <div class="slide" id="slide-5">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene V — The Portrait</span>
+          <h2 class="slide-title">The Guest Who Watches</h2>
+          <p class="slide-desc">A portrait of Signor Giacomo Venturi. His painted eyes seem to follow you. Look closely into each eye.</p>
+        </div>
+        <svg id="portraitSvg" viewBox="0 0 260 340" style="max-width:260px;width:100%;margin:0 auto;display:block;cursor:crosshair;">
+          <rect width="260" height="340" fill="rgba(40,25,15,0.9)" rx="4"/>
+          <rect x="10" y="10" width="240" height="320" fill="none" stroke="rgba(212,167,70,0.3)" stroke-width="2" rx="2"/>
+          <!-- face -->
+          <ellipse cx="130" cy="130" rx="60" ry="75" fill="rgba(200,150,100,0.5)"/>
+          <!-- eyes -->
+          <g id="leftEyeG" style="cursor:pointer">
+            <ellipse cx="104" cy="115" rx="16" ry="10" fill="white" opacity="0.9"/>
+            <circle id="leftIris" cx="104" cy="115" r="7" fill="rgba(60,40,20,0.9)"/>
+            <text id="leftLetter" x="104" y="119" text-anchor="middle" font-size="8" fill="rgba(212,167,70,0)" font-weight="bold" font-family="monospace">G</text>
+          </g>
+          <g id="rightEyeG" style="cursor:pointer">
+            <ellipse cx="156" cy="115" rx="16" ry="10" fill="white" opacity="0.9"/>
+            <circle id="rightIris" cx="156" cy="115" r="7" fill="rgba(60,40,20,0.9)"/>
+            <text id="rightLetter" x="156" y="119" text-anchor="middle" font-size="8" fill="rgba(212,167,70,0)" font-weight="bold" font-family="monospace">V</text>
+          </g>
+          <!-- nose mouth -->
+          <line x1="127" y1="125" x2="125" y2="148" stroke="rgba(160,110,70,0.4)" stroke-width="1.5"/>
+          <path d="M113,162 Q130,172 147,162" fill="none" stroke="rgba(160,110,70,0.5)" stroke-width="1.5"/>
+          <!-- coat -->
+          <path d="M70,205 Q70,340 190,340 Q190,205 190,205 L170,185 L130,195 L90,185Z" fill="rgba(30,20,10,0.8)"/>
+          <!-- inscription -->
+          <text id="portraitMsg" x="130" y="330" text-anchor="middle" font-family="serif" font-size="9" fill="rgba(212,167,70,0)">G.V. — Cabinet: 3 · 7 · 2</text>
+        </svg>
+        <div style="display:flex;gap:2rem;justify-content:center;margin-top:0.5rem;">
+          <div style="text-align:center"><div id="gStatus" style="font-family:var(--font-mono);font-size:1.2rem;color:rgba(212,167,70,0.2);">G</div><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);opacity:0.5;">Left eye</div></div>
+          <div style="text-align:center"><div id="vStatus" style="font-family:var(--font-mono);font-size:1.2rem;color:rgba(212,167,70,0.2);">V</div><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);opacity:0.5;">Right eye</div></div>
+        </div>
+        <p class="puzzle-instruction">Hover or touch each eye for 1.5 seconds</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 6 -->
+    <div class="slide" id="slide-6">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene VI — The Bookshelf</span>
+          <h2 class="slide-title">The Tilted Spines</h2>
+          <p class="slide-desc">Most books stand straight. Seven lean at an angle. Read the first letter of each tilted book's title, left to right.</p>
+        </div>
+        <div class="shelf" id="bookshelf"></div>
+        <div class="answer-area" style="margin-top:1rem;">
+          <input type="text" class="answer-input" id="bookInput" maxlength="8" placeholder="THE WORD" autocomplete="off">
+          <button class="answer-submit" id="bookSubmit">Confirm</button>
+          <div class="answer-feedback" id="bookFeedback"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7 -->
+    <div class="slide" id="slide-7">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene VII — The Clock</span>
+          <h2 class="slide-title">The Hour Frozen</h2>
+          <p class="slide-desc">The grandfather clock stopped. A card reads: "Set the hour to when the raven last cried." Ravens cry at dusk — 6 o'clock.</p>
+        </div>
+        <svg id="clockSvg" class="clock-svg" viewBox="0 0 200 260" style="max-width:200px;">
+          <rect width="200" height="260" rx="8" fill="rgba(40,25,10,0.8)" stroke="rgba(212,167,70,0.3)" stroke-width="1.5"/>
+          <circle cx="100" cy="120" r="70" fill="rgba(14,11,18,0.9)" stroke="rgba(212,167,70,0.4)" stroke-width="2"/>
+          <!-- hour marks -->
+          <g id="clockMarks"></g>
+          <!-- hands -->
+          <line id="hourHand" x1="100" y1="120" x2="100" y2="65" stroke="rgba(235,217,180,0.9)" stroke-width="4" stroke-linecap="round" style="transform-origin:100px 120px;transform:rotate(0deg);cursor:grab;"/>
+          <line id="minHand" x1="100" y1="120" x2="100" y2="58" stroke="rgba(212,167,70,0.8)" stroke-width="2.5" stroke-linecap="round" style="transform-origin:100px 120px;transform:rotate(0deg);cursor:grab;"/>
+          <circle cx="100" cy="120" r="5" fill="var(--gold)"/>
+          <!-- pendulum -->
+          <line x1="100" y1="195" x2="100" y2="240" stroke="rgba(212,167,70,0.4)" stroke-width="2" id="pendulum" style="transform-origin:100px 195px;"/>
+          <circle id="pendBob" cx="100" cy="240" r="10" fill="rgba(212,167,70,0.4)" stroke="rgba(212,167,70,0.6)" stroke-width="1"/>
+        </svg>
+        <div class="answer-feedback" id="clockFeedback" style="text-align:center;margin-top:0.8rem;"></div>
+        <p class="puzzle-instruction">Drag the clock hands to the correct time</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 8 -->
+    <div class="slide" id="slide-8">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene VIII — The Music Box</span>
+          <h2 class="slide-title">The Melody That Opens</h2>
+          <p class="slide-desc">Six colored pins on the music box drum. A torn sheet shows the sequence: G · E · A · B · C · E. Click the note tiles in that order.</p>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:0.75rem;color:var(--parchment-faint);text-align:center;margin-bottom:0.8rem;letter-spacing:0.15em;">Target: G — E — A — B — C — E</div>
+        <div class="note-row" id="noteRow"></div>
+        <div style="font-family:var(--font-mono);font-size:0.9rem;color:var(--gold);text-align:center;margin-top:0.8rem;letter-spacing:0.2em;min-height:1.5rem;" id="noteLog">·</div>
+        <div style="text-align:center;margin-top:0.5rem;"><button class="answer-submit" id="noteReset" style="background:transparent;color:var(--parchment-faint);border:1px solid rgba(212,167,70,0.2);font-size:0.65rem;padding:0.3rem 0.8rem;">Reset</button></div>
+        <div class="answer-feedback" id="noteFeedback" style="text-align:center;margin-top:0.5rem;"></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9 -->
+    <div class="slide" id="slide-9">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene IX — The Window</span>
+          <h2 class="slide-title">Write Upon the Glass</h2>
+          <p class="slide-desc">The window is frosted. Drag across the glass to reveal what was written there. Then type the word you uncover.</p>
+        </div>
+        <div class="fog-wrap">
+          <div class="fog-behind" id="fogBehind">IRUTTNEV</div>
+          <canvas id="fogCanvas" width="400" height="180"></canvas>
+        </div>
+        <div class="answer-area" id="fogAnswerArea" style="display:none;margin-top:1rem;">
+          <input type="text" class="answer-input" id="fogInput" maxlength="8" placeholder="THE WORD" autocomplete="off">
+          <button class="answer-submit" id="fogSubmit">Confirm</button>
+          <div class="answer-feedback" id="fogFeedback"></div>
+        </div>
+        <p class="puzzle-instruction">Drag to erase the frost</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 10 -->
+    <div class="slide" id="slide-10">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene X — The Globe</span>
+          <h2 class="slide-title">The Marked Meridian</h2>
+          <p class="slide-desc">An antique globe. Two gold pins mark a precise location: 41°N, 12°E. Name the city.</p>
+        </div>
+        <svg viewBox="0 0 300 300" style="max-width:280px;width:100%;margin:0 auto;display:block;">
+          <circle cx="150" cy="150" r="120" fill="rgba(14,50,80,0.6)" stroke="rgba(212,167,70,0.3)" stroke-width="1.5"/>
+          <!-- simplified continents -->
+          <path d="M60,90 Q90,70 130,80 Q150,75 160,100 Q170,120 155,140 Q140,160 120,155 Q90,160 75,140 Q55,120 60,90Z" fill="rgba(80,120,60,0.5)"/>
+          <path d="M155,85 Q185,70 220,85 Q240,100 235,130 Q225,150 200,155 Q175,158 165,135 Q150,110 155,85Z" fill="rgba(80,120,60,0.5)"/>
+          <path d="M80,165 Q110,155 140,170 Q160,180 155,210 Q148,235 120,235 Q90,235 78,210 Q68,185 80,165Z" fill="rgba(80,120,60,0.5)"/>
+          <!-- latitude/longitude lines -->
+          <ellipse cx="150" cy="150" rx="120" ry="30" fill="none" stroke="rgba(143,166,189,0.1)" stroke-width="0.5"/>
+          <line x1="30" y1="150" x2="270" y2="150" stroke="rgba(143,166,189,0.1)" stroke-width="0.5"/>
+          <line x1="150" y1="30" x2="150" y2="270" stroke="rgba(143,166,189,0.1)" stroke-width="0.5"/>
+          <!-- pins at 41N 12E — roughly center-right of European landmass -->
+          <circle cx="177" cy="105" r="5" fill="var(--gold)" opacity="0.9"/>
+          <text x="185" y="100" font-family="monospace" font-size="8" fill="rgba(212,167,70,0.8)">41°N</text>
+          <text x="185" y="112" font-family="monospace" font-size="8" fill="rgba(212,167,70,0.8)">12°E</text>
+        </svg>
+        <div class="answer-area" style="margin-top:1rem;">
+          <input type="text" class="answer-input" id="globeInput" maxlength="12" placeholder="CITY NAME" autocomplete="off">
+          <button class="answer-submit" id="globeSubmit">Confirm</button>
+          <div class="answer-feedback" id="globeFeedback"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 11 -->
+    <div class="slide" id="slide-11">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene XI — The Fireplace</span>
+          <h2 class="slide-title">Letters in the Ash</h2>
+          <p class="slide-desc">The fire is cold. Drag slowly through the ash to scatter it — burned fragments reveal five letters.</p>
+        </div>
+        <div style="position:relative;max-width:400px;width:100%;height:200px;margin:0 auto;border:1px solid rgba(212,167,70,0.2);border-radius:6px;overflow:hidden;background:rgba(20,10,5,0.9);">
+          <div id="ashLetters" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:1.2rem;">
+            <span class="ash-letter" data-i="0" style="font-family:var(--font-display);font-size:1.8rem;color:rgba(235,217,180,0);transition:color 0.8s;">V</span>
+            <span class="ash-letter" data-i="1" style="font-family:var(--font-display);font-size:1.8rem;color:rgba(235,217,180,0);transition:color 0.8s;">E</span>
+            <span class="ash-letter" data-i="2" style="font-family:var(--font-display);font-size:1.8rem;color:rgba(235,217,180,0);transition:color 0.8s;">N</span>
+            <span class="ash-letter" data-i="3" style="font-family:var(--font-display);font-size:1.8rem;color:rgba(235,217,180,0);transition:color 0.8s;">T</span>
+            <span class="ash-letter" data-i="4" style="font-family:var(--font-display);font-size:1.8rem;color:rgba(235,217,180,0);transition:color 0.8s;">I</span>
+          </div>
+          <canvas id="ashCanvas" width="400" height="200" style="position:absolute;inset:0;cursor:crosshair;touch-action:none;"></canvas>
+        </div>
+        <div class="answer-area" id="ashAnswerArea" style="display:none;margin-top:1rem;">
+          <input type="text" class="answer-input" id="ashInput" maxlength="6" placeholder="THE WORD" autocomplete="off">
+          <button class="answer-submit" id="ashSubmit">Confirm</button>
+          <div class="answer-feedback" id="ashFeedback"></div>
+        </div>
+        <p class="puzzle-instruction">Drag across the ash to reveal the letters</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 12 -->
+    <div class="slide" id="slide-12">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene XII — The Telescope</span>
+          <h2 class="slide-title">Stars Do Not Lie</h2>
+          <p class="slide-desc">Adjust the focus until the stars sharpen. Then connect them in the order: A → C → E → B → D.</p>
+        </div>
+        <div style="position:relative;width:280px;height:280px;margin:0 auto;border-radius:50%;overflow:hidden;border:2px solid rgba(212,167,70,0.3);">
+          <div id="telescopeInner" style="width:100%;height:100%;background:#040208;position:relative;filter:blur(8px);transition:filter 0.3s;">
+            <!-- stars -->
+            <div class="tele-star" id="starA" data-star="A" style="position:absolute;left:60px;top:80px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);">A</div>
+            <div class="tele-star" id="starB" data-star="B" style="position:absolute;left:180px;top:60px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);">B</div>
+            <div class="tele-star" id="starC" data-star="C" style="position:absolute;left:120px;top:130px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);">C</div>
+            <div class="tele-star" id="starD" data-star="D" style="position:absolute;left:200px;top:190px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);">D</div>
+            <div class="tele-star" id="starE" data-star="E" style="position:absolute;left:50px;top:200px;width:20px;height:20px;border:2px solid rgba(212,167,70,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:rgba(212,167,70,0.7);cursor:pointer;background:rgba(212,167,70,0.1);">E</div>
+            <svg id="starLines" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;"></svg>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:1rem;justify-content:center;margin-top:1rem;flex-wrap:wrap;">
+          <label style="font-family:var(--font-mono);font-size:0.65rem;color:var(--parchment-faint);">Focus:</label>
+          <input type="range" id="focusSlider" min="0" max="100" value="0" style="width:160px;">
+          <span id="focusPct" style="font-family:var(--font-mono);font-size:0.65rem;color:var(--gold);">0%</span>
+        </div>
+        <div class="answer-feedback" id="teleFeedback" style="text-align:center;margin-top:0.5rem;"></div>
+        <p class="puzzle-instruction">Set focus to 65%, then click: A → C → E → B → D</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 13 -->
+    <div class="slide" id="slide-13">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene XIII — The Chaise Longue</span>
+          <h2 class="slide-title">Beneath the Cushion</h2>
+          <p class="slide-desc">The chaise longue cushion sits unevenly. Something is hidden beneath it.</p>
+        </div>
+        <div style="position:relative;max-width:400px;width:100%;height:200px;margin:0 auto;">
+          <div style="position:absolute;bottom:0;left:0;right:0;height:120px;background:rgba(80,50,25,0.6);border-radius:8px 8px 4px 4px;border:1px solid rgba(212,167,70,0.2);"></div>
+          <div id="cushion" style="position:absolute;left:10%;right:10%;top:30px;height:90px;background:linear-gradient(135deg,rgba(100,60,30,0.9),rgba(60,35,15,0.9));border-radius:8px;border:1px solid rgba(212,167,70,0.3);cursor:pointer;transition:transform 0.6s ease,opacity 0.4s;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:0.65rem;color:rgba(212,167,70,0.4);letter-spacing:0.1em;">CLICK TO LIFT</div>
+          <div id="hiddenNote" style="position:absolute;left:15%;right:15%;top:50px;display:none;background:rgba(235,217,180,0.08);border:1px solid rgba(212,167,70,0.25);border-radius:4px;padding:0.8rem;font-family:var(--font-body);font-style:italic;font-size:0.82rem;color:var(--parchment-dim);line-height:1.6;text-align:center;">
+            "To the seeker:<br>My cabinet opens with three numbers.<br>Look into his eyes — they remember.<br>— G.V."
+          </div>
+        </div>
+        <p class="puzzle-instruction" id="chaiseInstr">Click the cushion to lift it</p>
+        <div class="answer-feedback" id="chaiseFeedback" style="text-align:center;margin-top:0.8rem;"></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 14 -->
+    <div class="slide" id="slide-14">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene XIV — The Cabinet</span>
+          <h2 class="slide-title">Signor Venturi's Cabinet</h2>
+          <p class="slide-desc">Three brass dials. The portrait's eyes remembered the combination.</p>
+        </div>
+        <div style="border:1px solid rgba(212,167,70,0.25);border-radius:6px;padding:1.5rem;max-width:360px;margin:0 auto;background:rgba(40,25,10,0.5);">
+          <div class="dials-row" id="cabinetDials14"></div>
+          <div id="cabinet14Door" style="margin-top:1rem;text-align:center;font-family:var(--font-mono);font-size:0.7rem;color:var(--parchment-faint);opacity:0.5;">[ locked ]</div>
+        </div>
+        <div class="answer-feedback" id="cabinet14Feedback" style="text-align:center;margin-top:0.8rem;"></div>
+        <p class="puzzle-instruction">Set the three dials to the correct combination</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 15 -->
+    <div class="slide" id="slide-15">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room I · Scene XV — The Private Door</span>
+          <h2 class="slide-title">Signor Venturi's Room</h2>
+          <p class="slide-desc">A narrow door almost hidden in the panelling. It opens only to his name.</p>
+        </div>
+        <svg viewBox="0 0 200 300" style="max-width:200px;width:100%;margin:0 auto;display:block;">
+          <rect width="200" height="300" fill="rgba(40,25,10,0.4)" rx="4"/>
+          <rect id="doorLeft" x="10" y="20" width="85" height="260" rx="3" fill="rgba(60,35,15,0.9)" stroke="rgba(212,167,70,0.35)" stroke-width="1.5" style="transform-origin:10px 150px;transition:transform 1.2s ease;"/>
+          <rect id="doorRight" x="105" y="20" width="85" height="260" rx="3" fill="rgba(60,35,15,0.9)" stroke="rgba(212,167,70,0.35)" stroke-width="1.5" style="transform-origin:190px 150px;transition:transform 1.2s ease;"/>
+          <circle cx="100" cy="150" r="6" fill="rgba(212,167,70,0.6)" id="doorKnob"/>
+          <text x="100" y="295" text-anchor="middle" font-family="monospace" font-size="8" fill="rgba(212,167,70,0.4)">G.V.</text>
+        </svg>
+        <div class="answer-area" style="margin-top:1rem;">
+          <input type="text" class="answer-input" id="doorInput" maxlength="20" placeholder="HIS SURNAME" autocomplete="off">
+          <button class="answer-submit" id="doorSubmit">Enter</button>
+          <div class="answer-feedback" id="doorFeedback"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 16 -->
+    <div class="slide" id="slide-16">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene I — The Writing Table</span>
+          <h2 class="slide-title">The Manuscript</h2>
+          <p class="slide-desc">A half-finished manuscript. The ink is invisible — only warmth and candlelight can reveal it.</p>
+        </div>
+        <div class="manuscript" id="manuscript16">
+          <div class="flame-overlay" id="flameOverlay16"></div>
+          <p class="ink-text" id="inkText1">The raven watches from the cage above.</p>
+          <p class="ink-text" id="inkText2">Echo is the only voice in an empty room.</p>
+          <p class="ink-text" id="inkText3">Seven holds the number of the final truth.</p>
+        </div>
+        <div style="text-align:center;margin-top:1rem;">
+          <button class="answer-submit" id="candleBtn" style="background:rgba(212,167,70,0.15);color:var(--gold);border:1px solid rgba(212,167,70,0.4);">Hold Candlelight (5s)</button>
+          <div style="height:4px;background:rgba(212,167,70,0.1);border-radius:2px;max-width:200px;margin:0.5rem auto;overflow:hidden;"><div id="candleProg" style="height:100%;width:0%;background:var(--gold);transition:width 0.1s;"></div></div>
+        </div>
+        <div class="answer-feedback" id="manuFeedback" style="text-align:center;margin-top:0.5rem;"></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 17 -->
+    <div class="slide" id="slide-17">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene II — The Inkpot</span>
+          <h2 class="slide-title">The Spilled Ink</h2>
+          <p class="slide-desc">The overturned inkpot has dried. The spill forms a shape. What number do you see?</p>
+        </div>
+        <svg viewBox="0 0 300 200" style="max-width:300px;width:100%;margin:0 auto;display:block;">
+          <rect width="300" height="200" fill="rgba(14,11,18,0.5)" rx="6"/>
+          <!-- inkpot -->
+          <ellipse cx="80" cy="60" rx="25" ry="18" fill="rgba(20,15,30,0.9)" stroke="rgba(212,167,70,0.3)" stroke-width="1.5"/>
+          <line x1="80" y1="70" x2="110" y2="90" stroke="rgba(20,10,40,0.9)" stroke-width="3"/>
+          <!-- ink spill forming "7" -->
+          <path d="M140,40 L220,40 L220,50 L175,50 L155,160 L145,160 L165,50 L140,50Z" fill="rgba(20,10,50,0.9)"/>
+          <line x1="140" y1="45" x2="220" y2="45" stroke="rgba(80,60,120,0.3)" stroke-width="8" stroke-linecap="round"/>
+          <text x="270" y="190" text-anchor="end" font-family="monospace" font-size="9" fill="rgba(212,167,70,0.3)">what number?</text>
+        </svg>
+        <div class="answer-area" style="margin-top:1rem;">
+          <input type="text" class="answer-input" id="inkInput" maxlength="5" placeholder="NUMBER" autocomplete="off">
+          <button class="answer-submit" id="inkSubmit">Confirm</button>
+          <div class="answer-feedback" id="inkFeedback"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 18 -->
+    <div class="slide" id="slide-18">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene III — The Cipher Wheel</span>
+          <h2 class="slide-title">The Alberti Cipher</h2>
+          <p class="slide-desc">Outer ring fixed. Rotate the inner ring by the number of shadows you saw in the living room. Decode: ZIRMGI.</p>
+        </div>
+        <div style="background:rgba(14,11,18,0.6);border:1px solid rgba(212,167,70,0.2);border-radius:6px;padding:1.2rem;max-width:380px;margin:0 auto;">
+          <div style="font-family:var(--font-mono);font-size:0.68rem;color:var(--parchment-faint);text-align:center;margin-bottom:0.5rem;">Encoded: <span style="color:var(--parchment);letter-spacing:0.2em;">ZIRMGI</span></div>
+          <div class="cipher-controls">
+            <button class="dial-btn" id="cipherMinus">−</button>
+            <div style="text-align:center;"><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);">Offset</div><div class="cipher-offset" id="cipherOffset">0</div></div>
+            <button class="dial-btn" id="cipherPlus">+</button>
+          </div>
+          <div class="cipher-decoded" id="cipherDecoded">ZIRMGI</div>
+          <div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);text-align:center;opacity:0.6;">Outer: A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</div>
+        </div>
+        <div class="answer-area" style="margin-top:1rem;">
+          <input type="text" class="answer-input" id="cipherInput" maxlength="10" placeholder="DECODED WORD" autocomplete="off">
+          <button class="answer-submit" id="cipherSubmit">Confirm</button>
+          <div class="answer-feedback" id="cipherFeedback"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 19 -->
+    <div class="slide" id="slide-19">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene IV — The Vanity Mirror</span>
+          <h2 class="slide-title">Reflection's Deception</h2>
+          <p class="slide-desc">The mirror shows text written on his desk — but it is reversed. Read what the mirror truly shows.</p>
+        </div>
+        <div style="max-width:360px;margin:0 auto;border:3px solid rgba(180,180,180,0.3);border-radius:8px;background:rgba(20,15,30,0.8);padding:2rem 1.5rem;text-align:center;box-shadow:inset 0 0 30px rgba(143,166,189,0.05);">
+          <div style="font-family:var(--font-display);font-size:1.1rem;color:var(--parchment);transform:scaleX(-1);letter-spacing:0.1em;line-height:1.6;">THE SEVENTH SEAL</div>
+          <div style="font-family:var(--font-mono);font-size:0.6rem;color:rgba(143,166,189,0.4);margin-top:1rem;">[ mirror reflection ]</div>
+        </div>
+        <div class="answer-area" style="margin-top:1.2rem;">
+          <input type="text" class="answer-input" id="mirrorInput" maxlength="20" placeholder="WHAT IT SHOWS" autocomplete="off">
+          <button class="answer-submit" id="mirrorSubmit">Confirm</button>
+          <div class="answer-feedback" id="mirrorFeedback"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 20 -->
+    <div class="slide" id="slide-20">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene V — The Music Sheets</span>
+          <h2 class="slide-title">Notes on a Staff</h2>
+          <p class="slide-desc">Four music sheets, each with one circled note. The notes spell a word. Click each sheet left to right, then type the word.</p>
+        </div>
+        <div style="display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap;margin:0.5rem 0;" id="sheetRow"></div>
+        <div style="font-family:var(--font-mono);font-size:1.5rem;letter-spacing:0.4em;color:var(--gold);text-align:center;margin:0.8rem 0;min-height:2rem;" id="sheetSeq">_ _ _ _</div>
+        <div class="answer-area" id="sheetAnswerArea" style="display:none;">
+          <input type="text" class="answer-input" id="sheetInput" maxlength="5" placeholder="THE WORD" autocomplete="off">
+          <button class="answer-submit" id="sheetSubmit">Confirm</button>
+          <div class="answer-feedback" id="sheetFeedback"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 21 -->
+    <div class="slide" id="slide-21">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene VI — The Letter Box</span>
+          <h2 class="slide-title">Steam the Seals</h2>
+          <p class="slide-desc">Six sealed letters. Hold on each wax seal for 2 seconds to steam it open. Read the word inside.</p>
+        </div>
+        <div id="letterBoxRow" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;max-width:400px;margin:0 auto;"></div>
+        <div class="answer-area" id="letterBoxAnswer" style="display:none;margin-top:1rem;">
+          <div style="font-family:var(--font-body);font-style:italic;color:var(--parchment-dim);font-size:0.88rem;text-align:center;margin-bottom:0.5rem;" id="letterBoxPhrase"></div>
+          <input type="text" class="answer-input" id="letterBoxInput" maxlength="30" placeholder="KEY WORD" autocomplete="off">
+          <button class="answer-submit" id="letterBoxSubmit">Confirm</button>
+          <div class="answer-feedback" id="letterBoxFeedback"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 22 -->
+    <div class="slide" id="slide-22">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene VII — The Diagram</span>
+          <h2 class="slide-title">The Body Speaks</h2>
+          <p class="slide-desc">Five organs circled in red, numbered 1–5. Click them in order. Their Latin names' first letters spell a word.</p>
+        </div>
+        <svg id="anatomySvg" viewBox="0 0 280 360" style="max-width:280px;width:100%;margin:0 auto;display:block;">
+          <rect width="280" height="360" fill="rgba(235,217,180,0.04)" rx="4" stroke="rgba(212,167,70,0.1)" stroke-width="1"/>
+          <!-- simplified body outline -->
+          <ellipse cx="140" cy="55" rx="35" ry="45" fill="none" stroke="rgba(235,217,180,0.2)" stroke-width="1.5"/>
+          <path d="M105,95 Q80,130 85,180 Q90,230 100,260 L180,260 Q190,230 195,180 Q200,130 175,95Z" fill="none" stroke="rgba(235,217,180,0.2)" stroke-width="1.5"/>
+          <line x1="100" y1="260" x2="85" y2="340" stroke="rgba(235,217,180,0.2)" stroke-width="1.5"/>
+          <line x1="180" y1="260" x2="195" y2="340" stroke="rgba(235,217,180,0.2)" stroke-width="1.5"/>
+          <line x1="85" y1="105" x2="45" y2="195" stroke="rgba(235,217,180,0.2)" stroke-width="1.5"/>
+          <line x1="175" y1="105" x2="235" y2="195" stroke="rgba(235,217,180,0.2)" stroke-width="1.5"/>
+          <!-- organs: 1=Vertex(head), 2=Extensor(arm-left), 3=Nodus(belly), 4=Tibia(leg-left), 5=Iris(eye) -->
+          <g class="organ" data-num="1" data-label="Vertex" style="cursor:pointer">
+            <circle cx="140" cy="30" r="14" fill="rgba(226,87,43,0.15)" stroke="rgba(226,87,43,0.6)" stroke-width="1.5"/>
+            <text x="140" y="28" text-anchor="middle" font-family="monospace" font-size="8" fill="rgba(226,87,43,0.8)" font-weight="bold">1</text>
+            <text x="140" y="38" text-anchor="middle" font-family="serif" font-size="7" fill="rgba(235,217,180,0.5)">Vertex</text>
+          </g>
+          <g class="organ" data-num="2" data-label="Extensor" style="cursor:pointer">
+            <circle cx="48" cy="155" r="14" fill="rgba(226,87,43,0.15)" stroke="rgba(226,87,43,0.6)" stroke-width="1.5"/>
+            <text x="48" y="153" text-anchor="middle" font-family="monospace" font-size="8" fill="rgba(226,87,43,0.8)" font-weight="bold">2</text>
+            <text x="48" y="163" text-anchor="middle" font-family="serif" font-size="7" fill="rgba(235,217,180,0.5)">Extensor</text>
+          </g>
+          <g class="organ" data-num="3" data-label="Nodus" style="cursor:pointer">
+            <circle cx="140" cy="185" r="14" fill="rgba(226,87,43,0.15)" stroke="rgba(226,87,43,0.6)" stroke-width="1.5"/>
+            <text x="140" y="183" text-anchor="middle" font-family="monospace" font-size="8" fill="rgba(226,87,43,0.8)" font-weight="bold">3</text>
+            <text x="140" y="193" text-anchor="middle" font-family="serif" font-size="7" fill="rgba(235,217,180,0.5)">Nodus</text>
+          </g>
+          <g class="organ" data-num="4" data-label="Tibia" style="cursor:pointer">
+            <circle cx="95" cy="305" r="14" fill="rgba(226,87,43,0.15)" stroke="rgba(226,87,43,0.6)" stroke-width="1.5"/>
+            <text x="95" y="303" text-anchor="middle" font-family="monospace" font-size="8" fill="rgba(226,87,43,0.8)" font-weight="bold">4</text>
+            <text x="95" y="313" text-anchor="middle" font-family="serif" font-size="7" fill="rgba(235,217,180,0.5)">Tibia</text>
+          </g>
+          <g class="organ" data-num="5" data-label="Iris" style="cursor:pointer">
+            <circle cx="155" cy="48" r="14" fill="rgba(226,87,43,0.15)" stroke="rgba(226,87,43,0.6)" stroke-width="1.5"/>
+            <text x="155" y="46" text-anchor="middle" font-family="monospace" font-size="8" fill="rgba(226,87,43,0.8)" font-weight="bold">5</text>
+            <text x="155" y="56" text-anchor="middle" font-family="serif" font-size="7" fill="rgba(235,217,180,0.5)">Iris</text>
+          </g>
+        </svg>
+        <div class="answer-area" id="anatomyAnswer" style="display:none;margin-top:0.5rem;">
+          <input type="text" class="answer-input" id="anatomyInput" maxlength="8" placeholder="THE WORD" autocomplete="off">
+          <button class="answer-submit" id="anatomySubmit">Confirm</button>
+          <div class="answer-feedback" id="anatomyFeedback"></div>
+        </div>
+        <p class="puzzle-instruction">Click organs 1 → 2 → 3 → 4 → 5 in order</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 23 -->
+    <div class="slide" id="slide-23">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene VIII — The Newspaper</span>
+          <h2 class="slide-title">The Coded Column</h2>
+          <p class="slide-desc">An 1887 Venetian gazette. Every seventh word in this column is underlined in pencil. Click all four underlined words.</p>
+        </div>
+        <div class="newspaper-col" id="newspaperCol"></div>
+        <div class="answer-feedback" id="newsFeedback" style="text-align:center;margin-top:0.8rem;"></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 24 -->
+    <div class="slide" id="slide-24">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene IX — The Wardrobe</span>
+          <h2 class="slide-title">The Monogrammed Garments</h2>
+          <p class="slide-desc">Seven garments hang inside. Each is monogrammed with a single letter. Read them left to right.</p>
+        </div>
+        <div style="max-width:400px;margin:0 auto;">
+          <div style="display:flex;gap:0;justify-content:center;">
+            <div id="wardrobeDoorL" style="width:100px;height:140px;background:rgba(60,35,15,0.85);border:1px solid rgba(212,167,70,0.25);border-radius:4px 0 0 4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:0.6rem;color:rgba(212,167,70,0.3);transition:transform 0.8s ease;transform-origin:left center;">← Open</div>
+            <div id="wardrobeDoorR" style="width:100px;height:140px;background:rgba(60,35,15,0.85);border:1px solid rgba(212,167,70,0.25);border-radius:0 4px 4px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:0.6rem;color:rgba(212,167,70,0.3);transition:transform 0.8s ease;transform-origin:right center;">Open →</div>
+          </div>
+          <div id="wardrobeInner" style="display:none;margin-top:0.8rem;">
+            <div class="garment-row" id="garmentRow"></div>
+          </div>
+        </div>
+        <div class="answer-area" id="wardrobeAnswer" style="display:none;margin-top:1rem;">
+          <input type="text" class="answer-input" id="wardrobeInput" maxlength="10" placeholder="THE NAME" autocomplete="off">
+          <button class="answer-submit" id="wardrobeSubmit">Confirm</button>
+          <div class="answer-feedback" id="wardrobeFeedback"></div>
+        </div>
+        <p class="puzzle-instruction">Click the wardrobe doors to open them, then click each garment</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 25 -->
+    <div class="slide" id="slide-25">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene X — The Specimen Jars</span>
+          <h2 class="slide-title">The Naturalist's Collection</h2>
+          <p class="slide-desc">Eight specimen jars on the shelf. One contains something that does not belong. Click the anomaly.</p>
+        </div>
+        <div class="jars-row" id="jarsRow"></div>
+        <div class="answer-feedback" id="jarsFeedback" style="text-align:center;margin-top:0.8rem;"></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 26 -->
+    <div class="slide" id="slide-26">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene XI — The Raven Cage</span>
+          <h2 class="slide-title">The Empty Cage</h2>
+          <p class="slide-desc">An ornate cage — empty. A tag on the door reads "EDGAR." Feed seeds to the perches that spell the raven's name.</p>
+        </div>
+        <svg viewBox="0 0 300 200" style="max-width:300px;width:100%;margin:0 auto;display:block;">
+          <rect width="300" height="200" fill="rgba(14,11,18,0.5)" rx="4"/>
+          <rect x="60" y="20" width="180" height="150" rx="4" fill="none" stroke="rgba(212,167,70,0.35)" stroke-width="2"/>
+          <!-- cage bars -->
+          <line x1="90" y1="20" x2="90" y2="170" stroke="rgba(212,167,70,0.2)" stroke-width="1"/>
+          <line x1="120" y1="20" x2="120" y2="170" stroke="rgba(212,167,70,0.2)" stroke-width="1"/>
+          <line x1="150" y1="20" x2="150" y2="170" stroke="rgba(212,167,70,0.2)" stroke-width="1"/>
+          <line x1="180" y1="20" x2="180" y2="170" stroke="rgba(212,167,70,0.2)" stroke-width="1"/>
+          <line x1="210" y1="20" x2="210" y2="170" stroke="rgba(212,167,70,0.2)" stroke-width="1"/>
+          <text id="cageTagText" x="150" y="190" text-anchor="middle" font-family="monospace" font-size="10" fill="rgba(212,167,70,0.5)">EDGAR</text>
+        </svg>
+        <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--parchment-faint);text-align:center;margin:0.4rem 0;">Perches:</div>
+        <div class="perch-row" id="perchRow"></div>
+        <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--parchment-faint);text-align:center;margin:0.4rem 0;">Seeds (click seed, then click target perch):</div>
+        <div class="seed-tray" id="seedTray"></div>
+        <div id="ravenDrawer" style="display:none;text-align:center;margin-top:0.8rem;font-family:var(--font-display);font-size:1.2rem;color:var(--gold);letter-spacing:0.2em;">RAVEN</div>
+        <div class="answer-feedback" id="ravenFeedback" style="text-align:center;margin-top:0.5rem;"></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 27 -->
+    <div class="slide" id="slide-27">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene XII — The Star Chart</span>
+          <h2 class="slide-title">The Astronomical Chart</h2>
+          <p class="slide-desc">Six stars are circled on the chart, numbered 1–6. Click them in order to connect them. The shape they form reveals a letter.</p>
+        </div>
+        <svg id="starChartSvg" viewBox="0 0 320 280" style="max-width:320px;width:100%;margin:0 auto;display:block;border-radius:6px;background:#040208;border:1px solid rgba(212,167,70,0.15);">
+          <!-- background stars -->
+          <circle cx="30" cy="20" r="1" fill="white" opacity="0.3"/>
+          <circle cx="80" cy="45" r="1" fill="white" opacity="0.4"/>
+          <circle cx="200" cy="15" r="1" fill="white" opacity="0.3"/>
+          <circle cx="270" cy="60" r="1" fill="white" opacity="0.5"/>
+          <circle cx="45" cy="120" r="1" fill="white" opacity="0.2"/>
+          <circle cx="250" cy="180" r="1" fill="white" opacity="0.4"/>
+          <circle cx="100" cy="250" r="1" fill="white" opacity="0.3"/>
+          <circle cx="290" cy="240" r="1" fill="white" opacity="0.2"/>
+          <g id="starLinesG"></g>
+          <!-- 6 circled stars forming letter R when connected 1→2→3→4→5→6 -->
+          <!-- 1:top-left, 2:top-right, 3:mid-right, 4:mid-center, 5:bottom-left, 6:bottom-right -->
+          <g class="chart-star" data-sn="1" style="cursor:pointer"><circle cx="100" cy="60" r="10" fill="rgba(212,167,70,0.1)" stroke="rgba(212,167,70,0.5)" stroke-width="1.5"/><text x="100" y="64" text-anchor="middle" font-family="monospace" font-size="9" fill="rgba(212,167,70,0.8)">1</text></g>
+          <g class="chart-star" data-sn="2" style="cursor:pointer"><circle cx="200" cy="60" r="10" fill="rgba(212,167,70,0.1)" stroke="rgba(212,167,70,0.5)" stroke-width="1.5"/><text x="200" y="64" text-anchor="middle" font-family="monospace" font-size="9" fill="rgba(212,167,70,0.8)">2</text></g>
+          <g class="chart-star" data-sn="3" style="cursor:pointer"><circle cx="200" cy="140" r="10" fill="rgba(212,167,70,0.1)" stroke="rgba(212,167,70,0.5)" stroke-width="1.5"/><text x="200" y="144" text-anchor="middle" font-family="monospace" font-size="9" fill="rgba(212,167,70,0.8)">3</text></g>
+          <g class="chart-star" data-sn="4" style="cursor:pointer"><circle cx="100" cy="140" r="10" fill="rgba(212,167,70,0.1)" stroke="rgba(212,167,70,0.5)" stroke-width="1.5"/><text x="100" y="144" text-anchor="middle" font-family="monospace" font-size="9" fill="rgba(212,167,70,0.8)">4</text></g>
+          <g class="chart-star" data-sn="5" style="cursor:pointer"><circle cx="100" cy="220" r="10" fill="rgba(212,167,70,0.1)" stroke="rgba(212,167,70,0.5)" stroke-width="1.5"/><text x="100" y="224" text-anchor="middle" font-family="monospace" font-size="9" fill="rgba(212,167,70,0.8)">5</text></g>
+          <g class="chart-star" data-sn="6" style="cursor:pointer"><circle cx="200" cy="220" r="10" fill="rgba(212,167,70,0.1)" stroke="rgba(212,167,70,0.5)" stroke-width="1.5"/><text x="200" y="224" text-anchor="middle" font-family="monospace" font-size="9" fill="rgba(212,167,70,0.8)">6</text></g>
+          <text id="starMsg" x="160" y="268" text-anchor="middle" font-family="monospace" font-size="9" fill="rgba(212,167,70,0.3)">Click stars 1 → 2 → 3 → 4 → 5 → 6</text>
+        </svg>
+        <div class="answer-feedback" id="starFeedback" style="text-align:center;margin-top:0.8rem;"></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 28 -->
+    <div class="slide" id="slide-28">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene XIII — The Safe</span>
+          <h2 class="slide-title">The Floor Safe</h2>
+          <p class="slide-desc">Lifting the rug reveals a small floor safe. Four digits. The clues were hidden in plain sight throughout both rooms.</p>
+        </div>
+        <div style="border:1px solid rgba(212,167,70,0.25);border-radius:6px;padding:1.5rem;max-width:360px;margin:0 auto;background:rgba(20,15,10,0.7);">
+          <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--parchment-faint);text-align:center;margin-bottom:0.8rem;opacity:0.6;">Hint: clock · inkpot · twenty</div>
+          <div class="dials-row" id="safeDials28"></div>
+          <div id="safe28Door" style="margin-top:1rem;text-align:center;font-family:var(--font-mono);font-size:0.7rem;color:var(--parchment-faint);opacity:0.5;">[ locked ]</div>
+        </div>
+        <div class="answer-feedback" id="safeFeedback" style="text-align:center;margin-top:0.8rem;"></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 29 -->
+    <div class="slide" id="slide-29">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene XIV — The Evidence Board</span>
+          <h2 class="slide-title">Six Whispers</h2>
+          <p class="slide-desc">Six scrambled fragments. Click each card and type the real word to unscramble it.</p>
+        </div>
+        <div class="ev-board" id="evBoard29"></div>
+        <div id="evLetters29" style="display:none;font-family:var(--font-mono);font-size:1.5rem;letter-spacing:0.4em;color:var(--gold);text-align:center;margin-top:1rem;"></div>
+        <p class="puzzle-instruction">Click a card to reveal its input field</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 30 -->
+    <div class="slide" id="slide-30">
+      <div class="slide-frame">
+        <div class="slide-header">
+          <span class="slide-eyebrow">Room II · Scene XV — The Final Page</span>
+          <h2 class="slide-title">The Whispering Page</h2>
+          <p class="slide-desc">Six letters. Signor Venturi's life's work. The word that defines everything he concealed.</p>
+        </div>
+        <div class="final-letters" id="finalLetters30">
+          <span class="final-letter" id="fl0">C</span>
+          <span class="final-letter" id="fl1">I</span>
+          <span class="final-letter" id="fl2">P</span>
+          <span class="final-letter" id="fl3">H</span>
+          <span class="final-letter" id="fl4">E</span>
+          <span class="final-letter" id="fl5">R</span>
+        </div>
+        <div class="answer-area" id="finalAnswerArea30">
+          <input type="text" class="answer-input" id="finalInput30" maxlength="6" placeholder="THE ANSWER" autocomplete="off">
+          <button class="answer-submit" id="finalSubmit30">Submit</button>
+          <div class="answer-feedback" id="finalFeedback30"></div>
+        </div>
+        <div class="victory-panel" id="victoryPanel30">
+          <div style="font-size:2.5rem;">✦</div>
+          <h3>Hunt Complete.</h3>
+          <p style="font-family:var(--font-body);font-style:italic;color:var(--parchment-dim);font-size:0.9rem;">Signor Giacomo Venturi's cipher has been broken.</p>
+          <div class="victory-score" id="victoryScore30">—</div>
+          <div class="victory-breakdown" id="victoryBreakdown30"></div>
+          <div id="lbSubmitArea30" style="margin-top:1.4rem;width:100%;max-width:340px;display:none;">
+            <p style="font-size:0.78rem;color:var(--parchment-dim);margin-bottom:0.7rem;font-style:italic;">Enter your name for the leaderboard:</p>
+            <div style="display:flex;gap:0.5rem;">
+              <input id="lbNameInput30" type="text" maxlength="32" placeholder="Your name…" style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(212,167,70,0.3);border-radius:6px;padding:0.45rem 0.8rem;color:var(--parchment);font-family:var(--font-body);font-size:0.85rem;outline:none;">
+              <button id="lbSubmitBtn30" style="background:var(--gold);color:var(--ink-deep);border:none;border-radius:6px;padding:0.45rem 1rem;font-family:var(--font-display);font-size:0.7rem;font-weight:700;letter-spacing:0.1em;cursor:pointer;">SUBMIT</button>
+            </div>
+            <p id="lbSubmitMsg30" style="font-size:0.72rem;margin-top:0.5rem;min-height:1em;color:var(--gold);"></p>
+          </div>
+          <div id="lbAutoMsg30" style="margin-top:1.2rem;font-size:0.78rem;color:var(--gold);display:none;">✦ Your score has been recorded.</div>
+          <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-top:1.5rem;">
+            <a href="leaderboard.html" style="font-family:var(--font-display);font-size:0.72rem;letter-spacing:0.12em;color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(212,167,70,0.3);">View Leaderboard →</a>
+            <a href="hunts.html" style="font-family:var(--font-display);font-size:0.72rem;letter-spacing:0.12em;color:var(--parchment-dim);text-decoration:none;border-bottom:1px solid rgba(212,167,70,0.2);">More Hunts →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end slide-stage -->
+
+  <nav class="slide-nav">
+    <span class="slide-nav-fragment">
+      <div class="fragment-chips" id="fragmentChips">
+        <div class="word-chip" id="chip-0">······</div>
+        <div class="word-chip" id="chip-1">······</div>
+        <div class="word-chip" id="chip-2">······</div>
+        <div class="word-chip" id="chip-3">······</div>
+        <div class="word-chip" id="chip-4">······</div>
+        <div class="word-chip" id="chip-5">······</div>
+      </div>
+    </span>
+    <button class="btn-next" id="btnNext">Continue →</button>
+  </nav>
+</div><!-- end hunt-wrap -->
+
+<!-- Overlays -->
+<div class="solved-flash" id="solvedFlash"></div>
+<div class="fragment-banner" id="fragmentBanner">
+  <span class="label">Evidence word collected</span>
+  <span class="big-letter" id="bannerLetter">·</span>
+  <span class="label" id="bannerScene">·</span>
+</div>
+<div class="credits-modal" id="creditsModal">
+  <div class="credits-modal-box">
+    <h4 id="creditsModalTitle">Clue Credits</h4>
+    <p id="creditsModalBody">Purchase clue credits to reveal hints.</p>
+    <a id="creditsModalBtn" href="pricing.html" style="display:inline-block;background:var(--gold);color:var(--ink-deep);font-family:var(--font-display);font-size:0.72rem;font-weight:700;letter-spacing:0.12em;padding:0.55rem 1.4rem;border-radius:var(--radius-seal);text-decoration:none;margin-bottom:0.5rem;">Get Credits</a><br>
+    <button class="credits-modal-close" onclick="document.getElementById('creditsModal').classList.remove('open')">Close</button>
+  </div>
+</div>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, collection, addDoc, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC4BpJBiNOMJFLGgOvLJEtiixKXY3sxTvk",
+  authDomain: "impossible-hunt.firebaseapp.com",
+  projectId: "impossible-hunt",
+  storageBucket: "impossible-hunt.firebasestorage.app",
+  messagingSenderId: "741286845376",
+  appId: "1:741286845376:web:a15e33ebc2f8c7b0b5b527"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const provider = new GoogleAuthProvider();
+
+onAuthStateChanged(auth, user => {
+  window._ihUser = user;
+  const el = document.getElementById('userDisplay');
+  if (el) el.textContent = user ? user.displayName || user.email : 'Guest';
+});
+
+document.getElementById('loginBtn')?.addEventListener('click', async () => {
+  try { await signInWithPopup(auth, provider); } catch(e) { console.warn(e); }
+});
+document.getElementById('logoutBtn')?.addEventListener('click', () => auth.signOut());
+
+const HUNT_ID = 'hunt-2';
+
+window._ihSubmitLeaderboard = async function(name, score, seconds) {
+  try {
+    await addDoc(collection(db, 'leaderboard'), {
+      huntId: HUNT_ID,
+      name: name || 'Anonymous',
+      score,
+      seconds,
+      ts: Date.now()
+    });
+    return true;
+  } catch(e) { console.error(e); return false; }
+};
+</script>
+<script>
+(function(){
+'use strict';
+
+// ── constants ────────────────────────────────────────────────────────────────
+const HUNT_ID   = 'hunt-2';
+const LS_KEY    = 'ih_progress_hunt-2';
+const TOTAL_SLIDES = 30;
+
+const WORDS = [
+  { scrambled:'LDNACE',  real:'CANDLE',  letter:'C' },
+  { scrambled:'LWNKELI', real:'INKWELL', letter:'I' },
+  { scrambled:'LUMEP',   real:'PLUME',   letter:'P' },
+  { scrambled:'LOLWOH',  real:'HOLLOW',  letter:'H' },
+  { scrambled:'OHCE',    real:'ECHO',    letter:'E' },
+  { scrambled:'EARVN',   real:'RAVEN',   letter:'R' },
+];
+
+const CLUES = [
+  null,
+  'Breathe slowly onto the card to reveal the hidden inscription.',
+  'Count the candles on the lamp that cast more than one shadow.',
+  'The torn envelope hides a number — find it in the wax seal.',
+  'The chalk symbols beneath the rug spell a word — trace them in order.',
+  'One portrait eye is different. Compare left and right carefully.',
+  'The library call numbers form initials — read them top to bottom.',
+  'Set the clock to the time shown in the portrait downstairs.',
+  'The musical notes map to letters A–G. Read the melody.',
+  'Wipe away the frost to reveal what is written behind.',
+  'The globe marks a city — find it on the map index.',
+  'The ash letters on the floor spell something when read correctly.',
+  'Align the telescope — when stars connect, read the constellation name.',
+  'Lift the chaise cushion — the note beneath gives the combination.',
+  'The cabinet dials must match the date on the letter inside.',
+  'Read the door plate carefully — the name is the answer.',
+  'Hold the candle to the manuscript to reveal the hidden ink.',
+  'Count the blots on the desk blotter — one for each letter.',
+  'The cipher wheel shifts letters by the number of candles lit.',
+  'Hold the mirror up — the backwards text will read forward.',
+  'Play the music box sequence — the notes spell a word.',
+  'Read the first letter of each line in the hidden letter.',
+  'The anatomy diagram labels body parts — first letters spell a name.',
+  'The underlined words in the newspaper form a phrase.',
+  'Read the garment labels left to right — they spell a name.',
+  'One jar label is not in English — that is the odd one out.',
+  'Place seeds on the perches that spell the bird\'s name.',
+  'Connect the stars in order — the constellation is the answer.',
+  'The safe combination is the year on the gravestone outside.',
+  'Arrange the evidence words in the order they were collected.',
+  'The first letter of each evidence word spells the final answer.',
+];
+
+// ── state ────────────────────────────────────────────────────────────────────
+let currentSlide = 1;
+let solvedSlides = new Set();
+let chipsFilled  = new Set();
+let clueCount    = 0;
+let timerSecs    = 0;
+let timerInterval= null;
+let timerRunning = false;
+let startTs      = null;
+
+// ── timer ────────────────────────────────────────────────────────────────────
+function startTimer(){
+  if(timerRunning) return;
+  timerRunning = true;
+  startTs = startTs || Date.now();
+  timerInterval = setInterval(()=>{
+    timerSecs = Math.floor((Date.now()-startTs)/1000);
+    const el = document.getElementById('timerDisplay');
+    if(el) el.textContent = formatTime(timerSecs);
+  }, 1000);
+}
+function stopTimer(){
+  clearInterval(timerInterval);
+  timerRunning = false;
+}
+function formatTime(s){
+  const m = Math.floor(s/60);
+  const ss = String(s%60).padStart(2,'0');
+  return `${m}:${ss}`;
+}
+
+// ── save / restore ────────────────────────────────────────────────────────────
+function buildSaveData(){
+  return {
+    v:2, huntId:HUNT_ID,
+    currentSlide,
+    solvedSlides:[...solvedSlides],
+    chipsFilled:[...chipsFilled],
+    clueCount,
+    timerSecs,
+    startTs
+  };
+}
+function saveProgress(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(buildSaveData())); }catch(e){}
+}
+window._ihSave = saveProgress;
+
+window._ihApplyRestore = function(data){
+  if(!data || data.huntId !== HUNT_ID) return;
+  solvedSlides = new Set(data.solvedSlides||[]);
+  chipsFilled  = new Set(data.chipsFilled||[]);
+  clueCount    = data.clueCount||0;
+  timerSecs    = data.timerSecs||0;
+  startTs      = data.startTs||null;
+  solvedSlides.forEach(n => markSlideSolved(n, true));
+  chipsFilled.forEach(i => fillChip(i, true));
+  updateClueDisplay();
+  activateSlide(data.currentSlide||1, true);
+  if(startTs) startTimer();
+};
+
+function tryRestore(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){ window._ihApplyRestore(JSON.parse(raw)); return; }
+  }catch(e){}
+  activateSlide(1);
+}
+
+// ── clues ─────────────────────────────────────────────────────────────────────
+function updateClueDisplay(){
+  const el = document.getElementById('clueCount');
+  if(el) el.textContent = clueCount;
+}
+
+window._ihUseClue = function(slideNum){
+  const txt = CLUES[slideNum];
+  if(!txt) return;
+  clueCount++;
+  updateClueDisplay();
+  saveProgress();
+  const el = document.querySelector(`#slide-${slideNum} .clue-text`);
+  if(el){ el.textContent = txt; el.style.display='block'; }
+};
+
+document.getElementById('clueBtn')?.addEventListener('click', ()=>{
+  const creditsModal = document.getElementById('creditsModal');
+  // check credits via window._ihUseClue after credits confirmed
+  const body = document.getElementById('creditsModalBody');
+  if(body) body.textContent = `Reveal a hint for scene ${currentSlide}? This uses 1 clue credit.`;
+  const btn  = document.getElementById('creditsModalBtn');
+  if(btn){
+    btn.textContent = 'Use Credit';
+    btn.onclick = ()=>{
+      window._ihUseClue(currentSlide);
+      creditsModal.classList.remove('open');
+    };
+    btn.href = '#';
+    btn.style.background = 'var(--gold)';
+  }
+  creditsModal.classList.add('open');
+});
+
+// ── chips ─────────────────────────────────────────────────────────────────────
+function fillChip(idx, silent){
+  if(chipsFilled.has(idx)) return;
+  chipsFilled.add(idx);
+  const chip = document.getElementById(`chip-${idx}`);
+  if(chip){
+    chip.classList.add('filled');
+    chip.textContent = WORDS[idx].letter;
+  }
+  if(!silent) showFragmentBanner(idx);
+}
+function showFragmentBanner(idx){
+  const b = document.getElementById('fragmentBanner');
+  const l = document.getElementById('bannerLetter');
+  const s = document.getElementById('bannerScene');
+  if(!b) return;
+  if(l) l.textContent = WORDS[idx].letter;
+  if(s) s.textContent = WORDS[idx].real;
+  b.classList.add('show');
+  setTimeout(()=>b.classList.remove('show'), 2800);
+}
+
+// ── solved ────────────────────────────────────────────────────────────────────
+function markSlideSolved(n, silent){
+  solvedSlides.add(n);
+  const slide = document.getElementById(`slide-${n}`);
+  if(slide) slide.classList.add('solved');
+  if(!silent) saveProgress();
+}
+
+function flashSolved(msg){
+  const el = document.getElementById('solvedFlash');
+  if(!el) return;
+  el.textContent = msg || '✓ Solved';
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 1800);
+}
+
+// ── nav ───────────────────────────────────────────────────────────────────────
+function updateNextBtn(){
+  const btn = document.getElementById('btnNext');
+  if(!btn) return;
+  const solved = solvedSlides.has(currentSlide);
+  btn.disabled = !solved;
+  btn.style.opacity = solved ? '1' : '0.35';
+}
+
+function activateSlide(n, restoring){
+  currentSlide = n;
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  const slide = document.getElementById(`slide-${n}`);
+  if(slide) slide.classList.add('active');
+
+  // room label
+  const rl = document.getElementById('roomLabel');
+  if(rl) rl.textContent = n <= 15 ? 'Room I · The Parlour' : 'Room II · Signor Venturi\'s Study';
+
+  // slide counter
+  const sc = document.getElementById('slideCounter');
+  if(sc) sc.textContent = `${n} / ${TOTAL_SLIDES}`;
+
+  updateNextBtn();
+  if(!restoring) saveProgress();
+
+  // init scene
+  switch(n){
+    case 1:  initScene1();  break;
+    case 2:  initScene2();  break;
+    case 3:  initScene3();  break;
+    case 4:  initScene4();  break;
+    case 5:  initScene5();  break;
+    case 6:  initScene6();  break;
+    case 7:  initScene7();  break;
+    case 8:  initScene8();  break;
+    case 9:  initScene9();  break;
+    case 10: initScene10(); break;
+    case 11: initScene11(); break;
+    case 12: initScene12(); break;
+    case 13: initScene13(); break;
+    case 14: initScene14(); break;
+    case 15: initScene15(); break;
+    case 16: initScene16(); break;
+    case 17: initScene17(); break;
+    case 18: initScene18(); break;
+    case 19: initScene19(); break;
+    case 20: initScene20(); break;
+    case 21: initScene21(); break;
+    case 22: initScene22(); break;
+    case 23: initScene23(); break;
+    case 24: initScene24(); break;
+    case 25: initScene25(); break;
+    case 26: initScene26(); break;
+    case 27: initScene27(); break;
+    case 28: initScene28(); break;
+    case 29: initScene29(); break;
+    case 30: initScene30(); break;
+  }
+}
+
+document.getElementById('btnNext')?.addEventListener('click', ()=>{
+  if(currentSlide < TOTAL_SLIDES) activateSlide(currentSlide+1);
+});
+document.getElementById('btnPrev')?.addEventListener('click', ()=>{
+  if(currentSlide > 1) activateSlide(currentSlide-1);
+});
+// ══════════════════════════════════════════════════════════════════════════════
+// SCENE INIT FUNCTIONS
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Scene 1 – Breath on the card (CANDLE C) — word chip earned
+let s1done=false;
+function initScene1(){
+  if(s1done)return; s1done=true;
+  startTimer();
+  const card  = document.getElementById('breathCard');
+  const frost = document.getElementById('frostLayer');
+  const txt   = document.getElementById('cardText');
+  const fill  = document.getElementById('breathFill');
+  if(!card) return;
+
+  let progress = 0;
+  let holding  = false;
+  let raf;
+
+  function grow(){
+    if(!holding) return;
+    progress = Math.min(100, progress+1.2);
+    if(fill) fill.style.width = progress+'%';
+    if(progress >= 100 && !solvedSlides.has(1)){
+      frost.style.opacity='0';
+      txt.style.opacity='1';
+      setTimeout(()=>{
+        markSlideSolved(1);
+        fillChip(0);
+        flashSolved('✦ CANDLE revealed');
+        updateNextBtn();
+      },600);
+      return;
+    }
+    raf = requestAnimationFrame(grow);
+  }
+
+  function start(){ holding=true; raf=requestAnimationFrame(grow); }
+  function stop(){ holding=false; cancelAnimationFrame(raf);
+    if(progress<100){ progress=Math.max(0,progress-20);
+      if(fill) fill.style.width=progress+'%'; }
+  }
+
+  card.addEventListener('mousedown', start);
+  card.addEventListener('touchstart', e=>{e.preventDefault();start();},{passive:false});
+  card.addEventListener('mouseup',   stop);
+  card.addEventListener('mouseleave',stop);
+  card.addEventListener('touchend',  stop);
+  card.addEventListener('touchcancel',stop);
+
+  if(solvedSlides.has(1)){
+    progress=100;
+    if(frost) frost.style.opacity='0';
+    if(txt) txt.style.opacity='1';
+    if(fill) fill.style.width='100%';
+  }
+}
+
+// Scene 2 – Lamp shadows (answer: 4) — navigation only
+let s2done=false;
+function initScene2(){
+  if(s2done)return; s2done=true;
+  const fb = document.getElementById('lampFeedback');
+  document.querySelectorAll('#lampSvg .shadow-arm').forEach(arm=>{
+    arm.addEventListener('click',()=>{
+      const num = parseInt(arm.dataset.num||'0');
+      if(num===4){
+        markSlideSolved(2);
+        flashSolved('✦ Correct — 4 shadows');
+        updateNextBtn();
+        if(fb){fb.textContent='The lamp with four shadows points the way.';fb.className='feedback ok';}
+      } else {
+        if(fb){fb.textContent='Not this one — count more carefully.';fb.className='feedback err';}
+      }
+    });
+  });
+  if(solvedSlides.has(2) && fb){fb.textContent='The lamp with four shadows points the way.';fb.className='feedback ok';}
+}
+
+// Scene 3 – Envelope / wax seal (INKWELL I) word chip
+let s3done=false;
+function initScene3(){
+  if(s3done)return; s3done=true;
+  const drawer = document.getElementById('deskDrawer');
+  const fb     = document.getElementById('envFeedback');
+  if(!drawer) return;
+
+  drawer.addEventListener('click',()=>{
+    if(solvedSlides.has(3)) return;
+    drawer.classList.add('open');
+    document.getElementById('envInstruction').style.display='block';
+  });
+
+  document.getElementById('envSubmit')?.addEventListener('click',()=>{
+    const val = (document.getElementById('envInput')?.value||'').trim().toUpperCase();
+    if(val==='7' || val==='SEVEN'){
+      markSlideSolved(3);
+      fillChip(1);
+      flashSolved('✦ INKWELL revealed');
+      updateNextBtn();
+      if(fb){fb.textContent='The wax seal bears the number 7.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Look more carefully at the seal impression.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(3)){
+    if(drawer) drawer.classList.add('open');
+    if(fb){fb.textContent='The wax seal bears the number 7.';fb.className='feedback ok';}
+  }
+}
+
+// Scene 4 – Chalk symbols under rug (answer: GHOST)
+let s4done=false;
+function initScene4(){
+  if(s4done)return; s4done=true;
+  const rug = document.getElementById('rugDiv');
+  const fb  = document.getElementById('rugFeedback');
+  if(!rug) return;
+
+  rug.addEventListener('click',()=>{ rug.classList.toggle('lifted'); });
+
+  document.getElementById('rugSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('rugInput')?.value||'').trim().toUpperCase();
+    if(val==='GHOST'){
+      markSlideSolved(4);
+      flashSolved('✦ GHOST — the chalk message revealed');
+      updateNextBtn();
+      if(fb){fb.textContent='The chalk symbols spell GHOST.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Trace the symbols in order — what do they spell?';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(4) && fb){fb.textContent='The chalk symbols spell GHOST.';fb.className='feedback ok';}
+}
+
+// Scene 5 – Portrait eyes (answer: G and V → GV → "Giacomo Venturi")
+let s5done=false;
+function initScene5(){
+  if(s5done)return; s5done=true;
+  const fb = document.getElementById('portraitMsg');
+  const svgEl = document.getElementById('portraitSvg');
+  if(!svgEl) return;
+
+  document.getElementById('portraitSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('portraitInput')?.value||'').trim().toUpperCase();
+    if(val==='GV' || val==='GIACOMO VENTURI' || val==='VENTURI'){
+      markSlideSolved(5);
+      flashSolved('✦ The initials G.V. — Giacomo Venturi');
+      updateNextBtn();
+      if(fb){fb.textContent='The eyes reveal G.V. — Giacomo Venturi.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Compare the two irises closely — one hides a letter.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(5) && fb){fb.textContent='The eyes reveal G.V. — Giacomo Venturi.';fb.className='feedback ok';}
+}
+
+// Scene 6 – Bookshelf call numbers → VENTU (clue to Venturi)
+let s6done=false;
+function initScene6(){
+  if(s6done)return; s6done=true;
+  const fb = document.getElementById('bookFeedback');
+  document.getElementById('bookSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('bookInput')?.value||'').trim().toUpperCase();
+    if(val==='VENTURI' || val==='VENTU'){
+      markSlideSolved(6);
+      flashSolved('✦ The shelves name Venturi');
+      updateNextBtn();
+      if(fb){fb.textContent='The call numbers spell V-E-N-T-U-R-I.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Read the first letter of each shelf label top to bottom.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(6) && fb){fb.textContent='The call numbers spell V-E-N-T-U-R-I.';fb.className='feedback ok';}
+}
+
+// Scene 7 – Clock puzzle (answer: 11:47)
+let s7done=false;
+function initScene7(){
+  if(s7done)return; s7done=true;
+  const fb = document.getElementById('clockFeedback');
+  let hAngle=0, mAngle=0;
+  const hHand = document.getElementById('hourHand');
+  const mHand = document.getElementById('minHand');
+
+  function updateClock(){
+    if(hHand) hHand.setAttribute('transform',`rotate(${hAngle},200,200)`);
+    if(mHand) mHand.setAttribute('transform',`rotate(${mAngle},200,200)`);
+  }
+
+  document.getElementById('hourPlus')?.addEventListener('click',()=>{hAngle=(hAngle+30)%360;updateClock();});
+  document.getElementById('hourMinus')?.addEventListener('click',()=>{hAngle=(hAngle-30+360)%360;updateClock();});
+  document.getElementById('minPlus')?.addEventListener('click',()=>{mAngle=(mAngle+6)%360;updateClock();});
+  document.getElementById('minMinus')?.addEventListener('click',()=>{mAngle=(mAngle-6+360)%360;updateClock();});
+
+  document.getElementById('clockSubmit')?.addEventListener('click',()=>{
+    // 11:47 → hour hand at 11*30+47*0.5=330+23.5=353.5 ≈354, min hand at 47*6=282
+    const hOk = Math.abs(((hAngle%360)+360)%360 - 354) < 20;
+    const mOk = Math.abs(((mAngle%360)+360)%360 - 282) < 15;
+    if(hOk && mOk){
+      markSlideSolved(7);
+      flashSolved('✦ 11:47 — the appointed hour');
+      updateNextBtn();
+      if(fb){fb.textContent='The clock reads 11:47 — the time on the portrait.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Set the hands to the time shown in the parlour portrait.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(7) && fb){fb.textContent='The clock reads 11:47.';fb.className='feedback ok';}
+}
+
+// Scene 8 – Musical notes (answer: FADE)
+let s8done=false;
+function initScene8(){
+  if(s8done)return; s8done=true;
+  const fb = document.getElementById('noteFeedback');
+  document.getElementById('noteSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('noteInput')?.value||'').trim().toUpperCase();
+    if(val==='FADE'){
+      markSlideSolved(8);
+      flashSolved('✦ The melody spells FADE');
+      updateNextBtn();
+      if(fb){fb.textContent='F-A-D-E — the notes fade like a memory.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Map each musical note to its letter name.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(8) && fb){fb.textContent='F-A-D-E — the notes fade like a memory.';fb.className='feedback ok';}
+}
+
+// Scene 9 – Fog canvas wipe → VENTURI
+let s9done=false;
+function initScene9(){
+  if(s9done)return; s9done=true;
+  const canvas = document.getElementById('fogCanvas');
+  const fb     = document.getElementById('fogFeedback');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  // Fill with frost
+  ctx.fillStyle = '#c8d8e8';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  let painting=false;
+  function wipe(e){
+    if(!painting) return;
+    const r = canvas.getBoundingClientRect();
+    const x = (e.clientX||e.touches[0].clientX) - r.left;
+    const y = (e.clientY||e.touches[0].clientY) - r.top;
+    ctx.globalCompositeOperation='destination-out';
+    ctx.beginPath();
+    ctx.arc(x,y,22,0,Math.PI*2);
+    ctx.fill();
+  }
+  canvas.addEventListener('mousedown',()=>{painting=true;});
+  canvas.addEventListener('mousemove',wipe);
+  canvas.addEventListener('mouseup',()=>{painting=false;});
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();painting=true;},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();wipe(e.touches[0]||e);},{passive:false});
+  canvas.addEventListener('touchend',()=>{painting=false;});
+
+  document.getElementById('fogSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('fogInput')?.value||'').trim().toUpperCase();
+    if(val==='VENTURI'){
+      markSlideSolved(9);
+      flashSolved('✦ VENTURI — the frost lifts');
+      updateNextBtn();
+      if(fb){fb.textContent='The frost concealed the name VENTURI.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Wipe away the frost — a name is written beneath.';fb.className='feedback err';}
+    }
+  });
+
+  if(solvedSlides.has(9)){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(fb){fb.textContent='The frost concealed the name VENTURI.';fb.className='feedback ok';}
+  }
+}
+
+// Scene 10 – Globe → VENICE (PLUME P) word chip
+let s10done=false;
+function initScene10(){
+  if(s10done)return; s10done=true;
+  const fb = document.getElementById('globeFeedback');
+  document.getElementById('globeSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('globeInput')?.value||'').trim().toUpperCase();
+    if(val==='VENICE'){
+      markSlideSolved(10);
+      fillChip(2);
+      flashSolved('✦ PLUME revealed — Venice marked on the globe');
+      updateNextBtn();
+      if(fb){fb.textContent='The globe marks Venice — Venturi\'s home city.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Find the pin on the globe and name the city.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(10)){
+    if(fb){fb.textContent='The globe marks Venice — Venturi\'s home city.';fb.className='feedback ok';}
+  }
+}
+
+// Scene 11 – Ash letters → VENTI (part of Venturi)
+let s11done=false;
+function initScene11(){
+  if(s11done)return; s11done=true;
+  const fb = document.getElementById('ashFeedback');
+  document.getElementById('ashSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('ashInput')?.value||'').trim().toUpperCase();
+    if(val==='VENTI' || val==='VENTURI'){
+      markSlideSolved(11);
+      flashSolved('✦ The ash spells VENTI');
+      updateNextBtn();
+      if(fb){fb.textContent='The ash letters spell V-E-N-T-I.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Read the scattered ash letters in order.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(11) && fb){fb.textContent='The ash letters spell V-E-N-T-I.';fb.className='feedback ok';}
+}
+
+// Scene 12 – Telescope / stars → ORION
+let s12done=false;
+function initScene12(){
+  if(s12done)return; s12done=true;
+  const fb = document.getElementById('teleFeedback');
+  document.getElementById('teleSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('teleInput')?.value||'').trim().toUpperCase();
+    if(val==='ORION'){
+      markSlideSolved(12);
+      flashSolved('✦ Orion — the hunter in the sky');
+      updateNextBtn();
+      if(fb){fb.textContent='The stars form the constellation Orion.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Focus the telescope and trace the star pattern.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(12) && fb){fb.textContent='The stars form the constellation Orion.';fb.className='feedback ok';}
+}
+
+// Scene 13 – Chaise cushion → hidden note (answer: 372)
+let s13done=false;
+function initScene13(){
+  if(s13done)return; s13done=true;
+  const cushion = document.getElementById('cushion');
+  const note    = document.getElementById('hiddenNote');
+  const fb      = document.getElementById('chaiseFeedback');
+  if(cushion && note){
+    cushion.addEventListener('click',()=>{
+      cushion.style.display='none';
+      note.style.display='block';
+    });
+  }
+  document.getElementById('chaiseSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('chaiseInput')?.value||'').trim();
+    if(val==='372'){
+      markSlideSolved(13);
+      flashSolved('✦ 372 — the combination is found');
+      updateNextBtn();
+      if(fb){fb.textContent='The hidden note reads: 372.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='The note has three digits — what does it say?';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(13) && fb){fb.textContent='The hidden note reads: 372.';fb.className='feedback ok';}
+}
+
+// Scene 14 – Cabinet dials (HOLLOW H) combo 3,7,2 word chip
+let s14done=false;
+function initScene14(){
+  if(s14done)return; s14done=true;
+  const fb = document.getElementById('cabinet14Feedback');
+  const door = document.getElementById('cabinet14Door');
+  const dials = document.querySelectorAll('#cabinetDials14 .dial-display');
+  const vals  = [0,0,0];
+  const COMBO = [3,7,2];
+
+  document.querySelectorAll('#cabinetDials14 .dial-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const di = parseInt(btn.dataset.di||'0');
+      const dir= parseInt(btn.dataset.dir||'1');
+      vals[di] = (vals[di]+dir+10)%10;
+      if(dials[di]) dials[di].textContent = vals[di];
+      // check
+      if(vals[0]===COMBO[0]&&vals[1]===COMBO[1]&&vals[2]===COMBO[2]){
+        if(door) door.classList.add('open');
+        markSlideSolved(14);
+        fillChip(3);
+        flashSolved('✦ HOLLOW revealed — cabinet opens');
+        updateNextBtn();
+        if(fb){fb.textContent='The cabinet swings open.';fb.className='feedback ok';}
+      }
+    });
+  });
+  if(solvedSlides.has(14)){
+    if(door) door.classList.add('open');
+    if(fb){fb.textContent='The cabinet swings open.';fb.className='feedback ok';}
+  }
+}
+
+// Scene 15 – Door plate → VENTURI (final room 1 gate)
+let s15done=false;
+function initScene15(){
+  if(s15done)return; s15done=true;
+  const fb = document.getElementById('doorFeedback');
+  document.getElementById('doorSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('doorInput')?.value||'').trim().toUpperCase();
+    if(val==='VENTURI'){
+      markSlideSolved(15);
+      flashSolved('✦ The door to Venturi\'s study opens');
+      updateNextBtn();
+      document.getElementById('doorLeft')?.classList.add('open');
+      document.getElementById('doorRight')?.classList.add('open');
+      if(fb){fb.textContent='The door plate reads VENTURI — you may enter.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Read the name plate on the door carefully.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(15)){
+    document.getElementById('doorLeft')?.classList.add('open');
+    document.getElementById('doorRight')?.classList.add('open');
+    if(fb){fb.textContent='The door plate reads VENTURI — you may enter.';fb.className='feedback ok';}
+  }
+}
+// Scene 16 – Candle / manuscript hidden ink
+let s16done=false;
+function initScene16(){
+  if(s16done)return; s16done=true;
+  const fb     = document.getElementById('manuFeedback');
+  const prog   = document.getElementById('candleProg');
+  const overlay= document.getElementById('flameOverlay16');
+  const texts  = ['inkText1','inkText2','inkText3'].map(id=>document.getElementById(id));
+  let heat=0, heating=false, raf16;
+
+  function warmUp(){
+    if(!heating) return;
+    heat=Math.min(100,heat+0.8);
+    if(prog) prog.style.width=heat+'%';
+    if(heat>30 && overlay) overlay.style.opacity=String(heat/200);
+    texts.forEach((t,i)=>{ if(t) t.style.opacity = heat>=(35+i*25) ? '1':'0'; });
+    if(heat>=100 && !solvedSlides.has(16)){
+      markSlideSolved(16);
+      flashSolved('✦ Hidden ink revealed');
+      updateNextBtn();
+      if(fb){fb.textContent='The heat reveals the hidden message.';fb.className='feedback ok';}
+      return;
+    }
+    raf16=requestAnimationFrame(warmUp);
+  }
+
+  const btn = document.getElementById('candleBtn');
+  if(btn){
+    btn.addEventListener('mousedown',()=>{heating=true;raf16=requestAnimationFrame(warmUp);});
+    btn.addEventListener('touchstart',e=>{e.preventDefault();heating=true;raf16=requestAnimationFrame(warmUp);},{passive:false});
+    btn.addEventListener('mouseup',()=>{heating=false;cancelAnimationFrame(raf16);});
+    btn.addEventListener('mouseleave',()=>{heating=false;cancelAnimationFrame(raf16);});
+    btn.addEventListener('touchend',()=>{heating=false;cancelAnimationFrame(raf16);});
+  }
+  if(solvedSlides.has(16)){
+    heat=100;
+    if(prog) prog.style.width='100%';
+    texts.forEach(t=>{ if(t) t.style.opacity='1'; });
+    if(fb){fb.textContent='The heat reveals the hidden message.';fb.className='feedback ok';}
+  }
+}
+
+// Scene 17 – Ink blots → count 7
+let s17done=false;
+function initScene17(){
+  if(s17done)return; s17done=true;
+  const fb = document.getElementById('inkFeedback');
+  document.getElementById('inkSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('inkInput')?.value||'').trim().toUpperCase();
+    if(val==='7'||val==='SEVEN'){
+      markSlideSolved(17);
+      flashSolved('✦ Seven blots on the blotter');
+      updateNextBtn();
+      if(fb){fb.textContent='There are exactly 7 ink blots on the blotter.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Count each stain on the desk blotter carefully.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(17) && fb){fb.textContent='There are exactly 7 ink blots on the blotter.';fb.className='feedback ok';}
+}
+
+// Scene 18 – Cipher wheel (ECHO E) ZIRMGI offset 4 → VENICE
+let s18done=false;
+function initScene18(){
+  if(s18done)return; s18done=true;
+  const encoded = 'ZIRMGI';
+  let offset=0;
+  const decoded = document.getElementById('cipherDecoded');
+
+  function updateDecoded(){
+    const result = encoded.split('').map(c=>{
+      const code = c.charCodeAt(0)-65;
+      return String.fromCharCode(((code-offset+26)%26)+65);
+    }).join('');
+    if(decoded) decoded.textContent = result;
+  }
+  updateDecoded();
+
+  document.getElementById('cipherPlus')?.addEventListener('click',()=>{offset=(offset+1)%26;updateDecoded();const oe=document.getElementById('cipherOffset');if(oe)oe.textContent=offset;});
+  document.getElementById('cipherMinus')?.addEventListener('click',()=>{offset=(offset-1+26)%26;updateDecoded();const oe=document.getElementById('cipherOffset');if(oe)oe.textContent=offset;});
+
+  const cFb = document.getElementById('cipherFeedback');
+  document.getElementById('cipherSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('cipherInput')?.value||'').trim().toUpperCase();
+    if(val==='VENICE'){
+      markSlideSolved(18);
+      flashSolved('✦ VENICE — the city of whispers');
+      updateNextBtn();
+      if(cFb){cFb.textContent='The cipher decodes to VENICE.';cFb.className='feedback ok';}
+    } else {
+      if(cFb){cFb.textContent='Adjust the offset until the decoded word is meaningful.';cFb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(18)){
+    offset=4; updateDecoded();
+    const oe=document.getElementById('cipherOffset');if(oe)oe.textContent='4';
+    if(cFb){cFb.textContent='The cipher decodes to VENICE.';cFb.className='feedback ok';}
+  }
+}
+
+// Scene 19 – Mirror text → THE SEVENTH SEAL
+let s19done=false;
+function initScene19(){
+  if(s19done)return; s19done=true;
+  const fb = document.getElementById('mirrorFeedback');
+  document.getElementById('mirrorSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('mirrorInput')?.value||'').trim().toUpperCase();
+    if(val==='THE SEVENTH SEAL'||val==='SEVENTH SEAL'||val==='SEVENTH'){
+      markSlideSolved(19);
+      flashSolved('✦ The Seventh Seal');
+      updateNextBtn();
+      if(fb){fb.textContent='The mirror text reads: THE SEVENTH SEAL.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Hold the mirror up — the text will read forward.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(19) && fb){fb.textContent='The mirror text reads: THE SEVENTH SEAL.';fb.className='feedback ok';}
+}
+
+// Scene 20 – Music box sequence (ECHO E) E,C,H,O → ECHO word chip
+let s20done=false;
+function initScene20(){
+  if(s20done)return; s20done=true;
+  const fb = document.getElementById('sheetFeedback');
+  document.getElementById('sheetSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('sheetInput')?.value||'').trim().toUpperCase();
+    if(val==='ECHO'){
+      markSlideSolved(20);
+      fillChip(4);
+      flashSolved('✦ ECHO revealed — the music fades');
+      updateNextBtn();
+      if(fb){fb.textContent='The music box plays E-C-H-O.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Play the sequence and note each musical letter.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(20)){
+    if(fb){fb.textContent='The music box plays E-C-H-O.';fb.className='feedback ok';}
+  }
+}
+
+// Scene 21 – Hidden letter acrostic → VENTI
+let s21done=false;
+function initScene21(){
+  if(s21done)return; s21done=true;
+  const fb = document.getElementById('letterBoxFeedback');
+  document.getElementById('letterBoxSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('letterBoxInput')?.value||'').trim().toUpperCase();
+    if(val==='VENTI'||val==='VENTURI'){
+      markSlideSolved(21);
+      flashSolved('✦ The letter names Venti');
+      updateNextBtn();
+      if(fb){fb.textContent='The first letters spell V-E-N-T-I.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Read the first letter of each line in the hidden letter.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(21) && fb){fb.textContent='The first letters spell V-E-N-T-I.';fb.className='feedback ok';}
+}
+
+// Scene 22 – Anatomy labels → VENTI → Venturi
+let s22done=false;
+function initScene22(){
+  if(s22done)return; s22done=true;
+  const fb = document.getElementById('anatomyFeedback');
+  document.getElementById('anatomySubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('anatomyInput')?.value||'').trim().toUpperCase();
+    if(val==='VENTI'||val==='VENTURI'){
+      markSlideSolved(22);
+      flashSolved('✦ The anatomy names Venturi');
+      updateNextBtn();
+      if(fb){fb.textContent='The labels: Vertex, Extensor, Nodus, Tibia, Iris → V.E.N.T.I.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Read the first letter of each anatomical label.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(22) && fb){fb.textContent='The labels spell V.E.N.T.I.';fb.className='feedback ok';}
+}
+
+// Scene 23 – Newspaper underlines → "MEET AT MIDNIGHT"
+let s23done=false;
+function initScene23(){
+  if(s23done)return; s23done=true;
+  const fb = document.getElementById('newsFeedback');
+  document.getElementById('newsSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('newsInput')?.value||'').trim().toUpperCase();
+    if(val==='MEET AT MIDNIGHT'||val==='MIDNIGHT'){
+      markSlideSolved(23);
+      flashSolved('✦ Meet at midnight');
+      updateNextBtn();
+      if(fb){fb.textContent='The underlined words read: MEET AT MIDNIGHT.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Find the underlined words and read them in order.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(23) && fb){fb.textContent='The underlined words: MEET AT MIDNIGHT.';fb.className='feedback ok';}
+}
+
+// Scene 24 – Wardrobe garment labels → GIACOMO
+let s24done=false;
+function initScene24(){
+  if(s24done)return; s24done=true;
+  const fb = document.getElementById('wardrobeFeedback');
+  const doorL = document.getElementById('wardrobeDoorL');
+  const doorR = document.getElementById('wardrobeDoorR');
+  const inner = document.getElementById('wardrobeInner');
+
+  if(doorL) doorL.addEventListener('click',()=>{ doorL.classList.add('open'); if(doorR) doorR.classList.add('open'); if(inner) inner.style.display='flex'; });
+
+  document.getElementById('wardrobeSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('wardrobeInput')?.value||'').trim().toUpperCase();
+    if(val==='GIACOMO'){
+      markSlideSolved(24);
+      flashSolved('✦ GIACOMO — his name in cloth');
+      updateNextBtn();
+      if(fb){fb.textContent='The garment labels spell G-I-A-C-O-M-O.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Open the wardrobe and read the garment tag letters in order.';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(24)){
+    if(doorL) doorL.classList.add('open');
+    if(doorR) doorR.classList.add('open');
+    if(inner) inner.style.display='flex';
+    if(fb){fb.textContent='The garment labels spell G-I-A-C-O-M-O.';fb.className='feedback ok';}
+  }
+}
+
+// Scene 25 – Jars anomaly → "Carta" (Italian for paper/charter)
+let s25done=false;
+function initScene25(){
+  if(s25done)return; s25done=true;
+  const fb = document.getElementById('jarsFeedback');
+  document.querySelectorAll('#jarsRow .jar').forEach(jar=>{
+    jar.addEventListener('click',()=>{
+      if(jar.dataset.odd==='true'){
+        markSlideSolved(25);
+        flashSolved('✦ Carta — the Italian outlier');
+        updateNextBtn();
+        if(fb){fb.textContent='"Carta" is the only Italian label — it means paper.';fb.className='feedback ok';}
+      } else {
+        if(fb){fb.textContent='One jar is labelled differently — find the odd one out.';fb.className='feedback err';}
+      }
+    });
+  });
+  if(solvedSlides.has(25) && fb){fb.textContent='"Carta" is the only Italian label.';fb.className='feedback ok';}
+}
+
+// Scene 26 – Raven perch puzzle (RAVEN R) → place seeds on E,D,G,A,R word chip
+let s26done=false;
+function initScene26(){
+  if(s26done)return; s26done=true;
+  const fb = document.getElementById('ravenFeedback');
+  const TARGET = ['E','D','G','A','R'];
+  let placed = new Set();
+
+  document.querySelectorAll('#perchRow .perch').forEach(perch=>{
+    perch.addEventListener('click',()=>{
+      const ltr = perch.dataset.letter;
+      if(TARGET.includes(ltr)){
+        perch.classList.add('seeded');
+        placed.add(ltr);
+        if(TARGET.every(l=>placed.has(l)) && !solvedSlides.has(26)){
+          markSlideSolved(26);
+          fillChip(5);
+          flashSolved('✦ RAVEN revealed — Edgar the raven');
+          updateNextBtn();
+          if(fb){fb.textContent='The raven lands on E-D-G-A-R — Edgar.';fb.className='feedback ok';}
+        }
+      } else {
+        if(fb){fb.textContent='The raven is not drawn to this perch.';fb.className='feedback err';}
+      }
+    });
+  });
+  if(solvedSlides.has(26)){
+    TARGET.forEach(l=>{
+      const p = document.querySelector(`#perchRow .perch[data-letter="${l}"]`);
+      if(p) p.classList.add('seeded');
+    });
+    if(fb){fb.textContent='The raven lands on E-D-G-A-R — Edgar.';fb.className='feedback ok';}
+  }
+}
+
+// Scene 27 – Star chart → CYGNUS
+let s27done=false;
+function initScene27(){
+  if(s27done)return; s27done=true;
+  const fb = document.getElementById('starFeedback');
+  document.getElementById('starSubmit')?.addEventListener('click',()=>{
+    const val=(document.getElementById('starInput')?.value||'').trim().toUpperCase();
+    if(val==='CYGNUS'){
+      markSlideSolved(27);
+      flashSolved('✦ Cygnus — the swan constellation');
+      updateNextBtn();
+      if(fb){fb.textContent='The stars form the constellation Cygnus.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent='Connect the numbered stars — what constellation do they form?';fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(27) && fb){fb.textContent='The stars form Cygnus.';fb.className='feedback ok';}
+}
+
+// Scene 28 – Safe dials combo 6,7,2,0
+let s28done=false;
+function initScene28(){
+  if(s28done)return; s28done=true;
+  const fb   = document.getElementById('safeFeedback');
+  const door = document.getElementById('safe28Door');
+  const dials= document.querySelectorAll('#safeDials28 .dial-display');
+  const vals = [0,0,0,0];
+  const COMBO= [6,7,2,0];
+
+  document.querySelectorAll('#safeDials28 .dial-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const di = parseInt(btn.dataset.di||'0');
+      const dir= parseInt(btn.dataset.dir||'1');
+      vals[di]=(vals[di]+dir+10)%10;
+      if(dials[di]) dials[di].textContent=vals[di];
+      if(vals[0]===COMBO[0]&&vals[1]===COMBO[1]&&vals[2]===COMBO[2]&&vals[3]===COMBO[3]){
+        if(door) door.classList.add('open');
+        markSlideSolved(28);
+        flashSolved('✦ Safe opens — 1672');
+        updateNextBtn();
+        if(fb){fb.textContent='The safe opens. The year 1672 was on the gravestone.';fb.className='feedback ok';}
+      }
+    });
+  });
+  if(solvedSlides.has(28)){
+    if(door) door.classList.add('open');
+    if(fb){fb.textContent='The safe opens. 1672.';fb.className='feedback ok';}
+  }
+}
+
+// Scene 29 – Evidence board (arrange 6 words)
+let s29done=false;
+function initScene29(){
+  if(s29done)return; s29done=true;
+  const fb = document.getElementById('evFeedback29')||document.querySelector('#slide-29 .feedback');
+  // auto-populate from chipsFilled
+  WORDS.forEach((w,i)=>{
+    const el = document.getElementById(`ev-word-${i}`);
+    if(el) el.textContent = chipsFilled.has(i) ? w.real : '?????';
+  });
+  document.getElementById('evSubmit29')?.addEventListener('click',()=>{
+    if(chipsFilled.size === 6){
+      markSlideSolved(29);
+      flashSolved('✦ All evidence gathered');
+      updateNextBtn();
+      if(fb){fb.textContent='All six words collected. The final answer awaits.';fb.className='feedback ok';}
+    } else {
+      if(fb){fb.textContent=`Still missing ${6-chipsFilled.size} word(s). Keep searching.`;fb.className='feedback err';}
+    }
+  });
+  if(solvedSlides.has(29) && fb){fb.textContent='All six words collected.';fb.className='feedback ok';}
+}
+
+// Scene 30 – Final answer CIPHER
+let s30done=false;
+function initScene30(){
+  if(s30done)return; s30done=true;
+  stopTimer();
+
+  // populate final letters from chips
+  WORDS.forEach((w,i)=>{
+    const fl = document.getElementById(`fl${i}`);
+    if(fl && chipsFilled.has(i)){
+      fl.textContent=w.letter;
+      fl.classList.add('drop');
+    }
+  });
+
+  const fa  = document.getElementById('finalAnswerArea30');
+  const fb30= document.querySelector('#slide-30 .feedback');
+  const vp  = document.getElementById('victoryPanel30');
+  const vs  = document.getElementById('victoryScore30');
+  const vb  = document.getElementById('victoryBreakdown30');
+
+  if(fa) fa.style.display='block';
+
+  document.getElementById('finalSubmit30')?.addEventListener('click',()=>{
+    const val=(document.getElementById('finalInput30')?.value||'').trim().toUpperCase();
+    if(val==='CIPHER'){
+      markSlideSolved(30);
+      updateNextBtn();
+      if(fb30){fb30.textContent='✦ CIPHER — the secret is decoded.';fb30.className='feedback ok';}
+
+      // show victory
+      if(vp) vp.style.display='flex';
+      const score = Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500);
+      if(vs) vs.textContent = score.toLocaleString();
+      if(vb) vb.textContent = `Time: ${formatTime(timerSecs)} · Clues used: ${clueCount}`;
+      saveProgress();
+
+      // leaderboard
+      const lbArea = document.getElementById('lbSubmitArea30');
+      const user   = window._ihUser;
+      if(user){
+        const autoMsg = document.getElementById('lbAutoMsg30');
+        if(autoMsg) autoMsg.style.display='block';
+        window._ihSubmitLeaderboard&&window._ihSubmitLeaderboard(user.displayName||user.email, score, timerSecs);
+      } else {
+        if(lbArea) lbArea.style.display='block';
+        document.getElementById('lbSubmitBtn30')?.addEventListener('click', async ()=>{
+          const name=(document.getElementById('lbNameInput30')?.value||'').trim()||'Anonymous';
+          const ok = window._ihSubmitLeaderboard && await window._ihSubmitLeaderboard(name, score, timerSecs);
+          const msg=document.getElementById('lbSubmitMsg30');
+          if(msg) msg.textContent = ok ? '✦ Score submitted!' : 'Could not submit — try again.';
+        });
+      }
+    } else {
+      if(fb30){fb30.textContent='The letters do not align. Consider the first letter of each word.';fb30.className='feedback err';}
+    }
+  });
+
+  if(solvedSlides.has(30)){
+    if(vp) vp.style.display='flex';
+    const score = Math.max(0, 10000 - Math.floor(timerSecs/8) - clueCount*500);
+    if(vs) vs.textContent = score.toLocaleString();
+    if(vb) vb.textContent = `Time: ${formatTime(timerSecs)} · Clues used: ${clueCount}`;
+  }
+}
+
+// ── bootstrap ─────────────────────────────────────────────────────────────────
+tryRestore();
+
+})();
+</script>
+</body>
+</html>
