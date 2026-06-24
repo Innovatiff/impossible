@@ -993,7 +993,7 @@
 <script type="module">
 import { initializeApp }               from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, deleteField, collection, serverTimestamp, waitForPendingWrites }
+import { getFirestore, doc, setDoc, getDoc, getDocFromServer, updateDoc, increment, deleteField, collection, serverTimestamp, waitForPendingWrites }
   from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
 
 const HUNT_ID = 'hunt-2';
@@ -1030,10 +1030,10 @@ window._ihSave = async function(data) {
   }
 };
 
-/* Clear: write clean doc with restarted:true — setDoc updates local cache immediately
-   so the next getDoc on reload sees the blank state, not the old completed one */
+/* Clear: write clean doc with restarted:true and wait for server ACK */
 window._ihClearProgress = async function() {
   if (window._ihUser) {
+    console.log('[hunt-2] _ihClearProgress: writing restart doc for uid', window._ihUser.uid);
     try {
       await setDoc(doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID), {
         huntId: HUNT_ID,
@@ -1046,8 +1046,12 @@ window._ihClearProgress = async function() {
         completed: false,
         updatedAt: serverTimestamp(),
       });
+      console.log('[hunt-2] _ihClearProgress: setDoc done, waiting for server ACK');
       try { await waitForPendingWrites(db); } catch(we) { console.warn('[hunt-2] waitForPendingWrites:', we); }
+      console.log('[hunt-2] _ihClearProgress: server ACK received');
     } catch(e) { console.error('[hunt-2] _ihClearProgress Firestore failed:', e); }
+  } else {
+    console.warn('[hunt-2] _ihClearProgress: no user, skipping Firestore clear');
   }
   try { localStorage.removeItem(LS_KEY); } catch(e) {}
 };
@@ -1089,8 +1093,12 @@ onAuthStateChanged(auth, async (user) => {
     } catch(e) { console.warn('[hunt-2] clue credit sync failed:', e); }
 
     try {
-      const snap = await getDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID));
-      console.log('[hunt-2] progress snap exists:', snap.exists(), 'IS_RESTART:', IS_RESTART);
+      /* On restart, force a server read to bypass stale offline cache */
+      const progressRef = doc(db, 'users', user.uid, 'progress', HUNT_ID);
+      const snap = IS_RESTART
+        ? await getDocFromServer(progressRef).catch(() => getDoc(progressRef))
+        : await getDoc(progressRef);
+      console.log('[hunt-2] progress snap exists:', snap.exists(), 'IS_RESTART:', IS_RESTART, 'restarted:', snap.data()?.restarted);
       if (snap.exists()) {
         deliver(snap.data());
       } else {
