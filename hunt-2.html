@@ -160,8 +160,14 @@
       background:radial-gradient(ellipse at center top, rgba(40,15,55,0.35) 0%, transparent 70%);
     }
 
+    /* Clue modal */
+    .clue-modal { position:fixed; inset:0; background:rgba(14,11,18,0.85); display:none; align-items:center; justify-content:center; z-index:600; backdrop-filter:blur(4px); }
+    .clue-modal.open { display:flex; }
+    .clue-modal-box { background:var(--ink-mid); border:1px solid rgba(226,87,43,0.5); border-radius:var(--radius-card); padding:2rem 2.5rem; max-width:380px; width:90%; text-align:center; box-shadow:0 0 40px rgba(226,87,43,0.12); }
+    .clue-modal-box h3 { font-family:var(--font-display); font-size:1.1rem; color:var(--gold); margin-bottom:0.8rem; letter-spacing:0.04em; }
+    .clue-body { font-family:var(--font-body); font-style:italic; color:var(--ember); font-size:0.92rem; line-height:1.7; margin-bottom:1.4rem; }
     /* Credits modal */
-    .credits-modal { position:fixed; inset:0; background:rgba(14,11,18,0.85); display:none; align-items:center; justify-content:center; z-index:500; backdrop-filter:blur(4px); }
+    .credits-modal { position:fixed; inset:0; background:rgba(14,11,18,0.85); display:none; align-items:center; justify-content:center; z-index:600; backdrop-filter:blur(4px); }
     .credits-modal.open { display:flex; }
     .credits-modal-box { background:var(--ink-mid); border:1px solid var(--gold); border-radius:var(--radius-card); padding:2rem 2.5rem; max-width:380px; text-align:center; box-shadow:var(--shadow-glow); }
     .credits-modal-box h4 { font-size:1.1rem; color:var(--gold); margin-bottom:0.8rem; }
@@ -969,6 +975,13 @@
   <span class="big-letter" id="bannerLetter">·</span>
   <span class="label" id="bannerScene">·</span>
 </div>
+<div class="clue-modal" id="clueModal" role="dialog" aria-modal="true">
+  <div class="clue-modal-box">
+    <h3>A Clue</h3>
+    <div class="clue-body" id="clueBody"></div>
+    <button class="credits-modal-close" id="clueClose">Close</button>
+  </div>
+</div>
 <div class="credits-modal" id="creditsModal">
   <div class="credits-modal-box">
     <h4 id="creditsModalTitle">No Clue Credits</h4>
@@ -980,7 +993,7 @@
 <script type="module">
 import { initializeApp }               from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
-import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, deleteDoc, collection, serverTimestamp }
+import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, deleteDoc, collection, serverTimestamp, waitForPendingWrites }
   from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
 
 const HUNT_ID = 'hunt-2';
@@ -1017,22 +1030,28 @@ window._ihSave = async function(data) {
   }
 };
 
-/* Clear: used by repeatHunt — delete so reload shows intro, not a "restored" state */
+/* Clear: used by repeatHunt — delete doc so reload starts fresh */
 window._ihClearProgress = async function() {
   if (window._ihUser) {
     try {
       await deleteDoc(doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID));
-    } catch(e) {}
+      try { await waitForPendingWrites(db); } catch(we) { console.warn('waitForPendingWrites:', we); }
+    } catch(e) { console.error('_ihClearProgress Firestore failed:', e); }
   }
   try { localStorage.removeItem(LS_KEY); } catch(e) {}
 };
 
+const IS_RESTART = new URLSearchParams(location.search).has('r');
+
 function deliver(data) {
-  if (window._ihApplyRestore) {
-    window._ihApplyRestore(data);
-  } else {
-    window._ihPendingRestore = data;
-  }
+  if (IS_RESTART) { console.log('[hunt-2] restart flag set — skipping restore'); return; }
+  try {
+    if (window._ihApplyRestore) {
+      window._ihApplyRestore(data);
+    } else {
+      window._ihPendingRestore = data;
+    }
+  } catch(e) { console.error('[hunt-2] deliver/applyRestore failed:', e); }
 }
 
 onAuthStateChanged(auth, async (user) => {
@@ -1041,8 +1060,18 @@ onAuthStateChanged(auth, async (user) => {
   if (el) el.textContent = user ? (user.displayName || user.email) : 'Guest';
 
   if (user) {
+    /* Sync Firestore clue credit count so button shows correct number */
+    try {
+      const userSnap = await getDoc(doc(db, 'users', user.uid));
+      const fsCredits = userSnap.data()?.clueCredits;
+      if (typeof fsCredits === 'number' && window._ihSetClueCredits) {
+        window._ihSetClueCredits(fsCredits);
+      }
+    } catch(e) { console.warn('[hunt-2] clue credit sync failed:', e); }
+
     try {
       const snap = await getDoc(doc(db, 'users', user.uid, 'progress', HUNT_ID));
+      console.log('[hunt-2] progress snap exists:', snap.exists(), 'IS_RESTART:', IS_RESTART);
       if (snap.exists()) {
         deliver(snap.data());
       } else {
@@ -1061,14 +1090,14 @@ onAuthStateChanged(auth, async (user) => {
               deliver(localData);
             }
           }
-        } catch(e) {}
+        } catch(e) { console.error('[hunt-2] localStorage migration failed:', e); }
       }
-    } catch(e) { console.error('Firestore load failed:', e); }
+    } catch(e) { console.error('[hunt-2] Firestore progress load failed:', e); }
   } else {
     try {
       const raw = localStorage.getItem(LS_KEY);
       if (raw) deliver(JSON.parse(raw));
-    } catch(e) {}
+    } catch(e) { console.error('[hunt-2] localStorage load failed:', e); }
   }
 });
 
@@ -1249,22 +1278,25 @@ function saveProgress(opts){
 }
 
 window._ihApplyRestore = function(data){
-  if(!data || data.huntId !== HUNT_ID) return;
-  const overlay = document.getElementById('introOverlay');
-  if(overlay) overlay.style.display='none';
-  solvedSlides = new Set(data.solvedSlides||[]);
-  chipsFilled  = new Set(data.chipsFilled||[]);
-  clueCount    = data.clueCount||0;
-  unlockedClueScenes = new Set(data.unlockedClueScenes||[]);
-  clueCredits  = data.clueCredits ?? Math.max(0, INITIAL_CLUE_CREDITS - clueCount);
-  timerSecs = data.timerSecs||0;
-  /* Reconstruct startTs so timer resumes from saved play time, not real elapsed time */
-  startTs   = timerSecs > 0 ? (Date.now() - timerSecs * 1000) : null;
-  solvedSlides.forEach(n => markSlideSolved(n, true));
-  chipsFilled.forEach(i => fillChip(i, true));
-  updateClueDisplay();
-  activateSlide(data.currentSlide||1, true);
-  if(!data.completed) startTimer();
+  try {
+    if(!data || data.huntId !== HUNT_ID){ console.warn('[hunt-2] _ihApplyRestore: bad data', data); return; }
+    console.log('[hunt-2] restoring: slide', data.currentSlide, 'solved', data.solvedSlides?.length, 'completed', data.completed);
+    const overlay = document.getElementById('introOverlay');
+    if(overlay) overlay.style.display='none';
+    solvedSlides = new Set(data.solvedSlides||[]);
+    chipsFilled  = new Set(data.chipsFilled||[]);
+    clueCount    = data.clueCount||0;
+    unlockedClueScenes = new Set(data.unlockedClueScenes||[]);
+    clueCredits  = data.clueCredits ?? Math.max(0, INITIAL_CLUE_CREDITS - clueCount);
+    timerSecs = data.timerSecs||0;
+    /* Reconstruct startTs so timer resumes from saved play time, not real elapsed time */
+    startTs   = timerSecs > 0 ? (Date.now() - timerSecs * 1000) : null;
+    solvedSlides.forEach(n => markSlideSolved(n, true));
+    chipsFilled.forEach(i => fillChip(i, true));
+    updateClueDisplay();
+    activateSlide(data.currentSlide||1, true);
+    if(!data.completed) startTimer();
+  } catch(e){ console.error('[hunt-2] _ihApplyRestore failed:', e); }
 };
 
 if(window._ihPendingRestore){
@@ -1286,57 +1318,63 @@ function updateClueDisplay(){
   if(btn) btn.textContent = `Clue (${clueCredits})`;
 }
 
-function showClueInline(slideNum){
-  const txt = CLUES[slideNum];
-  if(!txt) return;
-  const slideEl = document.getElementById(`slide-${slideNum}`);
-  if(!slideEl) return;
-  const frame = slideEl.querySelector('.slide-frame');
-  let el = slideEl.querySelector('.clue-reveal');
-  if(!el){
-    el = document.createElement('div');
-    el.className = 'clue-reveal';
-    if(frame) frame.appendChild(el);
-  }
-  el.style.cssText = 'background:rgba(14,11,18,0.92);border:1px solid rgba(226,87,43,0.5);border-radius:6px;padding:0.9rem 1.3rem;font-family:var(--font-body);font-style:italic;color:var(--ember);font-size:0.88rem;line-height:1.6;max-width:480px;margin:0.8rem auto;text-align:center;';
-  el.textContent = '✦ Hint: ' + txt;
+function showClueModal(slideNum){
+  try {
+    const txt = CLUES[slideNum];
+    if(!txt){ console.warn('[hunt-2] no clue for slide', slideNum); return; }
+    const body = document.getElementById('clueBody');
+    if(body) body.textContent = txt;
+    document.getElementById('clueModal')?.classList.add('open');
+  } catch(e){ console.error('[hunt-2] showClueModal failed:', e); }
 }
 
-// Exposed so module's Firestore gate can query/trigger inline display
+// Exposed so module's Firestore gate can query/trigger clue display
 window._ihIsClueUnlocked = function(slideNum){ return unlockedClueScenes.has(slideNum); };
+window._ihSetClueCredits = function(n){ clueCredits = Math.max(0, n); updateClueDisplay(); };
 window._ihShowClueInline = function(slideNum){
-  if(!unlockedClueScenes.has(slideNum)){
-    clueCount++;
-    clueCredits = Math.max(0, clueCredits - 1);
-    unlockedClueScenes.add(slideNum);
-    updateClueDisplay();
-    saveProgress();
-  }
-  showClueInline(slideNum);
+  try {
+    if(!unlockedClueScenes.has(slideNum)){
+      clueCount++;
+      clueCredits = Math.max(0, clueCredits - 1);
+      unlockedClueScenes.add(slideNum);
+      updateClueDisplay();
+      saveProgress();
+    }
+    showClueModal(slideNum);
+  } catch(e){ console.error('[hunt-2] _ihShowClueInline failed:', e); }
 };
 
-// Local-credits fallback — module overwrites this with Firestore-backed version
+// Local-credits fallback — module overwrites this with Firestore-backed version after load
 window._ihUseClue = function(slideNum){
-  if(!unlockedClueScenes.has(slideNum)){
-    if(clueCredits <= 0){
-      document.getElementById('creditsModal').classList.add('open');
-      return;
+  try {
+    if(!unlockedClueScenes.has(slideNum)){
+      if(clueCredits <= 0){
+        document.getElementById('creditsModal')?.classList.add('open');
+        return;
+      }
+      clueCredits--;
+      clueCount++;
+      unlockedClueScenes.add(slideNum);
+      updateClueDisplay();
+      saveProgress();
     }
-    clueCredits--;
-    clueCount++;
-    unlockedClueScenes.add(slideNum);
-    updateClueDisplay();
-    saveProgress();
-  }
-  showClueInline(slideNum);
+    showClueModal(slideNum);
+  } catch(e){ console.error('[hunt-2] _ihUseClue (local) failed:', e); }
 };
 
 document.getElementById('clueBtn')?.addEventListener('click', async ()=>{
-  await window._ihUseClue(currentSlide);
+  try { await window._ihUseClue(currentSlide); }
+  catch(e){ console.error('[hunt-2] clue button click failed:', e); }
 });
 
+document.getElementById('clueClose')?.addEventListener('click', ()=>{
+  document.getElementById('clueModal')?.classList.remove('open');
+});
+document.getElementById('clueModal')?.addEventListener('click', function(e){
+  if(e.target === this) this.classList.remove('open');
+});
 document.getElementById('creditsClose')?.addEventListener('click', ()=>{
-  document.getElementById('creditsModal').classList.remove('open');
+  document.getElementById('creditsModal')?.classList.remove('open');
 });
 document.getElementById('creditsModal')?.addEventListener('click', function(e){
   if(e.target === this) this.classList.remove('open');
@@ -2941,9 +2979,18 @@ function initScene30(){
 // ── repeat hunt ───────────────────────────────────────────────────────────────
 window.repeatHunt = function(){
   if(!confirm('Start Hunt 2 from the beginning? Your current progress will be cleared.')) return;
-  const doReload = () => location.reload();
-  if(window._ihClearProgress) window._ihClearProgress().then(doReload).catch(doReload);
-  else { try{ localStorage.removeItem(LS_KEY); }catch(e){} doReload(); }
+  const doReload = () => {
+    try { localStorage.removeItem(LS_KEY); } catch(e){}
+    location.href = location.pathname + '?r=1';
+  };
+  if(window._ihClearProgress){
+    window._ihClearProgress().then(doReload).catch(e => {
+      console.error('[hunt-2] repeatHunt clearProgress failed:', e);
+      doReload();
+    });
+  } else {
+    doReload();
+  }
 };
 
 // ── bootstrap ─────────────────────────────────────────────────────────────────
