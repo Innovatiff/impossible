@@ -1430,7 +1430,6 @@
       query,
       orderBy
     } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
-    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
 
     /* ── Firebase init ────────────────────────────────────── */
     const firebaseConfig = {
@@ -1447,8 +1446,19 @@
     const analytics = getAnalytics(app);
     const auth      = getAuth(app);
     const db        = getFirestore(app);
-    const fns       = getFunctions(app, 'us-central1');
-    const createCheckoutSession = httpsCallable(fns, 'createCheckoutSession');
+    const CHECKOUT_URL = "https://us-central1-impossible-9ac8d.cloudfunctions.net/createCheckoutSession";
+
+    async function createCheckoutSession(data) {
+      const token = await currentUser.getIdToken();
+      const res = await fetch(CHECKOUT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Checkout failed");
+      return { data: json };
+    }
     const googleProvider = new GoogleAuthProvider();
 
     /* ── Hunt catalog (static for now) ───────────────────── */

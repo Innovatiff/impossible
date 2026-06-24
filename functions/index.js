@@ -1,7 +1,8 @@
-const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
+const { onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret }                  = require("firebase-functions/params");
 const { initializeApp }                 = require("firebase-admin/app");
 const { getFirestore, FieldValue }      = require("firebase-admin/firestore");
+const { getAuth }                       = require("firebase-admin/auth");
 
 initializeApp();
 const db = getFirestore();
@@ -32,17 +33,31 @@ const SUBSCRIPTION_HUNTS = ["hunt-2", "hunt-3", "hunt-4", "hunt-5", "hunt-6"];
 const BASE_URL = "https://impossible-hunt.com";
 
 // ── createCheckoutSession ────────────────────────────────────────────────────
-// Called from the frontend via httpsCallable.
-// data: { type: 'subscription' | 'hunt' | 'clues', huntId?: string, priceKey?: string }
-exports.createCheckoutSession = onCall(
-  { secrets: [stripeSecret], cors: true },
-  async (request) => {
-    if (!request.auth) {
-      throw new HttpsError("unauthenticated", "You must be signed in to purchase.");
+// Called from the frontend via fetch + Bearer token.
+// body: { type: 'subscription' | 'hunt' | 'clues', huntId?: string, priceKey?: string }
+exports.createCheckoutSession = onRequest(
+  { secrets: [stripeSecret] },
+  async (req, res) => {
+    // CORS — allow all origins (tighten to your domain in production)
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    if (req.method === "OPTIONS") return res.status(204).send("");
+    if (req.method !== "POST") return res.sendStatus(405);
+
+    // Verify Firebase Auth token
+    const token = req.headers.authorization?.split("Bearer ")[1];
+    if (!token) return res.status(401).json({ error: "Unauthorized" });
+
+    let uid;
+    try {
+      const decoded = await getAuth().verifyIdToken(token);
+      uid = decoded.uid;
+    } catch (e) {
+      return res.status(401).json({ error: "Invalid token" });
     }
 
-    const { type, huntId, priceKey } = request.data;
-    const uid    = request.auth.uid;
+    const { type, huntId, priceKey } = req.body;
     const stripe = require("stripe")(stripeSecret.value());
 
     let lineItems, mode, metadata, subscriptionData;
@@ -54,32 +69,36 @@ exports.createCheckoutSession = onCall(
       subscriptionData = { metadata: { uid } };
 
     } else if (type === "hunt") {
-      if (!huntId) throw new HttpsError("invalid-argument", "huntId is required.");
+      if (!huntId) return res.status(400).json({ error: "huntId required" });
       lineItems = [{ price: PRICES.single_file, quantity: 1 }];
       mode      = "payment";
       metadata  = { type: "hunt", uid, huntId };
 
     } else if (type === "clues") {
-      if (!PRICES[priceKey]) throw new HttpsError("invalid-argument", "Invalid clue pack.");
+      if (!PRICES[priceKey]) return res.status(400).json({ error: "Invalid clue pack" });
       lineItems = [{ price: PRICES[priceKey], quantity: 1 }];
       mode      = "payment";
       metadata  = { type: "clues", uid, priceKey };
 
     } else {
-      throw new HttpsError("invalid-argument", "Invalid purchase type.");
+      return res.status(400).json({ error: "Invalid type" });
     }
 
-    const session = await stripe.checkout.sessions.create({
-      mode,
-      line_items: lineItems,
-      metadata,
-      ...(subscriptionData ? { subscription_data: subscriptionData } : {}),
-      client_reference_id: uid,
-      success_url: BASE_URL + "/account.html?payment=success",
-      cancel_url:  BASE_URL + "/account.html?payment=cancelled",
-    });
-
-    return { url: session.url };
+    try {
+      const session = await stripe.checkout.sessions.create({
+        mode,
+        line_items: lineItems,
+        metadata,
+        ...(subscriptionData ? { subscription_data: subscriptionData } : {}),
+        client_reference_id: uid,
+        success_url: BASE_URL + "/account.html?payment=success",
+        cancel_url:  BASE_URL + "/account.html?payment=cancelled",
+      });
+      res.json({ url: session.url });
+    } catch (e) {
+      console.error("Stripe error:", e);
+      res.status(500).json({ error: e.message });
+    }
   }
 );
 
