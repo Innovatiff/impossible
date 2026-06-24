@@ -254,6 +254,15 @@
         return;
       }
 
+      /* Deduplicate: keep best score per uid (guests with uid=null each keep their row) */
+      const seen = new Map();
+      entries = entries.filter(e => {
+        if (!e.uid) return true;
+        if (seen.has(e.uid)) return false;
+        seen.set(e.uid, true);
+        return true;
+      });
+
       renderTable(entries, huntId);
     }
 
