@@ -1258,6 +1258,10 @@
               <div class="stat-value" id="statClues">0</div>
               <div class="stat-label">Clues Used Total</div>
             </div>
+            <div class="stat-card" style="cursor:pointer;" onclick="showSection('membership')" title="Buy more credits">
+              <div class="stat-value" id="statCredits" style="color:var(--ember);">—</div>
+              <div class="stat-label">Clue Credits</div>
+            </div>
           </div>
 
           <div class="dashboard-grid">
@@ -1426,6 +1430,7 @@
       query,
       orderBy
     } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
 
     /* ── Firebase init ────────────────────────────────────── */
     const firebaseConfig = {
@@ -1442,6 +1447,8 @@
     const analytics = getAnalytics(app);
     const auth      = getAuth(app);
     const db        = getFirestore(app);
+    const fns       = getFunctions(app);
+    const createCheckoutSession = httpsCallable(fns, 'createCheckoutSession');
     const googleProvider = new GoogleAuthProvider();
 
     /* ── Hunt catalog (static for now) ───────────────────── */
@@ -1476,9 +1483,9 @@
     }
 
     const PLANS = [
-      { id: 'free',   name: 'Free',          price: '$0',    period: '',        badge: 'badge-free',   features: ['Access to Hunt 01', 'Basic leaderboard', 'Manual progress saving'] },
-      { id: 'single', name: 'Single File',   price: '$3.99', period: 'one-off', badge: 'badge-lock',   features: ['Unlock one hunt of your choice', 'Clue purchases', 'Leaderboard entry', 'Progress sync'] },
-      { id: 'full',   name: 'Full Dossier',  price: '$9.99', period: '/ month', badge: 'badge-ember',  features: ['All 10 hunts unlocked', 'Unlimited clues', 'Full leaderboard', 'Early access to new hunts', 'Priority support'] },
+      { id: 'free',   name: 'Free',          price: '$0',     period: '',        badge: 'badge-free',  features: ['Hunt 01 & 02 — free forever', 'Public leaderboard', 'Progress saved to account'] },
+      { id: 'single', name: 'Single File',   price: '$4.99',  period: 'per hunt',badge: 'badge-lock',  features: ['Any one locked hunt — permanently yours', 'Leaderboard entry', 'Access survives subscription cancellation'] },
+      { id: 'full',   name: 'Full Dossier',  price: '$14.99', period: '/ month', badge: 'badge-ember', features: ['All locked hunts unlocked instantly', 'New hunts added during membership — auto-unlocked', 'Priority access before public release'] },
     ];
 
     /* ── State ────────────────────────────────────────────── */
@@ -1684,6 +1691,8 @@
       document.getElementById('statCompleted').textContent = completed;
       document.getElementById('statBestScore').textContent = bestScore > 0 ? bestScore.toLocaleString() : '—';
       document.getElementById('statClues').textContent     = totalClues;
+      const credits = userDoc?.clueCredits || 0;
+      document.getElementById('statCredits').textContent   = credits;
 
       // Detective rank
       const rank = getDetectiveRank(completed);
@@ -1828,7 +1837,7 @@
             </div>
             <div class="hunt-card-actions">
               ${isLocked
-                ? `<div class="hunt-card-actions-row"><a href="pricing.html" class="btn-sm btn-sm-primary">Unlock →</a></div>`
+                ? `<div class="hunt-card-actions-row"><button class="btn-sm btn-sm-primary" onclick="buyHunt('${h.id}', this)">Unlock — $4.99 →</button></div>`
                 : inLib
                   ? completed
                     ? `<div class="hunt-card-actions-row">
@@ -1954,13 +1963,57 @@
       }).join('');
     }
 
+    /* ── Checkout helpers ─────────────────────────────────── */
+    async function startCheckout(type, extra, btnEl) {
+      const orig = btnEl ? btnEl.textContent : '';
+      if (btnEl) { btnEl.textContent = 'Loading…'; btnEl.disabled = true; }
+      try {
+        const result = await createCheckoutSession({ type, ...extra });
+        window.location.href = result.data.url;
+      } catch(e) {
+        console.error('Checkout error:', e);
+        toast('Could not start checkout — please try again.', 'error');
+        if (btnEl) { btnEl.textContent = orig; btnEl.disabled = false; }
+      }
+    }
+
+    window.upgradePlan = async function(planId, btnEl) {
+      if (planId === 'full') {
+        await startCheckout('subscription', {}, btnEl);
+      } else if (planId === 'single') {
+        toast('Choose a locked hunt in your Library to unlock it for $4.99.', '');
+        showSection('library');
+      }
+    };
+
+    window.buyClues = async function(priceKey, btnEl) {
+      await startCheckout('clues', { priceKey }, btnEl);
+    };
+
+    window.buyHunt = async function(huntId, btnEl) {
+      await startCheckout('hunt', { huntId }, btnEl);
+    };
+
     /* ── Render membership ────────────────────────────────── */
     function renderMembership() {
       const currentPlan = userDoc?.plan || 'free';
+      const credits     = userDoc?.clueCredits || 0;
       const grid = document.getElementById('membershipGrid');
 
       grid.innerHTML = PLANS.map(plan => {
         const isCurrent = plan.id === currentPlan;
+        let ctaHtml;
+        if (isCurrent && plan.id === 'free') {
+          ctaHtml = `<button class="btn btn-ghost" disabled style="opacity:0.4;cursor:default;">Current Plan</button>`;
+        } else if (isCurrent && plan.id === 'full') {
+          ctaHtml = `
+            <button class="btn btn-ghost" disabled style="opacity:0.4;cursor:default;margin-bottom:0.5rem;">Active Membership</button>
+            <p style="font-size:0.72rem;color:var(--parchment-faint);opacity:0.5;text-align:center;font-family:var(--font-mono);">Manage via Stripe Customer Portal</p>`;
+        } else if (plan.id === 'single') {
+          ctaHtml = `<button class="btn btn-primary" onclick="upgradePlan('single', this)" style="font-size:0.72rem;padding:0.55rem 1rem;">Choose a Hunt in Library</button>`;
+        } else {
+          ctaHtml = `<button class="btn btn-primary" onclick="upgradePlan('${plan.id}', this)" style="font-size:0.72rem;padding:0.55rem 1rem;">Upgrade to Full Dossier</button>`;
+        }
         return `
           <div class="plan-card ${isCurrent ? 'current' : ''} ${plan.id === 'full' ? 'featured' : ''}">
             ${isCurrent ? '<div class="plan-current-label">Current Plan</div>' : ''}
@@ -1975,14 +2028,43 @@
             <ul class="plan-features">
               ${plan.features.map(f => `<li>${f}</li>`).join('')}
             </ul>
-            ${isCurrent
-              ? `<button class="btn btn-ghost" disabled style="opacity:0.4;cursor:default;">Current Plan</button>`
-              : `<button class="btn btn-primary" onclick="upgradePlan('${plan.id}')" style="font-size:0.72rem;padding:0.55rem 1rem;">
-                   ${plan.id === 'free' ? 'Downgrade' : 'Upgrade — Coming Soon'}
-                 </button>`
-            }
+            ${ctaHtml}
           </div>`;
       }).join('');
+
+      // Clue credit packs
+      const membershipSection = document.getElementById('secMembership');
+      let cluePackHtml = membershipSection.querySelector('.clue-packs-section');
+      if (!cluePackHtml) {
+        const div = document.createElement('div');
+        div.className = 'clue-packs-section';
+        div.innerHTML = `
+          <div style="margin-top:2.5rem;margin-bottom:1rem;padding-top:2rem;border-top:1px solid rgba(212,167,70,0.1);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;">
+              <div>
+                <div class="section-eyebrow" style="display:block;margin-bottom:0.2rem;">Clue Credits</div>
+                <h3 style="font-size:1.1rem;margin:0;">Your Balance: <span id="creditBalance" style="color:var(--ember);">${credits}</span> credits</h3>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;">
+              ${[
+                { key: 'clues_5',  label: '5 Credits',  price: '$4.99',  sub: '$1.00 / credit' },
+                { key: 'clues_12', label: '12 Credits', price: '$9.99',  sub: '$0.83 / credit', best: true },
+                { key: 'clues_25', label: '25 Credits', price: '$17.99', sub: '$0.72 / credit' },
+              ].map(p => `
+                <div class="dash-card" style="text-align:center;${p.best ? 'border-color:rgba(212,167,70,0.35);' : ''}">
+                  ${p.best ? '<div style="font-family:var(--font-mono);font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:0.5rem;">Best Value</div>' : ''}
+                  <div style="font-family:var(--font-mono);font-size:1.4rem;font-weight:700;color:var(--gold);">${p.label}</div>
+                  <div style="font-family:var(--font-mono);font-size:0.95rem;color:var(--parchment);font-weight:700;margin:0.3rem 0 0.15rem;">${p.price}</div>
+                  <div style="font-size:0.7rem;color:var(--parchment-faint);opacity:0.5;margin-bottom:1rem;">${p.sub}</div>
+                  <button class="btn-sm btn-sm-primary" style="width:100%;justify-content:center;" onclick="buyClues('${p.key}', this)">Buy</button>
+                </div>`).join('')}
+            </div>
+          </div>`;
+        membershipSection.querySelector('.stripe-note').before(div);
+      } else {
+        document.getElementById('creditBalance').textContent = credits;
+      }
     }
 
     /* ── Settings actions ─────────────────────────────────── */
@@ -2017,9 +2099,7 @@
         .catch(() => toast('Please sign out and sign back in before deleting your account.', 'error'));
     };
 
-    window.upgradePlan = function(planId) {
-      toast('Stripe integration coming soon — check back shortly.', '');
-    };
+    /* upgradePlan defined above near renderMembership */
 
     /* ── Library filter (global) ──────────────────────────── */
     window.filterLibrary = window.filterLibrary;
@@ -2045,6 +2125,21 @@
         showState('auth');
       }
     });
+
+    /* ── Payment return handling ──────────────────────────── */
+    const paymentStatus = new URLSearchParams(window.location.search).get('payment');
+    if (paymentStatus === 'success') {
+      history.replaceState({}, '', 'account.html');
+      // Wait for auth to load, then show toast
+      const successInterval = setInterval(() => {
+        if (document.getElementById('stateAccount').style.display !== 'none') {
+          clearInterval(successInterval);
+          toast('Payment successful — your access has been updated.');
+        }
+      }, 300);
+    } else if (paymentStatus === 'cancelled') {
+      history.replaceState({}, '', 'account.html');
+    }
 
     /* ── Keyboard support for sidebar nav ─────────────────── */
     document.querySelectorAll('.sidebar-nav a').forEach(a => {

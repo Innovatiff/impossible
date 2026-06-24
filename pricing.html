@@ -493,7 +493,7 @@
             <span class="tier-entry">Per Case — One Time</span>
             <div class="tier-name">The Single File</div>
             <div class="tier-price-row">
-              <span class="tier-price">$3</span>
+              <span class="tier-price">$4</span>
               <span class="tier-price-cents">.99</span>
             </div>
             <div class="tier-cadence">— per hunt, one-time charge —</div>
@@ -524,7 +524,7 @@
                 <span style="opacity:0.5;">No monthly clue credit</span>
               </li>
             </ul>
-            <a href="hunts.html" class="tier-cta tier-cta--single">Choose a Hunt</a>
+            <a href="account.html" class="tier-cta tier-cta--single" id="ctaSingle">Choose a Hunt →</a>
           </div>
 
           <!-- Full Access -->
@@ -533,7 +533,7 @@
             <span class="tier-entry">Full Access — Monthly</span>
             <div class="tier-name">The Full Dossier</div>
             <div class="tier-price-row">
-              <span class="tier-price">$9</span>
+              <span class="tier-price">$14</span>
               <span class="tier-price-cents">.99</span>
               <span class="tier-cadence">/ month</span>
             </div>
@@ -570,7 +570,7 @@
                 <span>Hunts purchased individually — kept permanently regardless of membership status</span>
               </li>
             </ul>
-            <a href="#" class="tier-cta tier-cta--member">Join the Membership</a>
+            <button class="tier-cta tier-cta--member" id="ctaMember" onclick="handleMembershipClick()">Join the Membership</button>
           </div>
 
         </div>
@@ -584,35 +584,59 @@
           <div class="clue-rule-box">
             <h3 id="clue-heading">On the Matter of Purchased Clues</h3>
             <p>
-              A clue is available at any point during any hunt, to any solver —
-              free or paying alike. Each one costs <span class="clue-cost">$1.99</span>,
-              charged at the moment you choose to use it.
+              A clue is available at any point during any hunt, to any signed-in solver.
+              Clues are purchased as credits — one credit reveals one clue.
+              Credits never expire and carry across hunts.
             </p>
             <p>
               A clue does not solve the puzzle for you. It narrows the territory —
               confirms a direction, eliminates a wrong path, hints at the mechanism
               without demonstrating it. The work remains yours.
             </p>
-            <p>
-              What you should know before purchasing one:
-            </p>
             <div class="clue-impact" role="note">
               <span style="font-size:1.4rem;" aria-hidden="true">⚠</span>
               <p>
                 Every clue you use is recorded. Your <strong>Detective Score</strong>
-                on the leaderboard is calculated from time elapsed <em>and</em> clues
-                purchased. Using a clue does not disqualify you — but it costs you rank.
+                on the leaderboard is calculated from time elapsed <em>and</em> clues used.
                 Solving without a single clue is the highest demonstration of the craft.
                 Paying to progress is always an option. Being remembered for it is not.
               </p>
             </div>
-            <p style="margin-top:1rem;">
-              Members receive <strong>one free clue credit per month</strong>.
-              It expires at the end of each billing cycle and does not accumulate.
-              Free credits carry the same leaderboard weight as purchased ones —
-              a clue is a clue, however it was obtained.
-            </p>
           </div>
+
+          <div style="margin-top:2rem;">
+            <div style="font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);opacity:0.7;margin-bottom:1.2rem;text-align:center;">Credit Packs</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;">
+
+              <div class="card" style="text-align:center;padding:1.6rem 1.2rem;">
+                <div style="font-family:var(--font-mono);font-size:2rem;font-weight:700;color:var(--gold);line-height:1;">5</div>
+                <div style="font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--parchment-faint);opacity:0.6;margin:0.2rem 0 0.8rem;">credits</div>
+                <div style="font-family:var(--font-mono);font-size:1.1rem;color:var(--parchment);font-weight:700;margin-bottom:0.2rem;">$4.99</div>
+                <div style="font-size:0.75rem;color:var(--parchment-faint);opacity:0.5;margin-bottom:1.2rem;">$1.00 / credit</div>
+                <button class="tier-cta tier-cta--single" style="padding:0.6rem 1rem;font-size:0.68rem;" onclick="handleClueClick('clues_5')">Buy Pack</button>
+              </div>
+
+              <div class="card" style="text-align:center;padding:1.6rem 1.2rem;border-color:rgba(212,167,70,0.35);box-shadow:0 0 20px rgba(212,167,70,0.08);position:relative;">
+                <div style="position:absolute;top:-1px;right:1rem;font-family:var(--font-mono);font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;background:var(--gold);color:var(--ink-deep);padding:0.18rem 0.6rem;border-radius:0 0 3px 3px;font-weight:700;">Best Value</div>
+                <div style="font-family:var(--font-mono);font-size:2rem;font-weight:700;color:var(--gold);line-height:1;">12</div>
+                <div style="font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--parchment-faint);opacity:0.6;margin:0.2rem 0 0.8rem;">credits</div>
+                <div style="font-family:var(--font-mono);font-size:1.1rem;color:var(--parchment);font-weight:700;margin-bottom:0.2rem;">$9.99</div>
+                <div style="font-size:0.75rem;color:var(--parchment-faint);opacity:0.5;margin-bottom:1.2rem;">$0.83 / credit</div>
+                <button class="tier-cta tier-cta--member" style="padding:0.6rem 1rem;font-size:0.68rem;box-shadow:none;" onclick="handleClueClick('clues_12')">Buy Pack</button>
+              </div>
+
+              <div class="card" style="text-align:center;padding:1.6rem 1.2rem;">
+                <div style="font-family:var(--font-mono);font-size:2rem;font-weight:700;color:var(--gold);line-height:1;">25</div>
+                <div style="font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--parchment-faint);opacity:0.6;margin:0.2rem 0 0.8rem;">credits</div>
+                <div style="font-family:var(--font-mono);font-size:1.1rem;color:var(--parchment);font-weight:700;margin-bottom:0.2rem;">$17.99</div>
+                <div style="font-size:0.75rem;color:var(--parchment-faint);opacity:0.5;margin-bottom:1.2rem;">$0.72 / credit</div>
+                <button class="tier-cta tier-cta--single" style="padding:0.6rem 1rem;font-size:0.68rem;" onclick="handleClueClick('clues_25')">Buy Pack</button>
+              </div>
+
+            </div>
+            <p style="text-align:center;font-family:var(--font-mono);font-size:0.65rem;color:var(--parchment-faint);opacity:0.5;margin-top:1rem;">An account is required to purchase and use clue credits.</p>
+          </div>
+
         </div>
       </div>
     </section>
@@ -747,7 +771,90 @@
     </div>
   </footer>
 
+  <!-- Toast -->
+  <div id="pricingToast" style="position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(2rem);background:var(--ink-mid);border:1px solid rgba(212,167,70,0.25);border-radius:20px;padding:0.7rem 1.4rem;font-family:var(--font-mono);font-size:0.72rem;color:var(--gold);letter-spacing:0.08em;z-index:400;opacity:0;transition:all 0.3s ease;pointer-events:none;white-space:nowrap;"></div>
+
   <script src="script.js"></script>
+
+  <script type="module">
+    import { initializeApp }    from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+    import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-functions.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+    const app  = initializeApp({
+      apiKey:            "AIzaSyAfd15maH07AH9P-dRehUkACx48VofFq-I",
+      authDomain:        "impossible-9ac8d.firebaseapp.com",
+      projectId:         "impossible-9ac8d",
+      storageBucket:     "impossible-9ac8d.firebasestorage.app",
+      messagingSenderId: "93504469684",
+      appId:             "1:93504469684:web:d0c3ef054df765d5fd35e1",
+      measurementId:     "G-YYC9HPYBDC",
+    });
+    const auth      = getAuth(app);
+    const db        = getFirestore(app);
+    const functions = getFunctions(app);
+    const createCheckoutSession = httpsCallable(functions, 'createCheckoutSession');
+
+    let currentUser = null;
+
+    function toast(msg, isError) {
+      const el = document.getElementById('pricingToast');
+      el.textContent = msg;
+      el.style.color  = isError ? 'var(--ember)' : 'var(--gold)';
+      el.style.opacity = '1';
+      el.style.transform = 'translateX(-50%) translateY(0)';
+      clearTimeout(el._t);
+      el._t = setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(-50%) translateY(2rem)';
+      }, 3500);
+    }
+
+    async function startCheckout(type, extra) {
+      if (!currentUser) {
+        window.location.href = 'account.html?next=' + type;
+        return;
+      }
+      const btn = event.currentTarget;
+      const orig = btn.textContent;
+      btn.textContent = 'Loading…';
+      btn.disabled = true;
+      try {
+        // Check if already on full plan for subscription
+        if (type === 'subscription') {
+          const snap = await getDoc(doc(db, 'users', currentUser.uid));
+          if (snap.data()?.plan === 'full') {
+            toast('You already have Full Dossier access.');
+            btn.textContent = orig; btn.disabled = false;
+            return;
+          }
+        }
+        const result = await createCheckoutSession({ type, ...extra });
+        window.location.href = result.data.url;
+      } catch(e) {
+        console.error(e);
+        toast('Could not start checkout — please try again.', true);
+        btn.textContent = orig;
+        btn.disabled = false;
+      }
+    }
+
+    window.handleMembershipClick = function() {
+      startCheckout('subscription');
+    };
+
+    window.handleClueClick = function(priceKey) {
+      startCheckout('clues', { priceKey });
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      const btn = document.getElementById('ctaMember');
+      if (btn) btn.textContent = user ? 'Join the Membership' : 'Sign In to Join';
+    });
+  </script>
+
   <script>
     /* FAQ accordion */
     document.querySelectorAll('.faq-question').forEach(btn => {

@@ -1148,6 +1148,18 @@
     </div>
   </div>
 
+  <!-- Credits Modal -->
+  <div class="clue-modal" id="creditsModal" role="dialog" aria-modal="true">
+    <div class="clue-modal-box">
+      <h3 id="creditsModalTitle">Clue Credits Required</h3>
+      <p id="creditsModalBody" style="font-size:0.88rem;color:var(--parchment-dim);margin-bottom:1.4rem;line-height:1.6;"></p>
+      <div style="display:flex;gap:0.6rem;flex-wrap:wrap;align-items:center;">
+        <a id="creditsModalBtn" href="pricing.html" class="btn btn-primary" style="font-size:0.75rem;padding:0.6rem 1.2rem;">Buy Credits</a>
+        <button class="clue-close" id="creditsClose">Close</button>
+      </div>
+    </div>
+  </div>
+
   <div class="hunt-wrap">
     <div class="hunt-progress-rail"><div class="hunt-progress-fill" id="progressFill"></div></div>
 
@@ -1483,7 +1495,7 @@
   <script type="module">
     import { initializeApp }               from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
-    import { getFirestore, doc, setDoc, getDoc, addDoc, collection, serverTimestamp }
+    import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection, serverTimestamp, increment }
       from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 
     const HUNT_ID = 'hunt-1';
@@ -1589,6 +1601,47 @@
             this.textContent = 'SUBMIT';
           }
         });
+      }
+    };
+
+    /* ── Clue credit gate ────────────────────────────────── */
+    window._ihUseClue = async function() {
+      function showCreditsModal(title, body, btnText, btnHref) {
+        document.getElementById('creditsModalTitle').textContent = title;
+        document.getElementById('creditsModalBody').textContent  = body;
+        const btn = document.getElementById('creditsModalBtn');
+        btn.textContent = btnText;
+        btn.href        = btnHref;
+        document.getElementById('creditsModal').classList.add('open');
+      }
+
+      if (!currentUser) {
+        showCreditsModal(
+          'Sign In to Use Clues',
+          'Create a free account, then purchase clue credits to use during hunts.',
+          'Sign In / Create Account',
+          'account.html'
+        );
+        return false;
+      }
+
+      try {
+        const snap    = await getDoc(doc(db, 'users', currentUser.uid));
+        const credits = snap.data()?.clueCredits || 0;
+        if (credits <= 0) {
+          showCreditsModal(
+            'No Credits Remaining',
+            'You have used all your clue credits. Purchase a pack to continue.',
+            'Buy Credits',
+            'pricing.html#clues'
+          );
+          return false;
+        }
+        await updateDoc(doc(db, 'users', currentUser.uid), { clueCredits: increment(-1) });
+        return true;
+      } catch(e) {
+        console.error('Clue credit check failed:', e);
+        return true; // fail open — don't block clue if Firestore is unreachable
       }
     };
   </script>
@@ -1790,10 +1843,21 @@
     });
 
     /* ── Clue modal ── */
-    document.getElementById('clueBtn').addEventListener('click', function () {
+    document.getElementById('clueBtn').addEventListener('click', async function () {
+      if (window._ihUseClue) {
+        const ok = await window._ihUseClue();
+        if (!ok) return;
+      }
       clueCount++;
       document.getElementById('clueBody').textContent = clues[currentSlide - 1];
       document.getElementById('clueModal').classList.add('open');
+      if (window._ihSave) window._ihSave({ cluesUsed: clueCount });
+    });
+    document.getElementById('creditsClose').addEventListener('click', function() {
+      document.getElementById('creditsModal').classList.remove('open');
+    });
+    document.getElementById('creditsModal').addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('open');
     });
     document.getElementById('clueClose').addEventListener('click', function () {
       document.getElementById('clueModal').classList.remove('open');
