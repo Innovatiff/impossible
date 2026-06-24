@@ -35,7 +35,7 @@ const BASE_URL = "https://impossible-hunt.com";
 // Called from the frontend via httpsCallable.
 // data: { type: 'subscription' | 'hunt' | 'clues', huntId?: string, priceKey?: string }
 exports.createCheckoutSession = onCall(
-  { secrets: [stripeSecret] },
+  { secrets: [stripeSecret], cors: ["https://innovatiff.github.io", "http://localhost"] },
   async (request) => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "You must be signed in to purchase.");
