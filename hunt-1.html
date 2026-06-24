@@ -1248,6 +1248,91 @@
 
     /* Focus-visible for keyboard nav */
     :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+    /* SLIDE 10 — Penumbra Device */
+    .penumbra-device { background: #030208; border: 1px solid rgba(212,167,70,0.2); border-radius: 6px; max-width: 500px; margin: 0 auto; overflow: hidden; }
+    .mirror-tile { cursor: pointer; }
+    .mirror-tile rect { transition: fill 0.15s, stroke 0.15s; }
+    .mirror-tile:hover rect { fill: rgba(212,167,70,0.06); stroke: rgba(212,167,70,0.5); }
+    .mirror-tile.active rect { fill: rgba(212,167,70,0.1); stroke: var(--gold); }
+
+    /* SLIDE 11 — Glass Plate Negative */
+    .plate-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .plate-negative { width: 100%; max-width: 420px; background: #000; border: 2px solid rgba(143,166,189,0.3); border-radius: 4px; padding: 1.8rem; text-align: center; transition: filter 1.2s ease; box-shadow: 0 0 40px rgba(0,0,0,0.8); }
+    .plate-negative.developed { filter: invert(1) sepia(0.2); }
+    .plate-content { color: #ccc; font-family: var(--font-mono); line-height: 1.7; }
+    .plate-noise { font-size: 0.65rem; color: #555; letter-spacing: 0.05em; margin: 0.3rem 0; }
+    .plate-text { font-size: 0.72rem; letter-spacing: 0.08em; margin: 0.6rem 0; }
+    .plate-answer-word { font-family: var(--font-display); font-size: 1.8rem; font-weight: 900; letter-spacing: 0.15em; margin: 0.5rem 0; color: #fff; }
+    .plate-develop-btn { font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.6rem 1.6rem; background: rgba(143,166,189,0.1); color: var(--mist); font-weight: 700; border: 1px solid rgba(143,166,189,0.3); border-radius: var(--radius-seal); cursor: pointer; transition: all var(--transition); }
+    .plate-develop-btn:hover { background: rgba(143,166,189,0.2); color: var(--parchment); }
+
+    /* SLIDE 12 — Séance Recorder (Morse Candles) */
+    .morse-panels { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin: 0.8rem 0; }
+    .morse-panel { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; background: rgba(14,11,18,0.7); border: 1px solid rgba(212,167,70,0.2); border-radius: 6px; padding: 1rem 1.2rem; min-width: 80px; }
+    .morse-label { font-family: var(--font-display); font-size: 0.75rem; color: var(--gold); opacity: 0.7; letter-spacing: 0.1em; }
+    .morse-candle { font-size: 2rem; transition: all 0.1s ease; filter: brightness(0.3); }
+    .morse-candle.lit { filter: brightness(1); text-shadow: 0 0 20px rgba(212,167,70,0.8); }
+    .morse-replay { background: transparent; border: 1px solid rgba(212,167,70,0.25); border-radius: 3px; color: var(--gold); font-size: 0.7rem; padding: 0.3rem 0.7rem; cursor: pointer; font-family: var(--font-mono); }
+    .morse-replay:hover { border-color: var(--gold); }
+    .morse-reference { text-align: center; font-family: var(--font-mono); font-size: 0.7rem; color: var(--parchment-faint); opacity: 0.6; margin-top: 0.4rem; letter-spacing: 0.08em; }
+
+    /* SLIDE 13 — Impossible Shadow */
+    .shadow-diagrams { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; max-width: 500px; margin: 0 auto; width: 100%; }
+    .shadow-diagram { background: rgba(14,11,18,0.8); border: 1px solid rgba(212,167,70,0.2); border-radius: 6px; padding: 0.6rem; cursor: pointer; transition: all 0.15s ease; }
+    .shadow-diagram:hover { border-color: rgba(212,167,70,0.5); background: rgba(212,167,70,0.04); }
+    .shadow-diagram.wrong-pick { border-color: var(--ember); background: rgba(226,87,43,0.08); animation: shake 0.35s ease; }
+    .shadow-diagram.correct-pick { border-color: var(--gold); background: rgba(212,167,70,0.08); }
+    .diag-label { font-family: var(--font-mono); font-size: 0.62rem; color: var(--parchment-faint); opacity: 0.6; text-align: center; margin-top: 0.3rem; letter-spacing: 0.1em; }
+
+    /* SLIDE 14 — Long Exposure */
+    .exposure-wrap { display: flex; flex-direction: column; gap: 0.8rem; width: 100%; max-width: 520px; margin: 0 auto; }
+    .exposure-chamber { position: relative; width: 100%; aspect-ratio: 16/9; background: #111; border: 1px solid rgba(212,167,70,0.2); border-radius: 6px; overflow: hidden; }
+    .ghost-figure { position: absolute; font-size: 2rem; color: rgba(212,167,70,0.5); transform: translate(-50%,-50%); pointer-events: none; transition: opacity 0.15s; font-family: var(--font-display); }
+    .exposure-over { position: absolute; inset: 0; background: rgba(255,255,255,0); pointer-events: none; transition: background 0.1s; }
+    .exposure-under { position: absolute; inset: 0; background: rgba(0,0,0,0.95); pointer-events: none; transition: background 0.1s; }
+    .exposure-label { position: absolute; bottom: 0.5rem; right: 0.7rem; font-family: var(--font-mono); font-size: 0.62rem; color: var(--gold); opacity: 0.7; letter-spacing: 0.08em; }
+    .exposure-controls { display: flex; align-items: center; gap: 0.8rem; }
+
+    /* SLIDE 15 — Shadow Geometry */
+    .geometry-wrap { background: rgba(14,11,18,0.8); border: 1px solid rgba(212,167,70,0.2); border-radius: 6px; overflow: hidden; max-width: 500px; margin: 0 auto; }
+    .geometry-readout { font-family: var(--font-mono); font-size: 0.72rem; color: var(--parchment-dim); text-align: center; padding: 0.5rem; letter-spacing: 0.08em; background: rgba(14,11,18,0.5); }
+
+    /* SLIDE 16 — Spectral Signature */
+    .spectrograph-wrap { display: flex; flex-direction: column; gap: 0.6rem; max-width: 520px; margin: 0 auto; width: 100%; }
+    .spectrum-bar { display: flex; height: 120px; border: 1px solid rgba(212,167,70,0.2); border-radius: 4px; overflow: hidden; }
+    .spec-band { flex: 1; position: relative; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 0.5rem; transition: opacity 0.2s; }
+    .spec-band.dim { opacity: 0.25; }
+    .spec-band.highlighted { opacity: 1; box-shadow: inset 0 0 20px rgba(255,255,255,0.15); }
+    .spec-band.highlighted::after { content: '▼'; position: absolute; bottom: -18px; font-size: 0.7rem; color: var(--gold); }
+    .spec-letter { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 700; color: rgba(255,255,255,0.9); text-shadow: 0 1px 4px rgba(0,0,0,0.8); }
+    .spectrum-annotation { font-family: var(--font-mono); font-size: 0.6rem; color: var(--parchment-faint); opacity: 0.5; text-align: center; letter-spacing: 0.04em; margin-top: 1.2rem; }
+    .spectrum-note { font-family: var(--font-mono); font-size: 0.65rem; color: var(--parchment-faint); opacity: 0.6; text-align: center; letter-spacing: 0.05em; }
+
+    /* SLIDE 17 — Eclipse Track */
+    .eclipse-map-wrap { max-width: 560px; margin: 0 auto; width: 100%; }
+
+    /* SLIDE 18 — Magic Lantern Slides */
+    .lantern-layout { display: flex; flex-direction: column; gap: 1rem; max-width: 560px; margin: 0 auto; width: 100%; }
+    .lantern-slides-source { display: flex; flex-direction: column; gap: 0.5rem; }
+    .lantern-slide-card { background: rgba(245,234,208,0.07); border: 1px solid rgba(212,167,70,0.2); border-radius: 4px; padding: 0.6rem 0.8rem; cursor: pointer; transition: all 0.15s ease; display: flex; gap: 0.7rem; align-items: flex-start; }
+    .lantern-slide-card:hover { border-color: rgba(212,167,70,0.5); background: rgba(212,167,70,0.05); }
+    .lantern-slide-card.selected { border-color: var(--gold); background: rgba(212,167,70,0.1); box-shadow: 0 0 12px rgba(212,167,70,0.2); }
+    .lantern-slide-card.placed { opacity: 0.35; pointer-events: none; }
+    .lantern-slide-card p { font-size: 0.78rem; color: var(--parchment-dim); line-height: 1.5; margin: 0; }
+    .slide-card-num { font-family: var(--font-display); font-size: 0.9rem; color: var(--gold); opacity: 0.7; min-width: 24px; }
+    .lantern-slots { display: flex; flex-direction: column; gap: 0.4rem; }
+    .lantern-slot { display: flex; align-items: center; gap: 0.6rem; background: rgba(14,11,18,0.6); border: 1px dashed rgba(212,167,70,0.2); border-radius: 4px; padding: 0.4rem 0.8rem; cursor: pointer; min-height: 44px; transition: all 0.15s; }
+    .lantern-slot:hover { border-color: rgba(212,167,70,0.4); }
+    .lantern-slot.filled { border-style: solid; border-color: rgba(212,167,70,0.35); }
+    .lantern-slot.correct { border-color: rgba(42,180,42,0.5); background: rgba(42,180,42,0.05); }
+    .slot-num { font-family: var(--font-mono); font-size: 0.72rem; color: var(--gold); opacity: 0.5; min-width: 16px; }
+    .slot-content { font-size: 0.72rem; color: var(--parchment-dim); line-height: 1.4; }
+
+    /* Evidence card input */
+    .card-input-wrap { display: flex; gap: 0.3rem; align-items: center; margin-top: 0.3rem; }
+    .card-input { background: rgba(14,11,18,0.9); border: 1px solid rgba(212,167,70,0.3); border-radius: 3px; color: var(--parchment); font-family: var(--font-mono); font-size: 0.7rem; padding: 0.25rem 0.4rem; width: 80px; text-transform: uppercase; outline: none; letter-spacing: 0.08em; }
+    .card-submit { background: rgba(212,167,70,0.15); border: 1px solid rgba(212,167,70,0.3); border-radius: 3px; color: var(--gold); font-size: 0.75rem; width: 24px; height: 24px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -1303,7 +1388,7 @@
           <div class="slide-header">
             <span class="slide-eyebrow">Scene I — The Seal</span>
             <h2 class="slide-title">The Wax Seal</h2>
-            <p class="slide-desc">It arrived without a sender's name. Whoever sealed it did not want it opened by the impatient.</p>
+            <p class="slide-desc">It arrived without a sender. The wax bears the mark of those who study what cannot be photographed — only its absence.</p>
           </div>
           <div class="envelope-wrap">
             <div class="envelope" id="envelope">
@@ -1339,11 +1424,11 @@
           <div class="slide-header">
             <span class="slide-eyebrow">Scene II — The Glass</span>
             <h2 class="slide-title">The Mirror Room</h2>
-            <p class="slide-desc">The mirror shows something that cannot be seen directly. Find the angle. Hold it there.</p>
+            <p class="slide-desc">The entity wrote something on the glass in mirror-script. Hold perfectly still in the one spot where the reflection sharpens — and read what it left.</p>
           </div>
           <div class="mirror-box" id="mirrorBox">
             <div class="mirror-reflection">
-              <div class="mirror-hidden-text" id="mirrorText">LOOK<br>HERE</div>
+              <div class="mirror-hidden-text" id="mirrorText">TNUAH</div>
             </div>
             <div class="mirror-crosshair" id="mirrorCrosshair"></div>
             <div class="mirror-hold-ring" id="mirrorHoldRing">
@@ -1352,8 +1437,8 @@
           </div>
           <p class="mirror-instruction">Move slowly across the glass — watch for where the reflection sharpens</p>
           <div class="answer-area" id="mirrorAnswerArea" style="display:none;">
-            <div class="puzzle-instruction">What letter does the mirror reveal?</div>
-            <input type="text" class="answer-input" id="mirrorInput" maxlength="6" placeholder="?" autocomplete="off">
+            <div class="puzzle-instruction">Read the mirror-script and enter the word:</div>
+            <input type="text" class="answer-input" id="mirrorInput" maxlength="5" placeholder="?????" autocomplete="off">
             <button class="answer-submit" id="mirrorSubmit">Confirm</button>
             <div class="answer-feedback" id="mirrorFeedback"></div>
           </div>
@@ -1366,7 +1451,7 @@
           <div class="slide-header">
             <span class="slide-eyebrow">Scene III — The Flame</span>
             <h2 class="slide-title">What the Darkness Hides</h2>
-            <p class="slide-desc">Ink applied in the dark, meant to be read by lamplight. Light the braziers first. Then search.</p>
+            <p class="slide-desc">Two words were written in heat-sensitive ink during the incident. They describe what witnesses looked like — and when the entity was last seen. Light the braziers, then search.</p>
           </div>
           <div class="lantern-field" id="lanternField">
             <span class="hidden-ink" id="inkA" style="left:22%;top:28%;font-size:0.8rem;">A</span>
@@ -1436,7 +1521,7 @@
           </div>
           <div class="fog-panel" id="fogPanel">
             <div class="fog-text" id="fogText">
-              <div class="riddle">I am the twenty-third sentinel of the alphabet. Name me.</div>
+              <div class="riddle">I drift without weight. I move without feet. In the dark, I am mistaken for something far worse. Name me.</div>
             </div>
             <div class="fog-overlay" id="fogOverlay"></div>
             <div class="fog-hint-text">[ breathe on the glass ]</div>
@@ -1458,15 +1543,15 @@
           <div class="slide-header">
             <span class="slide-eyebrow">Scene VI — The Document</span>
             <h2 class="slide-title">Ink That Isn't There</h2>
-            <p class="slide-desc">The letter appears complete. But some lines were written in an ink that does not reflect light. Select the text to find them.</p>
+            <p class="slide-desc">The letter appears complete. But three passages were written in ink visible only under heat. They document where the shadow was seen — select across the text to find them.</p>
           </div>
           <div class="ink-document" id="inkDocument">
             <p>The envelope arrived on a Tuesday, though no postmark confirmed its origin. The handwriting was familiar in style but attributed to no name the recipient could place.</p>
-            <p>Several correspondents had been in the region during that season. <span class="hidden-span" id="hs1">The secondary location was never disclosed to anyone outside the inner circle.</span> Their movements were not tracked in any formal record.</p>
+            <p>Several correspondents had been in the region during that season. <span class="hidden-span" id="hs1">The shadow appeared on the eastern wall precisely at the moment the candle was moved three inches to the left.</span> Their movements were not tracked in any formal record.</p>
             <p>The item itself was unremarkable in appearance — a folded document, unsealed, with a single annotation in the margin. The annotation read only: refer elsewhere.</p>
-            <p>An inventory was produced the following week. <span class="hidden-span" id="hs2">Three items were moved before the audit — the inventory does not reflect this.</span> No discrepancy was officially noted.</p>
+            <p>An inventory was produced the following week. <span class="hidden-span" id="hs2">No figure stood between the light source and the wall at any point the witnesses could confirm.</span> No discrepancy was officially noted.</p>
             <p>The envelope's origin could not be established. It bore no stamp, no return direction, and no identifying mark of any kind save for the wax impression on the inner fold.</p>
-            <p>The final page of the record carries a signature in a different ink. <span class="hidden-span" id="hs3">The signature on the final page belongs to a name that was erased from the record.</span> Below this, only a date — no year.</p>
+            <p>The final page of the record carries a signature in a different ink. <span class="hidden-span" id="hs3">The shadow moved independently of the investigator who entered the room at eleven.</span> Below this, only a date — no year.</p>
             <p class="signature">— Archived, Ref. 7.</p>
           </div>
           <div class="ink-progress" id="inkProgress">Hidden passages found: 0 / 3</div>
@@ -1479,7 +1564,7 @@
           <div class="slide-header">
             <span class="slide-eyebrow">Scene VII — The Signal</span>
             <h2 class="slide-title">The Telegraph</h2>
-            <p class="slide-desc">A transmission, repeating. Five letters in dots and dashes. Decode it.</p>
+            <p class="slide-desc">A transmission was intercepted from the location where the shadow was last documented. Five letters in Morse. Decode them.</p>
           </div>
           <div class="telegraph-wrap">
             <div class="morse-display" id="morseDisplay"></div>
@@ -1501,10 +1586,10 @@
           <div class="slide-header">
             <span class="slide-eyebrow">Scene VIII — The Grid</span>
             <h2 class="slide-title">The Cipher Grid</h2>
-            <p class="slide-desc">Twenty-five letters. Only some belong.</p>
+            <p class="slide-desc">The grid contains twenty-five letters. Only those at positions that stand alone — prime positions — form the key word. It is the scientific term for the outer region of a shadow.</p>
           </div>
           <div class="grid-wrap">
-            <p class="riddle-text">Only positions that stand alone — divisible by nothing except one and themselves — hold the key.</p>
+            <p class="riddle-text">Only positions divisible by nothing except one and themselves hold the key. They spell a word from the science of shadows.</p>
             <div class="grid-5x5" id="cipherGrid"></div>
             <div class="grid-selection-display" id="gridDisplay">—</div>
             <div class="answer-area" id="gridAnswerArea" style="display:none;">
@@ -1523,7 +1608,7 @@
           <div class="slide-header">
             <span class="slide-eyebrow">Scene IX — The Letter</span>
             <h2 class="slide-title">The Correspondent's Letter</h2>
-            <p class="slide-desc">Do not read the content. Read the structure.</p>
+            <p class="slide-desc">Do not read the content. Read the structure. The first character of each sentence spells something the shadow thrives in.</p>
           </div>
           <div class="letter-wrap">
             <div class="letter-paper" id="letterPaper">
@@ -1548,239 +1633,355 @@
       </div>
 
       <!-- SLIDE 10 — Cabinet Lock -->
+      <!-- SLIDE 10 — The Penumbra Device -->
       <div class="slide" id="slide-10">
         <div class="slide-frame">
           <div class="slide-header">
-            <span class="slide-eyebrow">Scene X — The Cabinet</span>
-            <h2 class="slide-title">The Locked Cabinet</h2>
-            <p class="slide-desc">The keeper's notes record three observations. The cabinet holds something you need. Find the three-digit code.</p>
+            <span class="slide-eyebrow">Scene X — The Device</span>
+            <h2 class="slide-title">The Penumbra Device</h2>
+            <p class="slide-desc">The investigator's optical apparatus was found with its mirrors misaligned. Route the beam of light through all three mirrors so it strikes the detector. The detector reveals the entity's location.</p>
           </div>
-          <div class="lock-note">
-            <p>The ravens that gathered at dusk numbered <em>three</em>. The last entry was written at <em>four</em> in the afternoon. The bell tolled <em>nine</em> times at the close of that evening.</p>
+          <div class="penumbra-device" id="penumbraDevice">
+            <svg id="penumbraSvg" viewBox="0 0 400 300" width="100%" xmlns="http://www.w3.org/2000/svg">
+              <line x1="100" y1="0" x2="100" y2="300" stroke="rgba(212,167,70,0.06)" stroke-width="1"/>
+              <line x1="200" y1="0" x2="200" y2="300" stroke="rgba(212,167,70,0.06)" stroke-width="1"/>
+              <line x1="300" y1="0" x2="300" y2="300" stroke="rgba(212,167,70,0.06)" stroke-width="1"/>
+              <line x1="0" y1="100" x2="400" y2="100" stroke="rgba(212,167,70,0.06)" stroke-width="1"/>
+              <line x1="0" y1="200" x2="400" y2="200" stroke="rgba(212,167,70,0.06)" stroke-width="1"/>
+              <circle cx="20" cy="50" r="12" fill="rgba(212,167,70,0.3)" stroke="var(--gold)" stroke-width="1.5"/>
+              <text x="20" y="55" text-anchor="middle" font-size="10" fill="var(--gold)">☀</text>
+              <rect x="288" y="258" width="24" height="24" rx="3" fill="rgba(226,87,43,0.15)" stroke="var(--ember)" stroke-width="1.5" id="detectorRect"/>
+              <text x="300" y="274" text-anchor="middle" font-size="9" fill="var(--ember)">◎</text>
+              <g id="beamPath"></g>
+              <g id="mirror1" class="mirror-tile" data-state="1" transform="translate(100,50)">
+                <rect x="-22" y="-22" width="44" height="44" rx="4" fill="rgba(14,11,18,0.8)" stroke="rgba(143,166,189,0.3)" stroke-width="1.5"/>
+                <line class="mirror-line" x1="-14" y1="14" x2="14" y2="-14" stroke="rgba(143,166,189,0.8)" stroke-width="2" stroke-linecap="round"/>
+              </g>
+              <g id="mirror2" class="mirror-tile" data-state="0" transform="translate(100,200)">
+                <rect x="-22" y="-22" width="44" height="44" rx="4" fill="rgba(14,11,18,0.8)" stroke="rgba(143,166,189,0.3)" stroke-width="1.5"/>
+                <line class="mirror-line" x1="-14" y1="-14" x2="14" y2="14" stroke="rgba(143,166,189,0.8)" stroke-width="2" stroke-linecap="round"/>
+              </g>
+              <g id="mirror3" class="mirror-tile" data-state="1" transform="translate(300,200)">
+                <rect x="-22" y="-22" width="44" height="44" rx="4" fill="rgba(14,11,18,0.8)" stroke="rgba(143,166,189,0.3)" stroke-width="1.5"/>
+                <line class="mirror-line" x1="-14" y1="14" x2="14" y2="-14" stroke="rgba(143,166,189,0.8)" stroke-width="2" stroke-linecap="round"/>
+              </g>
+            </svg>
+            <p class="puzzle-instruction">Click each mirror tile to rotate it. Route the beam from ☀ to ◎.</p>
           </div>
-          <div class="cabinet-lock" id="cabinetLock">
-            <div class="digit-spinner" data-index="0">
-              <button class="spin-up" aria-label="Increase">▲</button>
-              <div class="digit-display" id="digit-0">0</div>
-              <button class="spin-down" aria-label="Decrease">▼</button>
-            </div>
-            <div class="digit-spinner" data-index="1">
-              <button class="spin-up">▲</button>
-              <div class="digit-display" id="digit-1">0</div>
-              <button class="spin-down">▼</button>
-            </div>
-            <div class="digit-spinner" data-index="2">
-              <button class="spin-up">▲</button>
-              <div class="digit-display" id="digit-2">0</div>
-              <button class="spin-down">▼</button>
-            </div>
-          </div>
-          <div class="answer-feedback" id="lockFeedback" style="text-align:center;margin-top:0.8rem;"></div>
-          <button class="answer-submit" id="lockSubmit" style="margin:0.5rem auto;display:block;">Try Code</button>
+          <div class="answer-feedback" id="penumbraFeedback" style="text-align:center;margin-top:0.8rem;font-family:var(--font-mono);font-size:0.82rem;"></div>
         </div>
       </div>
 
-      <!-- SLIDE 11 — Torn Manuscript -->
+      <!-- SLIDE 11 — The Glass Plate Negative -->
       <div class="slide" id="slide-11">
         <div class="slide-frame">
           <div class="slide-header">
-            <span class="slide-eyebrow">Scene XI — The Manuscript</span>
-            <h2 class="slide-title">The Torn Pages</h2>
-            <p class="slide-desc">Four fragments of a manuscript. Someone tore them apart and scattered them. Reassemble in the correct order.</p>
+            <span class="slide-eyebrow">Scene XI — The Photograph</span>
+            <h2 class="slide-title">The Glass Plate Negative</h2>
+            <p class="slide-desc">A photographic plate was recovered from the incident room. In its negative state, the image makes no sense. Develop it — and read what was there.</p>
           </div>
-          <div class="fragments-field" id="fragmentsField">
-            <div class="ms-fragment" data-order="1" id="frag-1">
-              <span class="frag-num">I</span>
-              <p>The first account, as recorded by the primary witness, describes a room with no windows.</p>
+          <div class="plate-wrap">
+            <div class="plate-negative" id="plateNegative">
+              <div class="plate-content" id="plateContent">
+                <p class="plate-noise">▓▒░▓▒░▒▓░▒▓▓░▒</p>
+                <p class="plate-text">THE ENTITY OBSERVED<br>AT THIS LOCATION IS<br>A PROJECTION ONLY.<br>IT BELONGS TO THE<br>CLASS KNOWN AS:</p>
+                <p class="plate-answer-word" id="plateWord">OBSCURA</p>
+                <p class="plate-noise">▒░▓▒░▓▒░▓▒░▓▒░</p>
+              </div>
             </div>
-            <div class="ms-fragment" data-order="3" id="frag-3">
-              <span class="frag-num">III</span>
-              <p>Upon returning, the investigator found three items displaced from their original positions.</p>
-            </div>
-            <div class="ms-fragment" data-order="2" id="frag-2">
-              <span class="frag-num">II</span>
-              <p>A second witness contradicted the first on every point. The record does not explain this.</p>
-            </div>
-            <div class="ms-fragment" data-order="4" id="frag-4">
-              <span class="frag-num">IV</span>
-              <p>The final entry is dated three weeks after the others. No author is named.</p>
-            </div>
+            <button class="plate-develop-btn" id="plateDevelop">▶ Develop Plate</button>
           </div>
-          <div class="frag-progress" id="fragProgress">Click fragments in order: I → II → III → IV</div>
-          <div class="answer-feedback" id="fragFeedback" style="text-align:center;"></div>
+          <div class="answer-area" id="plateAnswerArea" style="display:none;">
+            <div class="puzzle-instruction">Enter the classification written on the plate:</div>
+            <input type="text" class="answer-input" id="plateInput" maxlength="10" placeholder="????????" autocomplete="off">
+            <button class="answer-submit" id="plateSubmit">Confirm</button>
+            <div class="answer-feedback" id="plateFeedback"></div>
+          </div>
         </div>
       </div>
 
-      <!-- SLIDE 12 — Séance Candles -->
+      <!-- SLIDE 12 — The Séance Recorder -->
       <div class="slide" id="slide-12">
         <div class="slide-frame">
           <div class="slide-header">
             <span class="slide-eyebrow">Scene XII — The Séance</span>
-            <h2 class="slide-title">The Candle Sequence</h2>
-            <p class="slide-desc">The candles lit themselves in a particular order during the séance. Observe. Repeat.</p>
+            <h2 class="slide-title">The Séance Recorder</h2>
+            <p class="slide-desc">During the séance, a drum recorder inscribed the entity's transmissions in light and dark. Each column is one letter. Short flash = dot. Long flash = dash. Decode it.</p>
           </div>
-          <div class="candle-row" id="candleRow">
-            <button class="candle-btn" id="candle-1" data-n="1">🕯</button>
-            <button class="candle-btn" id="candle-2" data-n="2">🕯</button>
-            <button class="candle-btn" id="candle-3" data-n="3">🕯</button>
-            <button class="candle-btn" id="candle-4" data-n="4">🕯</button>
+          <div class="morse-panels" id="morsePanels">
+            <div class="morse-panel">
+              <div class="morse-label">I</div>
+              <div class="morse-candle" id="mc-0">🕯</div>
+              <button class="morse-replay" data-letter="0">▶</button>
+            </div>
+            <div class="morse-panel">
+              <div class="morse-label">II</div>
+              <div class="morse-candle" id="mc-1">🕯</div>
+              <button class="morse-replay" data-letter="1">▶</button>
+            </div>
+            <div class="morse-panel">
+              <div class="morse-label">III</div>
+              <div class="morse-candle" id="mc-2">🕯</div>
+              <button class="morse-replay" data-letter="2">▶</button>
+            </div>
+            <div class="morse-panel">
+              <div class="morse-label">IV</div>
+              <div class="morse-candle" id="mc-3">🕯</div>
+              <button class="morse-replay" data-letter="3">▶</button>
+            </div>
           </div>
-          <button class="play-btn" id="seancePlay" style="margin:0.5rem auto;display:block;">▶ Show Sequence</button>
-          <div class="puzzle-instruction" id="seanceInstruction">Watch the sequence, then repeat it.</div>
-          <div class="answer-feedback" id="seanceFeedback" style="text-align:center;margin-top:0.5rem;"></div>
+          <div class="morse-reference">
+            <span class="morse-ref-item">· = short &nbsp;&nbsp; — = long</span>
+            <button class="play-btn" id="morsePlayAll" style="margin-left:1rem;display:inline-block;">▶ Play All</button>
+          </div>
+          <div class="answer-area">
+            <div class="puzzle-instruction">Decode all four letters. Enter the word:</div>
+            <input type="text" class="answer-input" id="morseWordInput" maxlength="8" placeholder="????" autocomplete="off">
+            <button class="answer-submit" id="morseWordSubmit">Confirm</button>
+            <div class="answer-feedback" id="morseWordFeedback"></div>
+          </div>
         </div>
       </div>
 
-      <!-- SLIDE 13 — The Shadow Letter -->
+      <!-- SLIDE 13 — The Impossible Shadow -->
       <div class="slide" id="slide-13">
         <div class="slide-frame">
           <div class="slide-header">
-            <span class="slide-eyebrow">Scene XIII — The Shadow</span>
-            <h2 class="slide-title">What the Candle Casts</h2>
-            <p class="slide-desc">A candelabra stands before the wall. Its shadow forms a letter. Which letter?</p>
+            <span class="slide-eyebrow">Scene XIII — The Paradox</span>
+            <h2 class="slide-title">The Impossible Shadow</h2>
+            <p class="slide-desc">Four shadow observations from the case file. Three are geometrically sound. One is impossible — a shadow that defies physics. This is how we know the entity is not natural. Identify it.</p>
           </div>
-          <div class="shadow-scene" id="shadowScene">
-            <svg class="shadow-svg" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
-              <rect x="95" y="60" width="10" height="140" fill="rgba(212,167,70,0.6)"/>
-              <rect x="75" y="90" width="50" height="6" fill="rgba(212,167,70,0.6)"/>
-              <rect x="75" y="130" width="50" height="6" fill="rgba(212,167,70,0.6)"/>
-              <ellipse cx="100" cy="200" rx="30" ry="6" fill="rgba(212,167,70,0.4)"/>
-              <rect x="130" y="55" width="7" height="150" fill="rgba(143,166,189,0.25)"/>
-              <rect x="137" y="78" width="35" height="5" fill="rgba(143,166,189,0.25)"/>
-              <rect x="137" y="118" width="28" height="5" fill="rgba(143,166,189,0.25)"/>
-              <text x="100" y="240" text-anchor="middle" font-family="Georgia" font-size="10" fill="rgba(212,167,70,0.4)">light source ☀</text>
-            </svg>
-            <p class="shadow-hint">The shadow falls to the right — one vertical bar, two horizontal bars extending from its left.</p>
+          <div class="shadow-diagrams" id="shadowDiagrams">
+            <div class="shadow-diagram" data-valid="true" id="sdiag-A">
+              <svg viewBox="0 0 120 80" width="100%" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="15" cy="40" r="8" fill="rgba(212,167,70,0.5)" stroke="var(--gold)" stroke-width="1"/>
+                <line x1="23" y1="40" x2="45" y2="40" stroke="rgba(212,167,70,0.4)" stroke-width="1" stroke-dasharray="3 2"/>
+                <rect x="50" y="30" width="12" height="20" rx="2" fill="rgba(143,166,189,0.5)"/>
+                <polygon points="62,38 62,42 95,45 95,35" fill="rgba(0,0,0,0.5)"/>
+                <line x1="0" y1="50" x2="120" y2="50" stroke="rgba(212,167,70,0.15)" stroke-width="1"/>
+              </svg>
+              <div class="diag-label">Observation A</div>
+            </div>
+            <div class="shadow-diagram" data-valid="true" id="sdiag-B">
+              <svg viewBox="0 0 120 80" width="100%" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="105" cy="40" r="8" fill="rgba(212,167,70,0.5)" stroke="var(--gold)" stroke-width="1"/>
+                <line x1="97" y1="40" x2="75" y2="40" stroke="rgba(212,167,70,0.4)" stroke-width="1" stroke-dasharray="3 2"/>
+                <rect x="58" y="30" width="12" height="20" rx="2" fill="rgba(143,166,189,0.5)"/>
+                <polygon points="58,38 58,42 25,45 25,35" fill="rgba(0,0,0,0.5)"/>
+                <line x1="0" y1="50" x2="120" y2="50" stroke="rgba(212,167,70,0.15)" stroke-width="1"/>
+              </svg>
+              <div class="diag-label">Observation B</div>
+            </div>
+            <div class="shadow-diagram" data-valid="true" id="sdiag-C">
+              <svg viewBox="0 0 120 80" width="100%" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="15" r="8" fill="rgba(212,167,70,0.5)" stroke="var(--gold)" stroke-width="1"/>
+                <line x1="27" y1="22" x2="52" y2="42" stroke="rgba(212,167,70,0.4)" stroke-width="1" stroke-dasharray="3 2"/>
+                <rect x="54" y="34" width="12" height="20" rx="2" fill="rgba(143,166,189,0.5)"/>
+                <polygon points="66,40 66,54 100,62 90,46" fill="rgba(0,0,0,0.5)"/>
+                <line x1="0" y1="54" x2="120" y2="54" stroke="rgba(212,167,70,0.15)" stroke-width="1"/>
+              </svg>
+              <div class="diag-label">Observation C</div>
+            </div>
+            <div class="shadow-diagram" data-valid="false" id="sdiag-D">
+              <svg viewBox="0 0 120 80" width="100%" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="105" cy="40" r="8" fill="rgba(212,167,70,0.5)" stroke="var(--gold)" stroke-width="1"/>
+                <line x1="97" y1="40" x2="75" y2="40" stroke="rgba(212,167,70,0.4)" stroke-width="1" stroke-dasharray="3 2"/>
+                <rect x="58" y="30" width="12" height="20" rx="2" fill="rgba(143,166,189,0.5)"/>
+                <polygon points="70,38 70,42 100,44 100,36" fill="rgba(0,0,0,0.5)"/>
+                <line x1="0" y1="50" x2="120" y2="50" stroke="rgba(212,167,70,0.15)" stroke-width="1"/>
+              </svg>
+              <div class="diag-label">Observation D</div>
+            </div>
           </div>
-          <div class="shadow-choices" id="shadowChoices">
-            <button class="shadow-choice" data-letter="A">A</button>
-            <button class="shadow-choice" data-letter="E">E</button>
-            <button class="shadow-choice" data-letter="F">F</button>
-            <button class="shadow-choice" data-letter="T">T</button>
-          </div>
-          <div class="answer-feedback" id="shadowFeedback" style="text-align:center;margin-top:0.6rem;"></div>
+          <div class="puzzle-instruction">Click the observation that is physically impossible.</div>
+          <div class="answer-feedback" id="shadowParadoxFeedback" style="text-align:center;margin-top:0.6rem;font-family:var(--font-mono);font-size:0.82rem;"></div>
         </div>
       </div>
 
-      <!-- SLIDE 14 — Constellation -->
+      <!-- SLIDE 14 — The Long Exposure -->
       <div class="slide" id="slide-14">
         <div class="slide-frame">
           <div class="slide-header">
-            <span class="slide-eyebrow">Scene XIV — The Stars</span>
-            <h2 class="slide-title">The Constellation Map</h2>
-            <p class="slide-desc">The observatory's chart marks a pattern among the stars. Connect the four principal stars in the correct sequence — they trace a letter.</p>
+            <span class="slide-eyebrow">Scene XIV — The Photograph</span>
+            <h2 class="slide-title">The Long Exposure</h2>
+            <p class="slide-desc">A long-exposure photograph of the incident room. Multiple figures passed through — they appear as translucent forms. Find the correct exposure to count them precisely. How many figures?</p>
           </div>
-          <div class="star-field" id="starField">
-            <svg id="constellationSvg" width="100%" viewBox="0 0 400 280" xmlns="http://www.w3.org/2000/svg">
-              <circle class="star-bg" cx="200" cy="50" r="2" fill="rgba(143,166,189,0.3)"/>
-              <circle class="star-bg" cx="320" cy="180" r="1.5" fill="rgba(143,166,189,0.25)"/>
-              <circle class="star-bg" cx="60" cy="140" r="1.5" fill="rgba(143,166,189,0.2)"/>
-              <circle class="star-bg" cx="350" cy="80" r="2" fill="rgba(143,166,189,0.25)"/>
-              <circle class="star-bg" cx="180" cy="220" r="1.5" fill="rgba(143,166,189,0.2)"/>
-              <g id="constellLines"></g>
-              <circle class="star-click" id="star-1" data-seq="1" cx="80"  cy="50"  r="8" fill="rgba(212,167,70,0.15)" stroke="rgba(212,167,70,0.4)" stroke-width="1.5"/>
-              <circle class="star-click" id="star-2" data-seq="2" cx="80"  cy="230" r="8" fill="rgba(212,167,70,0.15)" stroke="rgba(212,167,70,0.4)" stroke-width="1.5"/>
-              <circle class="star-click" id="star-3" data-seq="3" cx="220" cy="50"  r="8" fill="rgba(212,167,70,0.15)" stroke="rgba(212,167,70,0.4)" stroke-width="1.5"/>
-              <circle class="star-click" id="star-4" data-seq="4" cx="220" cy="230" r="8" fill="rgba(212,167,70,0.15)" stroke="rgba(212,167,70,0.4)" stroke-width="1.5"/>
-              <text x="65" y="42" font-family="monospace" font-size="10" fill="rgba(212,167,70,0.5)">α</text>
-              <text x="65" y="245" font-family="monospace" font-size="10" fill="rgba(212,167,70,0.5)">β</text>
-              <text x="225" y="42" font-family="monospace" font-size="10" fill="rgba(212,167,70,0.5)">γ</text>
-              <text x="225" y="245" font-family="monospace" font-size="10" fill="rgba(212,167,70,0.5)">δ</text>
-            </svg>
+          <div class="exposure-wrap">
+            <div class="exposure-chamber" id="exposureChamber">
+              <div class="ghost-figure" style="left:12%;top:20%;">◈</div>
+              <div class="ghost-figure" style="left:28%;top:35%;">◈</div>
+              <div class="ghost-figure" style="left:50%;top:18%;">◈</div>
+              <div class="ghost-figure" style="left:67%;top:40%;">◈</div>
+              <div class="ghost-figure" style="left:82%;top:25%;">◈</div>
+              <div class="exposure-over" id="exposureOver"></div>
+              <div class="exposure-under" id="exposureUnder"></div>
+              <div class="exposure-label" id="exposureLabel">Exposure: 0%</div>
+            </div>
+            <div class="exposure-controls">
+              <span class="puzzle-instruction" style="margin:0;">Underexposed</span>
+              <input type="range" id="exposureSlider" min="0" max="100" value="0" class="rubbing-slider" style="flex:1;">
+              <span class="puzzle-instruction" style="margin:0;">Overexposed</span>
+            </div>
           </div>
-          <div class="puzzle-instruction" id="constellInstruction">Click the stars: α → β → γ → δ</div>
-          <div class="answer-feedback" id="constellFeedback" style="text-align:center;margin-top:0.4rem;"></div>
+          <div class="answer-area" id="exposureAnswerArea">
+            <div class="puzzle-instruction">How many distinct figures are visible at the correct exposure?</div>
+            <input type="text" class="answer-input" id="exposureInput" maxlength="4" placeholder="?" autocomplete="off">
+            <button class="answer-submit" id="exposureSubmit">Confirm</button>
+            <div class="answer-feedback" id="exposureFeedback"></div>
+          </div>
         </div>
       </div>
 
-      <!-- SLIDE 15 — The Rubbing -->
+      <!-- SLIDE 15 — The Shadow Geometry -->
       <div class="slide" id="slide-15">
         <div class="slide-frame">
           <div class="slide-header">
-            <span class="slide-eyebrow">Scene XV — The Stone</span>
-            <h2 class="slide-title">The Tombstone Rubbing</h2>
-            <p class="slide-desc">A name was erased from this stone. But the rubbing preserves what the eye cannot see. Drag the rubbing cloth across the stone.</p>
+            <span class="slide-eyebrow">Scene XV — The Geometry</span>
+            <h2 class="slide-title">The Shadow Geometry</h2>
+            <p class="slide-desc">The investigator noted: "The shadow was exactly twice the height of the object that cast it. I have replicated the experiment. Set the sun to the angle that produces this condition."</p>
           </div>
-          <div class="rubbing-wrap">
-            <div class="rubbing-stone" id="rubbingStone">
-              <div class="rubbing-hidden" id="rubbingHidden">HERE LIES<br>THE MEMORY OF<br><span class="rubbing-name">BLACKWOOD</span><br>ERASED BY DESIGN</div>
-              <div class="rubbing-mask" id="rubbingMask"></div>
-            </div>
-            <div class="rubbing-slider-wrap">
-              <label class="puzzle-instruction">Drag to rub:</label>
-              <input type="range" id="rubbingSlider" min="0" max="100" value="0" class="rubbing-slider">
-            </div>
+          <div class="geometry-wrap">
+            <svg id="geometrySvg" viewBox="0 0 400 240" width="100%" xmlns="http://www.w3.org/2000/svg">
+              <line x1="40" y1="180" x2="380" y2="180" stroke="rgba(212,167,70,0.3)" stroke-width="1.5"/>
+              <rect x="150" y="120" width="8" height="60" fill="rgba(143,166,189,0.6)" rx="1"/>
+              <text x="140" y="150" font-size="10" fill="rgba(143,166,189,0.5)" font-family="monospace">6u</text>
+              <line id="shadowLine" x1="158" y1="180" x2="278" y2="180" stroke="rgba(0,0,0,0.6)" stroke-width="8" stroke-linecap="round"/>
+              <text id="shadowLengthText" x="218" y="200" text-anchor="middle" font-size="10" fill="rgba(212,167,70,0.6)" font-family="monospace">12.0u</text>
+              <path d="M 40 180 A 200 200 0 0 1 360 180" fill="none" stroke="rgba(212,167,70,0.15)" stroke-width="1" stroke-dasharray="4 4"/>
+              <circle id="sunCircle" cx="80" cy="87" r="16" fill="rgba(212,167,70,0.4)" stroke="var(--gold)" stroke-width="1.5" cursor="grab"/>
+              <text id="sunText" x="80" y="91" text-anchor="middle" font-size="10" fill="var(--ink-deep)" font-family="sans-serif">☀</text>
+              <text id="angleText" x="200" y="30" text-anchor="middle" font-size="12" fill="rgba(212,167,70,0.7)" font-family="monospace">Elevation: 27°</text>
+              <line id="lightRay" x1="80" y1="87" x2="154" y2="120" stroke="rgba(212,167,70,0.3)" stroke-width="1" stroke-dasharray="5 3"/>
+            </svg>
+            <div class="geometry-readout" id="geometryReadout">Shadow: <span id="shadowReadout">12.0</span> units &nbsp;|&nbsp; Object: 6 units</div>
           </div>
-          <div class="answer-area" id="rubbingAnswerArea" style="display:none;">
-            <div class="puzzle-instruction">Enter the erased name:</div>
-            <input type="text" class="answer-input" id="rubbingInput" maxlength="16" placeholder="?" autocomplete="off">
-            <button class="answer-submit" id="rubbingSubmit">Confirm</button>
-            <div class="answer-feedback" id="rubbingFeedback"></div>
+          <div id="geometryConfirmWrap" style="text-align:center;margin-top:0.8rem;display:none;">
+            <div class="answer-feedback correct" style="display:block;margin-bottom:0.6rem;">Shadow = 2 × object height confirmed.</div>
+            <button class="answer-submit" id="geometryConfirm">Confirm the geometry</button>
           </div>
+          <div class="answer-feedback" id="geometryFeedback" style="text-align:center;margin-top:0.5rem;font-family:var(--font-mono);font-size:0.78rem;"></div>
         </div>
       </div>
 
-      <!-- SLIDE 16 — Cipher -->
+      <!-- SLIDE 16 — The Spectral Signature -->
       <div class="slide" id="slide-16">
         <div class="slide-frame">
           <div class="slide-header">
-            <span class="slide-eyebrow">Scene XVI — The Cipher</span>
-            <h2 class="slide-title">The Encoded Message</h2>
-            <p class="slide-desc">The message was intercepted mid-transmission. Each letter has been rotated thirteen places through the alphabet.</p>
+            <span class="slide-eyebrow">Scene XVI — The Spectrograph</span>
+            <h2 class="slide-title">The Spectral Signature</h2>
+            <p class="slide-desc">The entity's optical analysis produced a spectral signature. The highlighted frequency bands, read in sequence, encode its scientific classification. The non-highlighted bands are noise.</p>
           </div>
-          <div class="cipher-display">
-            <div class="cipher-encoded">SYNZR JEVGRF BA GUR JNYY</div>
-            <div class="cipher-key-hint">A↔N · B↔O · C↔P · D↔Q · E↔R · F↔S · G↔T · H↔U · I↔V · J↔W · K↔X · L↔Y · M↔Z</div>
+          <div class="spectrograph-wrap">
+            <div class="spectrum-bar">
+              <div class="spec-band highlighted" data-letter="U" style="background:linear-gradient(to bottom,#5500aa,#330077);">
+                <span class="spec-letter">U</span>
+              </div>
+              <div class="spec-band dim" data-letter="X" style="background:linear-gradient(to bottom,#2200ff,#0000cc);">
+                <span class="spec-letter">X</span>
+              </div>
+              <div class="spec-band highlighted" data-letter="M" style="background:linear-gradient(to bottom,#0044ff,#0033cc);">
+                <span class="spec-letter">M</span>
+              </div>
+              <div class="spec-band dim" data-letter="Q" style="background:linear-gradient(to bottom,#008800,#005500);">
+                <span class="spec-letter">Q</span>
+              </div>
+              <div class="spec-band highlighted" data-letter="B" style="background:linear-gradient(to bottom,#cccc00,#999900);">
+                <span class="spec-letter">B</span>
+              </div>
+              <div class="spec-band highlighted" data-letter="R" style="background:linear-gradient(to bottom,#cc5500,#992200);">
+                <span class="spec-letter">R</span>
+              </div>
+              <div class="spec-band highlighted" data-letter="A" style="background:linear-gradient(to bottom,#880000,#550000);">
+                <span class="spec-letter">A</span>
+              </div>
+            </div>
+            <div class="spectrum-annotation">← violet &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; red →</div>
+            <div class="spectrum-note">Highlighted bands indicate detected frequencies. Read left to right.</div>
           </div>
           <div class="answer-area">
-            <div class="puzzle-instruction">Enter the first decoded word only:</div>
-            <input type="text" class="answer-input" id="cipherInput" maxlength="10" placeholder="?????" autocomplete="off">
-            <button class="answer-submit" id="cipherSubmit">Confirm</button>
-            <div class="answer-feedback" id="cipherFeedback"></div>
+            <div class="puzzle-instruction">Enter the word spelled by highlighted bands:</div>
+            <input type="text" class="answer-input" id="spectraInput" maxlength="8" placeholder="?????" autocomplete="off">
+            <button class="answer-submit" id="spectraSubmit">Confirm</button>
+            <div class="answer-feedback" id="spectraFeedback"></div>
           </div>
         </div>
       </div>
 
-      <!-- SLIDE 17 — The False Door -->
+      <!-- SLIDE 17 — The Eclipse Track -->
       <div class="slide" id="slide-17">
         <div class="slide-frame">
           <div class="slide-header">
-            <span class="slide-eyebrow">Scene XVII — The Door</span>
-            <h2 class="slide-title">The Deceptive Door</h2>
-            <p class="slide-desc">A single digit is painted above this door. But the door will not open for the obvious answer.</p>
+            <span class="slide-eyebrow">Scene XVII — The Eclipse</span>
+            <h2 class="slide-title">The Eclipse Track</h2>
+            <p class="slide-desc">Three witnesses reported sightings during the solar eclipse. The entity only manifests within the path of totality. Position the shadow track so it passes through all three sighting locations.</p>
           </div>
-          <div class="door-scene">
-            <div class="door-number">9</div>
-            <p class="door-hint" id="doorHint" style="display:none;font-style:italic;color:var(--ember);text-align:center;font-size:0.85rem;margin-top:0.8rem;">"The number you see is not the number you need. Look again — from a different angle."</p>
+          <div class="eclipse-map-wrap">
+            <svg id="eclipseMapSvg" viewBox="0 0 500 320" width="100%" xmlns="http://www.w3.org/2000/svg" style="background:#0a0814;border:1px solid rgba(212,167,70,0.2);border-radius:6px;">
+              <rect x="0" y="0" width="500" height="320" fill="#0a0814"/>
+              <path d="M0,80 Q60,70 100,90 Q160,110 200,95 Q260,75 310,85 Q370,100 410,80 Q460,65 500,75" fill="none" stroke="rgba(143,166,189,0.08)" stroke-width="1.5"/>
+              <path d="M0,200 Q80,185 130,205 Q200,225 260,210 Q320,195 380,215 Q440,230 500,210" fill="none" stroke="rgba(143,166,189,0.08)" stroke-width="1.5"/>
+              <rect id="eclipseTrack" x="0" y="40" width="500" height="70" fill="rgba(0,0,0,0.55)" rx="0" style="cursor:ns-resize;"/>
+              <text id="trackLabel" x="250" y="80" text-anchor="middle" font-size="10" fill="rgba(212,167,70,0.5)" font-family="monospace" pointer-events="none">PATH OF TOTALITY</text>
+              <circle id="witness-A" cx="120" cy="128" r="8" fill="rgba(226,87,43,0.2)" stroke="var(--ember)" stroke-width="1.5"/>
+              <text x="120" y="118" text-anchor="middle" font-size="9" fill="var(--ember)" font-family="monospace">A</text>
+              <circle id="witness-B" cx="280" cy="145" r="8" fill="rgba(226,87,43,0.2)" stroke="var(--ember)" stroke-width="1.5"/>
+              <text x="280" y="135" text-anchor="middle" font-size="9" fill="var(--ember)" font-family="monospace">B</text>
+              <circle id="witness-C" cx="420" cy="118" r="8" fill="rgba(226,87,43,0.2)" stroke="var(--ember)" stroke-width="1.5"/>
+              <text x="420" y="108" text-anchor="middle" font-size="9" fill="var(--ember)" font-family="monospace">C</text>
+              <text id="eclipseStatus" x="250" y="300" text-anchor="middle" font-size="11" fill="rgba(212,167,70,0.6)" font-family="monospace">Drag the shadow band to align it</text>
+            </svg>
           </div>
-          <div class="answer-area">
-            <div class="puzzle-instruction" id="doorInstruction">Enter the door's code:</div>
-            <input type="text" class="answer-input" id="doorInput" maxlength="4" placeholder="?" autocomplete="off">
-            <button class="answer-submit" id="doorSubmit">Try</button>
-            <div class="answer-feedback" id="doorFeedback"></div>
+          <div id="eclipseConfirmWrap" style="text-align:center;margin-top:0.8rem;display:none;">
+            <button class="answer-submit" id="eclipseConfirm">Confirm alignment</button>
           </div>
+          <div class="answer-feedback" id="eclipseFeedback" style="text-align:center;margin-top:0.5rem;font-family:var(--font-mono);font-size:0.8rem;"></div>
         </div>
       </div>
 
-      <!-- SLIDE 18 — Three Seals -->
+      <!-- SLIDE 18 — The Magic Lantern Slides -->
       <div class="slide" id="slide-18">
         <div class="slide-frame">
           <div class="slide-header">
-            <span class="slide-eyebrow">Scene XVIII — The Count</span>
-            <h2 class="slide-title">The Three Seals</h2>
-            <p class="slide-desc">Three wax seals. Each bears a Roman numeral. Their marks, when totalled, name a letter of the alphabet.</p>
+            <span class="slide-eyebrow">Scene XVIII — The Lantern</span>
+            <h2 class="slide-title">The Magic Lantern Slides</h2>
+            <p class="slide-desc">Five slides from the investigation's magic lantern presentation. They document the entity's appearance — but they were found in the wrong order. Arrange them chronologically.</p>
           </div>
-          <div class="seals-row">
-            <div class="roman-seal"><span class="roman-numeral">III</span></div>
-            <div class="roman-seal"><span class="roman-numeral">VII</span></div>
-            <div class="roman-seal"><span class="roman-numeral">VIII</span></div>
+          <div class="lantern-layout">
+            <div class="lantern-slides-source" id="lanternSource">
+              <div class="lantern-slide-card" data-correct="3" id="lsc-3">
+                <span class="slide-card-num">III</span>
+                <p>An anomaly is observed: a shadow on the east wall, moving — but no object stands between the candle and the wall.</p>
+              </div>
+              <div class="lantern-slide-card" data-correct="1" id="lsc-1">
+                <span class="slide-card-num">I</span>
+                <p>The room is documented in total darkness. No light source. No shadow. The absence itself is the first evidence.</p>
+              </div>
+              <div class="lantern-slide-card" data-correct="5" id="lsc-5">
+                <span class="slide-card-num">V</span>
+                <p>At dawn, the investigators photograph the room. The shadow from the night before remains. It has not moved.</p>
+              </div>
+              <div class="lantern-slide-card" data-correct="2" id="lsc-2">
+                <span class="slide-card-num">II</span>
+                <p>A single candle is introduced. Shadows appear on every surface. The room behaves normally.</p>
+              </div>
+              <div class="lantern-slide-card" data-correct="4" id="lsc-4">
+                <span class="slide-card-num">IV</span>
+                <p>The candle is extinguished. All shadows disappear. All shadows except one.</p>
+              </div>
+            </div>
+            <div class="lantern-slots" id="lanternSlots">
+              <div class="lantern-slot" data-slot="1"><span class="slot-num">1</span><div class="slot-content" id="slot-1"></div></div>
+              <div class="lantern-slot" data-slot="2"><span class="slot-num">2</span><div class="slot-content" id="slot-2"></div></div>
+              <div class="lantern-slot" data-slot="3"><span class="slot-num">3</span><div class="slot-content" id="slot-3"></div></div>
+              <div class="lantern-slot" data-slot="4"><span class="slot-num">4</span><div class="slot-content" id="slot-4"></div></div>
+              <div class="lantern-slot" data-slot="5"><span class="slot-num">5</span><div class="slot-content" id="slot-5"></div></div>
+            </div>
           </div>
-          <div class="answer-area">
-            <div class="puzzle-instruction">What letter does the sum name?</div>
-            <input type="text" class="answer-input" id="sealsInput" maxlength="1" placeholder="?" autocomplete="off">
-            <button class="answer-submit" id="sealsSubmit">Confirm</button>
-            <div class="answer-feedback" id="sealsFeedback"></div>
+          <div class="puzzle-instruction" id="lanternInstruction">Click a slide to select it, then click a numbered position to place it.</div>
+          <div id="lanternConfirmWrap" style="text-align:center;margin-top:0.8rem;display:none;">
+            <button class="answer-submit" id="lanternConfirm">Project the slides</button>
           </div>
+          <div class="answer-feedback" id="lanternFeedback" style="text-align:center;margin-top:0.5rem;font-family:var(--font-mono);font-size:0.8rem;"></div>
         </div>
       </div>
 
@@ -2017,38 +2218,38 @@
     let timerStarted = false;
 
     const WORDS = [
-      { scrambled: 'KSEMO', real: 'SMOKE', letter: 'S' },
-      { scrambled: 'NUTAH', real: 'HAUNT', letter: 'H' },
-      { scrambled: 'NHEAS', real: 'ASHEN', letter: 'A' },
-      { scrambled: 'KSUD',  real: 'DUSK',  letter: 'D' },
-      { scrambled: 'NEMO',  real: 'OMEN',  letter: 'O' },
-      { scrambled: 'PSIW',  real: 'WISP',  letter: 'W' },
+      { scrambled: 'EADSH', real: 'SHADE',  letter: 'S' },
+      { scrambled: 'TNUAH', real: 'HAUNT',  letter: 'H' },
+      { scrambled: 'NAESH', real: 'ASHEN',  letter: 'A' },
+      { scrambled: 'SKUD',  real: 'DUSK',   letter: 'D' },
+      { scrambled: 'MENO',  real: 'OMEN',   letter: 'O' },
+      { scrambled: 'IPSW',  real: 'WISP',   letter: 'W' },
     ];
 
     let wordsFound = [false,false,false,false,false,false];
     let wordsUnscrambled = [false,false,false,false,false,false];
 
     const clues = [
-      'Scene I: Three phases. Hold the seal for three seconds to open it. Tap the four symbols in order shown on the paper (left to right). Then hold the seal once more.',
-      'Scene II: The true zone is in the upper-right corner (roughly 65-72% across, 14-22% down). Hold there for three seconds. The Roman numeral VIII = 8 → the 8th letter is H.',
-      'Scene III: Light all three braziers first. Then drag the lantern slowly — the capture radius is narrow. Find both hidden letters: A (upper-left area) and D (lower-right area).',
-      'Scene IV: Drag to rotate the outer ring until ◈ snaps to the red arrow (~240°). Then rotate the inner ring until ◆ aligns (~180°). The letter O is revealed.',
-      'Scene V: Hold on the glass panel for five full seconds. The riddle names the twenty-third letter of the alphabet — W.',
-      'Scene VI: Three hidden passages are buried in the text. You must select across text in all three paragraphs containing them. On touch: tap each grey-coloured line to reveal it.',
-      'Scene VII: The encoded word is FOUND. Use the Morse chart — each symbol group is one letter. F=..-. O=--- U=..- N=-. D=-..',
-      'Scene VIII: Number each cell 1-25, left to right. Click only prime-numbered cells (2,3,5,7,11,13,17,19,23). They spell PENUMBRAE.',
-      'Scene IX: Ignore the content entirely. Read only the first character of each of the eight sentences, in order from top to bottom. They spell DARKNESS.',
-      'Scene X: The three clues are literal numbers spoken in the keeper\'s notes: three ravens, fourth hour, nine tolls. The code is 349.',
-      'Scene XI: Click the four torn fragments in Roman numeral order — I first, then II, then III, then IV. Each fragment displays its number prominently.',
-      'Scene XII: Watch the candle sequence carefully. The order is: candle 3, candle 1, candle 4, candle 2. Then click them in that same order.',
-      'Scene XIII: Count the bars on the shadow. One vertical line, two horizontal bars projecting from the left side — one at the top, one in the middle. That letter is F.',
-      'Scene XIV: The four principal stars must be clicked in order: α (top-left) → β (bottom-left) → γ (top-right) → δ (bottom-right). They trace the letter N.',
-      'Scene XV: Drag the slider all the way to the right to fully reveal the inscription. The erased name is BLACKWOOD.',
-      'Scene XVI: ROT-13: each letter shifts 13 places. SYNZR decodes to FLAME. Enter only the first word.',
-      'Scene XVII: The 9 painted above the door is a red herring. Turn it upside down — 9 inverted becomes 6. Enter 6.',
-      'Scene XVIII: Add the Roman numerals: III (3) + VII (7) + VIII (8) = 18. The 18th letter of the alphabet is R.',
-      'Scene XIX: Click each evidence card to unscramble it. The first letter of each real word is highlighted. Together they spell the final answer.',
-      'Scene XX: The six first letters you collected are S, H, A, D, O, W. Enter SHADOW.',
+      'Scene I: Three phases. Hold the seal for three full seconds. Symbols appear on the paper — tap them in the exact order shown (left to right). Then hold the seal once more to confirm.',
+      'Scene II: The true zone is the upper-right corner. Hold still there for three seconds. The mirror shows a word in reverse — TNUAH. Read it as a mirror would. Type HAUNT.',
+      'Scene III: Light all three braziers first. Then drag the lantern slowly across the field — find the letters A and D hidden in the ink. Both must be found.',
+      'Scene IV: Drag to rotate the outer ring until ◈ aligns with the red arrow (~240°). Then rotate the inner ring until ◆ aligns (~180°). The word OMEN appears.',
+      'Scene V: Hold on the cold glass for five full seconds. The riddle describes a will-o-wisp. The answer is WISP (or just W).',
+      'Scene VI: Three shadow-related passages are hidden in the document. Select across all three paragraphs. On touch: tap each faded line to reveal it.',
+      'Scene VII: Decode the Morse signal. The word is FOUND. F=..-. O=--- U=..- N=-. D=-..',
+      'Scene VIII: Click only prime-numbered cells (2,3,5,7,11,13,17,19,23). They spell PENUMBRAE — the scientific term for outer shadow.',
+      'Scene IX: Read only the first letter of each sentence. They spell DARKNESS — the entity\'s domain.',
+      'Scene X: Click each mirror to toggle its direction. Route the light beam from ☀ to ◎. Correct: mirror1=backslash, mirror2=forwardslash, mirror3=backslash.',
+      'Scene XI: Click DEVELOP to invert the photographic plate. The revealed text shows the entity\'s classification: OBSCURA. Type it.',
+      'Scene XII: Each candle panel flashes in Morse. Short flash=dot, long flash=dash. D=-.. A=.- R=.-. K=-.- → DARK. Type DARK.',
+      'Scene XIII: Look at the direction of each shadow relative to the light source. In Observation D, the shadow points TOWARD the light — physically impossible. Click D.',
+      'Scene XIV: Drag the exposure slider to around 50%. Five ghost figures become individually visible and countable. Type 5.',
+      'Scene XV: Drag the sun circle along the arc. Shadow doubles when sun is at ~26.6° elevation. The shadow readout should show approximately 12 units. Confirm when the button appears.',
+      'Scene XVI: Read only the highlighted (bright) bands of the spectrum, left to right. The letters spell UMBRA — the inner shadow of an eclipse.',
+      'Scene XVII: Drag the eclipse shadow band down until all three witness markers (A, B, C) turn gold — meaning they are inside the path of totality. Then confirm.',
+      'Scene XVIII: Arrange the 5 slides in chronological story order. Click a slide to select it, then click a numbered position. Correct order: darkness first, then candle, anomaly, extinguished, dawn.',
+      'Scene XIX: Click each evidence card to unscramble it. The first letter of each real word is revealed. Together they spell the final answer.',
+      'Scene XX: The six first letters you collected are S (SHADE), H (HAUNT), A (ASHEN), D (DUSK), O (OMEN), W (WISP). The word they spell is SHADOW.',
     ];
 
     /* ── Timer ── */
@@ -2167,15 +2368,15 @@
         case 7:  initTelegraph();     break;
         case 8:  initGrid();          break;
         case 9:  initLetter();        break;
-        case 10: initLock();          break;
-        case 11: initFragments();     break;
-        case 12: initSeance();        break;
-        case 13: initShadow();        break;
-        case 14: initConstellation(); break;
-        case 15: initRubbing();       break;
-        case 16: initCipher();        break;
-        case 17: initDoor();          break;
-        case 18: initSeals();         break;
+        case 10: initPenumbra();       break;
+        case 11: initPlate();          break;
+        case 12: initMorseCandles();   break;
+        case 13: initShadowParadox();  break;
+        case 14: initExposure();       break;
+        case 15: initGeometry();       break;
+        case 16: initSpectra();        break;
+        case 17: initEclipse();        break;
+        case 18: initLanternSlides();  break;
         case 19: initEvidence();      break;
         case 20: initAssembly();      break;
       }
@@ -2439,7 +2640,7 @@
       }
 
       function onReveal() {
-        text.innerHTML = 'VIII';
+        text.innerHTML = 'TNUAH';
         text.style.opacity = '1';
         ring.classList.remove('visible');
         answerArea.style.display = 'flex';
@@ -2459,10 +2660,10 @@
 
       function submit() {
         const v = input.value.trim().toUpperCase();
-        if (v === 'H') {
+        if (v === 'HAUNT') {
           solved = true;
           feedback.className = 'answer-feedback correct';
-          feedback.textContent = 'Confirmed.';
+          feedback.textContent = 'The mirror confirms it.';
           fillChip(1);
           showFragmentBanner(1);
           markSlideSolved(2);
@@ -2773,7 +2974,7 @@
 
       function submit() {
         const v = input.value.trim().toUpperCase();
-        if (v === 'W' || v === '23' || v === 'TWENTY-THREE' || v === 'TWENTYTHREE') {
+        if (v === 'WISP' || v === 'W') {
           cleared = true;
           feedback.className = 'answer-feedback correct';
           feedback.textContent = 'Confirmed.';
@@ -3037,312 +3238,472 @@
       input.addEventListener('keydown', function (e) { if (e.key === 'Enter') submit(); });
     }
 
-    /* ════════════════ SCENE 10 — Cabinet Lock ════════════════ */
-    let lockDone = false;
-    function initLock() {
-      if (lockDone) return;
-      lockDone = true;
-      const digits = [0, 0, 0];
-      const TARGET = [3, 4, 9];
-      document.querySelectorAll('.spin-up').forEach(function(btn, i) {
-        btn.addEventListener('click', function() {
-          digits[i] = (digits[i] + 1) % 10;
-          document.getElementById('digit-' + i).textContent = digits[i];
+    /* ════════════════ SCENE 10 — Penumbra Device ════════════════ */
+    let penumbraDone = false;
+    function initPenumbra() {
+      if (penumbraDone) return;
+      penumbraDone = true;
+
+      // Mirror positions: {id, x, y, state: 0=backslash(\), 1=forwardslash(/)}
+      // Source at (20,50) going right.
+      // Correct: mirror1=\(0), mirror2=/(1), mirror3=\(0)
+      // Beam: right → mirror1(100,50) \ → down → mirror2(100,200) / → right → mirror3(300,200) \ → down → target(300,~270)
+      const MIRRORS = [
+        { id: 'mirror1', x: 100, y: 50,  state: 1 }, // starts wrong (/)
+        { id: 'mirror2', x: 100, y: 200, state: 0 }, // starts correct (\) but target still needs all 3
+        { id: 'mirror3', x: 300, y: 200, state: 1 }, // starts wrong (/)
+      ];
+
+      MIRRORS.forEach(function(m, idx) {
+        const el = document.getElementById(m.id);
+        el.addEventListener('click', function() {
+          MIRRORS[idx].state = 1 - MIRRORS[idx].state;
+          updateMirrorVisual(idx);
+          drawBeam();
         });
+        updateMirrorVisual(idx);
       });
-      document.querySelectorAll('.spin-down').forEach(function(btn, i) {
-        btn.addEventListener('click', function() {
-          digits[i] = (digits[i] + 9) % 10;
-          document.getElementById('digit-' + i).textContent = digits[i];
+
+      function updateMirrorVisual(idx) {
+        const m = MIRRORS[idx];
+        const el = document.getElementById(m.id);
+        const line = el.querySelector('.mirror-line');
+        if (m.state === 0) { // backslash \
+          line.setAttribute('x1', '-14'); line.setAttribute('y1', '-14');
+          line.setAttribute('x2', '14');  line.setAttribute('y2', '14');
+        } else { // forwardslash /
+          line.setAttribute('x1', '-14'); line.setAttribute('y1', '14');
+          line.setAttribute('x2', '14');  line.setAttribute('y2', '-14');
+        }
+      }
+
+      function drawBeam() {
+        const beamG = document.getElementById('beamPath');
+        beamG.innerHTML = '';
+        let x = 20, y = 50, dx = 1, dy = 0;
+        const segments = [];
+        let hitTarget = false;
+        const MAX_STEPS = 20;
+        for (let step = 0; step < MAX_STEPS; step++) {
+          let minT = Infinity;
+          let hitMirror = -1;
+          MIRRORS.forEach(function(m, i) {
+            let t = Infinity;
+            if (dx !== 0) { const tx = (m.x - x) / dx; if (tx > 0.5 && Math.abs(y + dy * tx - m.y) < 8) t = tx; }
+            if (dy !== 0) { const ty = (m.y - y) / dy; if (ty > 0.5 && Math.abs(x + dx * ty - m.x) < 8) t = ty; }
+            if (t < minT) { minT = t; hitMirror = i; }
+          });
+          const wallT = Math.min(
+            dx > 0 ? (400 - x) / dx : dx < 0 ? -x / dx : Infinity,
+            dy > 0 ? (300 - y) / dy : dy < 0 ? -y / dy : Infinity
+          );
+          if (hitMirror === -1 || wallT < minT) {
+            const ex = x + dx * wallT;
+            const ey = y + dy * wallT;
+            segments.push([x, y, ex, ey]);
+            if (Math.abs(ex - 300) < 25 && Math.abs(ey - 270) < 25 && dy > 0) {
+              hitTarget = true;
+            }
+            break;
+          }
+          const nx = x + dx * minT;
+          const ny = y + dy * minT;
+          segments.push([x, y, nx, ny]);
+          x = nx; y = ny;
+          const m = MIRRORS[hitMirror];
+          if (m.state === 0) { // \ : swap dx,dy
+            const tmp = dx; dx = dy; dy = tmp;
+          } else { // / : swap and negate
+            const tmp = dx; dx = -dy; dy = -tmp;
+          }
+        }
+        segments.forEach(function(seg) {
+          const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+          line.setAttribute('x1', seg[0]); line.setAttribute('y1', seg[1]);
+          line.setAttribute('x2', seg[2]); line.setAttribute('y2', seg[3]);
+          line.setAttribute('stroke', hitTarget ? 'rgba(212,167,70,0.9)' : 'rgba(212,167,70,0.55)');
+          line.setAttribute('stroke-width', '2');
+          line.setAttribute('stroke-dasharray', '4 2');
+          beamG.appendChild(line);
         });
-      });
-      document.getElementById('lockSubmit').addEventListener('click', function() {
-        const fb = document.getElementById('lockFeedback');
-        if (digits[0] === TARGET[0] && digits[1] === TARGET[1] && digits[2] === TARGET[2]) {
-          fb.className = 'answer-feedback correct';
-          fb.textContent = 'The cabinet opens.';
+        if (hitTarget && !slideSolved[10]) {
+          document.getElementById('detectorRect').setAttribute('fill', 'rgba(212,167,70,0.4)');
+          document.getElementById('penumbraFeedback').className = 'answer-feedback correct';
+          document.getElementById('penumbraFeedback').textContent = 'The detector is activated. Location confirmed.';
           markSlideSolved(10);
+        }
+      }
+
+      drawBeam();
+    }
+
+    /* ════════════════ SCENE 11 — Glass Plate Negative ════════════════ */
+    let plateDone = false;
+    function initPlate() {
+      if (plateDone) return;
+      plateDone = true;
+      document.getElementById('plateDevelop').addEventListener('click', function() {
+        const plate = document.getElementById('plateNegative');
+        plate.classList.add('developed');
+        this.style.display = 'none';
+        setTimeout(function() {
+          document.getElementById('plateAnswerArea').style.display = 'flex';
+        }, 1400);
+      });
+      const input = document.getElementById('plateInput');
+      const fb = document.getElementById('plateFeedback');
+      function submit() {
+        if (input.value.trim().toUpperCase() === 'OBSCURA') {
+          fb.className = 'answer-feedback correct';
+          fb.textContent = 'Classification confirmed.';
+          markSlideSolved(11);
         } else {
           fb.className = 'answer-feedback wrong';
-          fb.textContent = 'The lock does not yield.';
+          fb.textContent = 'Read the developed plate again.';
         }
-      });
+      }
+      document.getElementById('plateSubmit').addEventListener('click', submit);
+      input.addEventListener('keydown', function(e) { if (e.key==='Enter') submit(); });
     }
 
-    /* ════════════════ SCENE 11 — Torn Manuscript ════════════════ */
-    let fragDone = false;
-    function initFragments() {
-      if (fragDone) return;
-      fragDone = true;
-      const ORDER = [1, 2, 3, 4];
-      let nextExpected = 0;
-      const frags = document.querySelectorAll('.ms-fragment');
-      frags.forEach(function(frag) {
-        frag.addEventListener('click', function() {
-          if (nextExpected >= ORDER.length) return;
-          const ord = parseInt(frag.getAttribute('data-order'), 10);
-          if (ord === ORDER[nextExpected]) {
-            frag.classList.add('correct');
-            nextExpected++;
-            document.getElementById('fragProgress').textContent = nextExpected + ' / 4 in order';
-            if (nextExpected === 4) {
-              document.getElementById('fragFeedback').className = 'answer-feedback correct';
-              document.getElementById('fragFeedback').textContent = 'The manuscript is restored.';
-              markSlideSolved(11);
-            }
-          } else {
-            frag.classList.add('wrong');
-            setTimeout(function() {
-              frags.forEach(function(f) { f.classList.remove('correct','wrong'); });
-              nextExpected = 0;
-              document.getElementById('fragProgress').textContent = 'Click fragments in order: I → II → III → IV';
-            }, 600);
-          }
-        });
-      });
-    }
+    /* ════════════════ SCENE 12 — Séance Recorder (Morse Candles) ════════════════ */
+    let morseCandleDone = false;
+    function initMorseCandles() {
+      if (morseCandleDone) return;
+      morseCandleDone = true;
+      // D=-.., A=.-, R=.-., K=-.-
+      const LETTERS = [
+        [1,0,0], // D: long, short, short
+        [0,1],   // A: short, long
+        [0,1,0], // R: short, long, short
+        [1,0,1], // K: long, short, long
+      ];
+      const DOT_MS = 300, DASH_MS = 700, GAP_MS = 200, LETTER_GAP = 500;
 
-    /* ════════════════ SCENE 12 — Séance Candles ════════════════ */
-    let seanceDone = false;
-    function initSeance() {
-      if (seanceDone) return;
-      seanceDone = true;
-      const SEQUENCE = [3, 1, 4, 2];
-      let playerSeq = [];
-      let showing = false;
-      let solved12 = false;
-
-      function lightCandle(n, ms) {
-        return new Promise(function(res) {
-          setTimeout(function() {
-            const el = document.getElementById('candle-' + n);
-            el.classList.add('active');
-            setTimeout(function() { el.classList.remove('active'); res(); }, 600);
-          }, ms);
+      function playLetter(idx) {
+        const candle = document.getElementById('mc-' + idx);
+        const pattern = LETTERS[idx];
+        let t = 0;
+        pattern.forEach(function(isDash) {
+          const dur = isDash ? DASH_MS : DOT_MS;
+          setTimeout(function() { candle.classList.add('lit'); }, t);
+          t += dur;
+          setTimeout(function() { candle.classList.remove('lit'); }, t);
+          t += GAP_MS;
         });
       }
 
-      document.getElementById('seancePlay').addEventListener('click', async function() {
-        if (showing || solved12) return;
-        showing = true;
-        playerSeq = [];
-        document.querySelectorAll('.candle-btn').forEach(function(b) { b.classList.remove('player-correct','player-wrong'); });
-        document.getElementById('seanceInstruction').textContent = 'Watch…';
-        let delay = 0;
-        for (let i = 0; i < SEQUENCE.length; i++) {
-          await lightCandle(SEQUENCE[i], delay);
-          delay += 800;
-        }
-        setTimeout(function() {
-          showing = false;
-          document.getElementById('seanceInstruction').textContent = 'Now repeat the sequence — click the candles:';
-        }, delay);
-      });
-
-      document.querySelectorAll('.candle-btn').forEach(function(btn) {
+      document.querySelectorAll('.morse-replay').forEach(function(btn) {
         btn.addEventListener('click', function() {
-          if (showing || solved12) return;
-          const n = parseInt(btn.getAttribute('data-n'), 10);
-          playerSeq.push(n);
-          const idx = playerSeq.length - 1;
-          if (n === SEQUENCE[idx]) {
-            btn.classList.add('player-correct');
-            if (playerSeq.length === SEQUENCE.length) {
-              document.getElementById('seanceFeedback').className = 'answer-feedback correct';
-              document.getElementById('seanceFeedback').textContent = 'The spirits confirm the sequence.';
-              solved12 = true;
-              markSlideSolved(12);
-            }
-          } else {
-            btn.classList.add('player-wrong');
-            document.getElementById('seanceFeedback').className = 'answer-feedback wrong';
-            document.getElementById('seanceFeedback').textContent = 'Wrong order. Watch again.';
-            setTimeout(function() {
-              playerSeq = [];
-              document.querySelectorAll('.candle-btn').forEach(function(b) { b.classList.remove('player-correct','player-wrong'); });
-              document.getElementById('seanceFeedback').textContent = '';
-            }, 800);
-          }
+          const idx = parseInt(btn.getAttribute('data-letter'),10);
+          playLetter(idx);
         });
       });
+
+      document.getElementById('morsePlayAll').addEventListener('click', function() {
+        let t = 0;
+        for (let i = 0; i < 4; i++) {
+          const dur = LETTERS[i].reduce(function(s,d){ return s + (d?DASH_MS:DOT_MS) + GAP_MS; }, 0) + LETTER_GAP;
+          (function(idx, delay) {
+            setTimeout(function() { playLetter(idx); }, delay);
+          })(i, t);
+          t += dur;
+        }
+      });
+
+      const inp = document.getElementById('morseWordInput');
+      const fb = document.getElementById('morseWordFeedback');
+      function submit() {
+        if (inp.value.trim().toUpperCase() === 'DARK') {
+          fb.className = 'answer-feedback correct';
+          fb.textContent = 'Transmission decoded.';
+          markSlideSolved(12);
+        } else {
+          fb.className = 'answer-feedback wrong';
+          fb.textContent = 'Decode each flash pattern — short=dot, long=dash.';
+        }
+      }
+      document.getElementById('morseWordSubmit').addEventListener('click', submit);
+      inp.addEventListener('keydown', function(e){ if(e.key==='Enter') submit(); });
     }
 
-    /* ════════════════ SCENE 13 — Shadow Letter ════════════════ */
-    let shadowDone = false;
-    function initShadow() {
-      if (shadowDone) return;
-      shadowDone = true;
-      document.querySelectorAll('.shadow-choice').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          const letter = btn.getAttribute('data-letter');
-          const fb = document.getElementById('shadowFeedback');
-          if (letter === 'F') {
-            btn.classList.add('chosen');
+    /* ════════════════ SCENE 13 — Impossible Shadow ════════════════ */
+    let shadowParadoxDone = false;
+    function initShadowParadox() {
+      if (shadowParadoxDone) return;
+      shadowParadoxDone = true;
+      document.querySelectorAll('.shadow-diagram').forEach(function(el) {
+        el.addEventListener('click', function() {
+          if (slideSolved[13]) return;
+          const fb = document.getElementById('shadowParadoxFeedback');
+          if (el.getAttribute('data-valid') === 'false') {
+            el.classList.add('correct-pick');
             fb.className = 'answer-feedback correct';
-            fb.textContent = 'Confirmed — F.';
+            fb.textContent = 'Correct. Observation D is impossible — shadow moves toward the light source. The entity defies physics.';
             markSlideSolved(13);
           } else {
-            btn.classList.add('wrong-choice');
+            el.classList.add('wrong-pick');
             fb.className = 'answer-feedback wrong';
-            fb.textContent = 'That shadow does not match.';
-            setTimeout(function() { btn.classList.remove('wrong-choice'); fb.textContent = ''; }, 800);
+            fb.textContent = 'That shadow is geometrically valid. Look again.';
+            setTimeout(function() { el.classList.remove('wrong-pick'); fb.textContent = ''; }, 900);
           }
         });
       });
     }
 
-    /* ════════════════ SCENE 14 — Constellation ════════════════ */
-    let constellDone = false;
-    function initConstellation() {
-      if (constellDone) return;
-      constellDone = true;
-      const ORDER = [1, 2, 3, 4];
-      const POS = { 1: [80,50], 2: [80,230], 3: [220,50], 4: [220,230] };
-      let seq = [];
-      const lines = document.getElementById('constellLines');
+    /* ════════════════ SCENE 14 — Long Exposure ════════════════ */
+    let exposureDone = false;
+    function initExposure() {
+      if (exposureDone) return;
+      exposureDone = true;
+      const slider = document.getElementById('exposureSlider');
+      const underEl = document.getElementById('exposureUnder');
+      const overEl = document.getElementById('exposureOver');
+      const label = document.getElementById('exposureLabel');
+      const ghosts = document.querySelectorAll('.ghost-figure');
 
-      document.querySelectorAll('.star-click').forEach(function(star) {
-        star.addEventListener('click', function() {
-          const n = parseInt(star.getAttribute('data-seq'), 10);
-          const expected = ORDER[seq.length];
-          if (n === expected) {
-            star.classList.add('clicked');
-            star.setAttribute('fill', 'rgba(212,167,70,0.6)');
-            seq.push(n);
-            if (seq.length >= 2) {
-              const prev = POS[seq[seq.length-2]];
-              const cur = POS[n];
-              const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-              line.setAttribute('x1', prev[0]); line.setAttribute('y1', prev[1]);
-              line.setAttribute('x2', cur[0]);  line.setAttribute('y2', cur[1]);
-              line.setAttribute('stroke', 'rgba(212,167,70,0.5)');
-              line.setAttribute('stroke-width', '1.5');
-              line.setAttribute('stroke-dasharray', '4 3');
-              lines.appendChild(line);
-            }
-            if (seq.length === 4) {
-              document.getElementById('constellFeedback').className = 'answer-feedback correct';
-              document.getElementById('constellFeedback').textContent = 'The letter N is traced.';
-              markSlideSolved(14);
-            }
-          } else {
-            document.getElementById('constellFeedback').className = 'answer-feedback wrong';
-            document.getElementById('constellFeedback').textContent = 'Wrong star. Reset.';
-            setTimeout(function() {
-              seq = [];
-              lines.innerHTML = '';
-              document.querySelectorAll('.star-click').forEach(function(s) { s.classList.remove('clicked'); s.setAttribute('fill','rgba(212,167,70,0.15)'); });
-              document.getElementById('constellFeedback').textContent = '';
-            }, 700);
-          }
-        });
-      });
-    }
-
-    /* ════════════════ SCENE 15 — Rubbing ════════════════ */
-    let rubbingDone = false;
-    function initRubbing() {
-      if (rubbingDone) return;
-      rubbingDone = true;
-      const slider = document.getElementById('rubbingSlider');
-      const mask = document.getElementById('rubbingMask');
-      const answerArea = document.getElementById('rubbingAnswerArea');
-      let revealed = false;
       slider.addEventListener('input', function() {
         const v = parseInt(slider.value, 10);
-        mask.style.opacity = String(1 - v / 100);
-        if (v >= 85 && !revealed) {
-          revealed = true;
-          answerArea.style.display = 'flex';
-        }
+        label.textContent = 'Exposure: ' + v + '%';
+        const underOpacity = v < 40 ? 1 - (v / 40) * 0.92 : 0.08;
+        underEl.style.background = 'rgba(0,0,0,' + underOpacity + ')';
+        const overOpacity = v > 60 ? ((v - 60) / 40) * 0.85 : 0;
+        overEl.style.background = 'rgba(235,217,180,' + overOpacity + ')';
+        const ghostOp = v >= 40 && v <= 60 ? 0.7 : (v < 40 ? (v / 40) * 0.7 : 0.7 - ((v-60)/40)*0.65);
+        ghosts.forEach(function(g) { g.style.opacity = ghostOp; });
       });
-      const input = document.getElementById('rubbingInput');
-      const fb = document.getElementById('rubbingFeedback');
+
+      const inp = document.getElementById('exposureInput');
+      const fb = document.getElementById('exposureFeedback');
       function submit() {
-        const v = input.value.trim().toUpperCase();
-        if (v === 'BLACKWOOD') {
+        if (inp.value.trim() === '5') {
           fb.className = 'answer-feedback correct';
-          fb.textContent = 'The name is confirmed.';
-          markSlideSolved(15);
+          fb.textContent = 'Five figures. And a sixth — the one that cast no shadow. The entity.';
+          markSlideSolved(14);
         } else {
           fb.className = 'answer-feedback wrong';
-          fb.textContent = 'That is not the erased name.';
+          fb.textContent = 'Find the exposure where each figure is individually distinct.';
         }
       }
-      document.getElementById('rubbingSubmit').addEventListener('click', submit);
-      input.addEventListener('keydown', function(e) { if (e.key === 'Enter') submit(); });
+      document.getElementById('exposureSubmit').addEventListener('click', submit);
+      inp.addEventListener('keydown', function(e){ if(e.key==='Enter') submit(); });
     }
 
-    /* ════════════════ SCENE 16 — Cipher ════════════════ */
-    let cipherDone = false;
-    function initCipher() {
-      if (cipherDone) return;
-      cipherDone = true;
-      const input = document.getElementById('cipherInput');
-      const fb = document.getElementById('cipherFeedback');
+    /* ════════════════ SCENE 15 — Shadow Geometry ════════════════ */
+    let geometryDone = false;
+    function initGeometry() {
+      if (geometryDone) return;
+      geometryDone = true;
+
+      const svg = document.getElementById('geometrySvg');
+      const sunCircle = document.getElementById('sunCircle');
+      const sunText = document.getElementById('sunText');
+      const shadowLine = document.getElementById('shadowLine');
+      const shadowLengthText = document.getElementById('shadowLengthText');
+      const lightRay = document.getElementById('lightRay');
+      const angleText = document.getElementById('angleText');
+      const shadowReadout = document.getElementById('shadowReadout');
+      const confirmWrap = document.getElementById('geometryConfirmWrap');
+
+      const ARC_CX = 200, ARC_CY = 180, ARC_R = 160;
+      const OBJ_X = 154;
+      let dragging = false;
+      let currentAngle = 27;
+
+      function updateGeometry(angleDeg) {
+        angleDeg = Math.max(10, Math.min(75, angleDeg));
+        currentAngle = angleDeg;
+        const rad = (180 - angleDeg) * Math.PI / 180;
+        const sunX = ARC_CX + ARC_R * Math.cos(rad);
+        const sunY = ARC_CY + ARC_R * Math.sin(rad);
+        sunCircle.setAttribute('cx', sunX);
+        sunCircle.setAttribute('cy', sunY);
+        sunText.setAttribute('x', sunX);
+        sunText.setAttribute('y', sunY + 4);
+        const shadowLen = 6 / Math.tan(angleDeg * Math.PI / 180);
+        const shadowPx = shadowLen * 10;
+        const shadowEndX = OBJ_X + 4 + shadowPx;
+        shadowLine.setAttribute('x1', OBJ_X + 4);
+        shadowLine.setAttribute('x2', Math.min(shadowEndX, 380));
+        shadowLengthText.setAttribute('x', (OBJ_X + 4 + Math.min(shadowEndX, 380)) / 2);
+        shadowLengthText.textContent = shadowLen.toFixed(1) + 'u';
+        lightRay.setAttribute('x1', sunX);
+        lightRay.setAttribute('y1', sunY);
+        angleText.textContent = 'Elevation: ' + Math.round(angleDeg) + '°';
+        shadowReadout.textContent = shadowLen.toFixed(1);
+        if (Math.abs(shadowLen - 12) < 0.8) {
+          confirmWrap.style.display = 'block';
+        } else {
+          confirmWrap.style.display = 'none';
+        }
+      }
+
+      function svgToAngle(clientX, clientY) {
+        const rect = svg.getBoundingClientRect();
+        const scaleX = 400 / rect.width;
+        const scaleY = 240 / rect.height;
+        const svgX = (clientX - rect.left) * scaleX;
+        const svgY = (clientY - rect.top) * scaleY;
+        const dx = svgX - ARC_CX;
+        const dy = ARC_CY - svgY;
+        return Math.atan2(dy, Math.abs(dx)) * 180 / Math.PI;
+      }
+
+      sunCircle.addEventListener('mousedown', function(e) { e.preventDefault(); dragging = true; });
+      sunCircle.addEventListener('touchstart', function(e) { e.preventDefault(); dragging = true; }, { passive: false });
+      svg.addEventListener('mousemove', function(e) { if (dragging) updateGeometry(svgToAngle(e.clientX, e.clientY)); });
+      svg.addEventListener('touchmove', function(e) { e.preventDefault(); if (dragging && e.touches[0]) updateGeometry(svgToAngle(e.touches[0].clientX, e.touches[0].clientY)); }, { passive: false });
+      document.addEventListener('mouseup', function() { dragging = false; });
+      document.addEventListener('touchend', function() { dragging = false; });
+
+      document.getElementById('geometryConfirm').addEventListener('click', function() {
+        if (Math.abs(currentAngle - 26.6) < 5) {
+          document.getElementById('geometryFeedback').className = 'answer-feedback correct';
+          document.getElementById('geometryFeedback').textContent = 'Angle confirmed. At 26.6° elevation, shadow doubles the object.';
+          markSlideSolved(15);
+        }
+      });
+
+      updateGeometry(27);
+    }
+
+    /* ════════════════ SCENE 16 — Spectral Signature ════════════════ */
+    let spectraDone = false;
+    function initSpectra() {
+      if (spectraDone) return;
+      spectraDone = true;
+      const inp = document.getElementById('spectraInput');
+      const fb = document.getElementById('spectraFeedback');
       function submit() {
-        const v = input.value.trim().toUpperCase();
-        if (v === 'FLAME') {
+        if (inp.value.trim().toUpperCase() === 'UMBRA') {
           fb.className = 'answer-feedback correct';
-          fb.textContent = 'Decoded correctly.';
+          fb.textContent = 'UMBRA — the inner shadow. The total darkness at the core of an eclipse.';
           markSlideSolved(16);
         } else {
           fb.className = 'answer-feedback wrong';
-          fb.textContent = 'That is not the decoded word.';
+          fb.textContent = 'Read only the highlighted bands, left to right.';
         }
       }
-      document.getElementById('cipherSubmit').addEventListener('click', submit);
-      input.addEventListener('keydown', function(e) { if (e.key === 'Enter') submit(); });
+      document.getElementById('spectraSubmit').addEventListener('click', submit);
+      inp.addEventListener('keydown', function(e){ if(e.key==='Enter') submit(); });
     }
 
-    /* ════════════════ SCENE 17 — Deceptive Door ════════════════ */
-    let doorDone = false;
-    let doorAttempt = 0;
-    function initDoor() {
-      if (doorDone) return;
-      doorDone = true;
-      const input = document.getElementById('doorInput');
-      const fb = document.getElementById('doorFeedback');
-      function submit() {
-        const v = input.value.trim();
-        if (v === '6') {
-          fb.className = 'answer-feedback correct';
-          fb.textContent = 'The door opens.';
-          markSlideSolved(17);
-        } else if (v === '9' && doorAttempt === 0) {
-          doorAttempt++;
-          fb.className = 'answer-feedback wrong';
-          fb.textContent = '';
-          document.getElementById('doorHint').style.display = 'block';
+    /* ════════════════ SCENE 17 — Eclipse Track ════════════════ */
+    let eclipseDone = false;
+    function initEclipse() {
+      if (eclipseDone) return;
+      eclipseDone = true;
+
+      const svg = document.getElementById('eclipseMapSvg');
+      const track = document.getElementById('eclipseTrack');
+      const trackLabel = document.getElementById('trackLabel');
+      const statusText = document.getElementById('eclipseStatus');
+      const confirmWrap = document.getElementById('eclipseConfirmWrap');
+      const witnesses = [
+        { el: document.getElementById('witness-A'), cy: 128 },
+        { el: document.getElementById('witness-B'), cy: 145 },
+        { el: document.getElementById('witness-C'), cy: 118 },
+      ];
+      let trackY = 40;
+      let dragging = false;
+      let dragStartY = 0, dragStartTrackY = 0;
+
+      function updateTrack() {
+        track.setAttribute('y', trackY);
+        trackLabel.setAttribute('y', trackY + 38);
+        const bandTop = trackY, bandBot = trackY + 70;
+        let allInside = true;
+        witnesses.forEach(function(w) {
+          const inside = w.cy >= bandTop && w.cy <= bandBot;
+          w.el.setAttribute('fill', inside ? 'rgba(212,167,70,0.25)' : 'rgba(226,87,43,0.2)');
+          w.el.setAttribute('stroke', inside ? 'var(--gold)' : 'var(--ember)');
+          if (!inside) allInside = false;
+        });
+        if (allInside) {
+          statusText.textContent = 'All witnesses within the path of totality';
+          statusText.setAttribute('fill', 'rgba(212,167,70,0.9)');
+          confirmWrap.style.display = 'block';
         } else {
-          fb.className = 'answer-feedback wrong';
-          fb.textContent = 'The door remains sealed.';
+          statusText.textContent = 'Drag the shadow band to align it';
+          statusText.setAttribute('fill', 'rgba(212,167,70,0.6)');
+          confirmWrap.style.display = 'none';
         }
       }
-      document.getElementById('doorSubmit').addEventListener('click', submit);
-      input.addEventListener('keydown', function(e) { if (e.key === 'Enter') submit(); });
+
+      function svgY(clientY) {
+        const rect = svg.getBoundingClientRect();
+        return (clientY - rect.top) * (320 / rect.height);
+      }
+
+      track.addEventListener('mousedown', function(e) { e.preventDefault(); dragging = true; dragStartY = svgY(e.clientY); dragStartTrackY = trackY; });
+      track.addEventListener('touchstart', function(e) { e.preventDefault(); dragging = true; if(e.touches[0]){ dragStartY = svgY(e.touches[0].clientY); dragStartTrackY = trackY; } }, { passive: false });
+      svg.addEventListener('mousemove', function(e) { if (!dragging) return; trackY = Math.max(10, Math.min(250, dragStartTrackY + svgY(e.clientY) - dragStartY)); updateTrack(); });
+      svg.addEventListener('touchmove', function(e) { e.preventDefault(); if (!dragging || !e.touches[0]) return; trackY = Math.max(10, Math.min(250, dragStartTrackY + svgY(e.touches[0].clientY) - dragStartY)); updateTrack(); }, { passive: false });
+      document.addEventListener('mouseup', function() { dragging = false; });
+      document.addEventListener('touchend', function() { dragging = false; });
+
+      document.getElementById('eclipseConfirm').addEventListener('click', function() {
+        document.getElementById('eclipseFeedback').className = 'answer-feedback correct';
+        document.getElementById('eclipseFeedback').textContent = 'Alignment confirmed. The entity moves within the shadow of the eclipse.';
+        markSlideSolved(17);
+      });
+
+      updateTrack();
     }
 
-    /* ════════════════ SCENE 18 — Roman Seals ════════════════ */
-    let sealsDone = false;
-    function initSeals() {
-      if (sealsDone) return;
-      sealsDone = true;
-      const input = document.getElementById('sealsInput');
-      const fb = document.getElementById('sealsFeedback');
-      function submit() {
-        const v = input.value.trim().toUpperCase();
-        if (v === 'R') {
-          fb.className = 'answer-feedback correct';
-          fb.textContent = 'III + VII + VIII = 18 — the eighteenth letter is R.';
-          markSlideSolved(18);
-        } else {
-          fb.className = 'answer-feedback wrong';
-          fb.textContent = 'Count the marks. Sum them. Name the letter.';
-        }
-      }
-      document.getElementById('sealsSubmit').addEventListener('click', submit);
-      input.addEventListener('keydown', function(e) { if (e.key === 'Enter') submit(); });
+    /* ════════════════ SCENE 18 — Magic Lantern Slides ════════════════ */
+    let lanternSlideDone = false;
+    function initLanternSlides() {
+      if (lanternSlideDone) return;
+      lanternSlideDone = true;
+
+      let selectedCard = null;
+      const slotFilled = { 1: null, 2: null, 3: null, 4: null, 5: null };
+
+      document.querySelectorAll('.lantern-slide-card').forEach(function(card) {
+        card.addEventListener('click', function() {
+          if (card.classList.contains('placed')) return;
+          if (selectedCard === card) { card.classList.remove('selected'); selectedCard = null; return; }
+          if (selectedCard) selectedCard.classList.remove('selected');
+          selectedCard = card;
+          card.classList.add('selected');
+          document.getElementById('lanternInstruction').textContent = 'Now click a numbered slot to place it.';
+        });
+      });
+
+      document.querySelectorAll('.lantern-slot').forEach(function(slot) {
+        slot.addEventListener('click', function() {
+          if (!selectedCard) return;
+          const slotNum = parseInt(slot.getAttribute('data-slot'), 10);
+          if (slotFilled[slotNum]) {
+            const prevCardId = 'lsc-' + slotFilled[slotNum];
+            const prevCard = document.getElementById(prevCardId);
+            if (prevCard) { prevCard.classList.remove('placed'); }
+            slot.classList.remove('filled', 'correct');
+          }
+          const correctOrder = parseInt(selectedCard.getAttribute('data-correct'), 10);
+          slotFilled[slotNum] = correctOrder;
+          document.getElementById('slot-' + slotNum).textContent = selectedCard.querySelector('p').textContent.substring(0, 60) + '…';
+          slot.classList.add('filled');
+          if (slotNum === correctOrder) slot.classList.add('correct');
+          else slot.classList.remove('correct');
+          selectedCard.classList.add('placed');
+          selectedCard.classList.remove('selected');
+          selectedCard = null;
+          document.getElementById('lanternInstruction').textContent = 'Click a slide to select it, then click a numbered position to place it.';
+          const allCorrect = [1,2,3,4,5].every(function(s) { return slotFilled[s] === s; });
+          if (allCorrect) {
+            document.getElementById('lanternConfirmWrap').style.display = 'block';
+            document.getElementById('lanternInstruction').textContent = 'The sequence is correct. Project the slides.';
+          }
+        });
+      });
+
+      document.getElementById('lanternConfirm').addEventListener('click', function() {
+        document.getElementById('lanternFeedback').className = 'answer-feedback correct';
+        document.getElementById('lanternFeedback').textContent = 'The story is confirmed. The shadow preceded the light — and outlasted it.';
+        markSlideSolved(18);
+      });
     }
 
     /* ════════════════ SCENE 19 — Evidence Board ════════════════ */
@@ -3359,34 +3720,70 @@
         card.innerHTML =
           '<div class="card-hint">evidence ' + (i+1) + '</div>' +
           '<div class="card-scrambled">' + word.scrambled + '</div>' +
-          '<div class="card-real">' + word.real + '</div>' +
-          '<div class="card-first-letter">' + word.letter + '</div>';
+          '<div class="card-input-wrap" style="display:none;">' +
+            '<input class="card-input" type="text" maxlength="8" placeholder="unscramble" autocomplete="off">' +
+            '<button class="card-submit">→</button>' +
+          '</div>' +
+          '<div class="card-real" style="display:none;">' + word.real + '</div>' +
+          '<div class="card-first-letter">' + word.letter + '</div>' +
+          '<div class="card-feedback" style="font-size:0.55rem;color:var(--ember);min-height:0.8em;font-family:var(--font-mono);"></div>';
 
-        if (!wordsFound[i]) {
-          card.style.opacity = '0.4';
+        if (!wordsFound[i]) { card.style.opacity = '0.35'; card.style.pointerEvents = 'none'; }
+
+        const scrambledEl = card.querySelector('.card-scrambled');
+        const inputWrap = card.querySelector('.card-input-wrap');
+        const inp = card.querySelector('.card-input');
+        const submitBtn = card.querySelector('.card-submit');
+        const realEl = card.querySelector('.card-real');
+        const letterEl = card.querySelector('.card-first-letter');
+        const fb = card.querySelector('.card-feedback');
+
+        scrambledEl.style.cursor = 'pointer';
+        scrambledEl.addEventListener('click', function() {
+          if (card.classList.contains('unscrambled')) return;
+          inputWrap.style.display = 'flex';
+          inp.focus();
+        });
+
+        function trySubmit() {
+          const v = inp.value.trim().toUpperCase();
+          if (v === word.real) {
+            card.classList.add('unscrambled');
+            scrambledEl.style.display = 'none';
+            inputWrap.style.display = 'none';
+            realEl.style.display = 'block';
+            letterEl.style.opacity = '1';
+            wordsUnscrambled[i] = true;
+            unscrambledCount++;
+            const chip = document.getElementById('chip-' + i);
+            if (chip) {
+              chip.classList.add('unscrambled');
+              chip.innerHTML = '<span style="color:var(--ember);font-weight:900;">' + word.letter + '</span>' + word.real.slice(1).toLowerCase();
+            }
+            if (unscrambledCount >= WORDS.length) {
+              document.getElementById('evidenceInstruction').textContent = 'All words unscrambled. The first letters are revealed.';
+              const lettersEl = document.getElementById('evidenceLetters');
+              lettersEl.style.display = 'flex';
+              lettersEl.textContent = WORDS.map(function(w){ return w.letter; }).join(' · ');
+              markSlideSolved(19);
+            }
+            saveProgress();
+          } else {
+            fb.textContent = 'wrong';
+            card.style.animation = 'shake 0.3s ease';
+            setTimeout(function() { card.style.animation = ''; fb.textContent = ''; }, 400);
+          }
+        }
+        submitBtn.addEventListener('click', trySubmit);
+        inp.addEventListener('keydown', function(e){ if(e.key==='Enter') trySubmit(); });
+
+        if (wordsUnscrambled[i]) {
+          card.classList.add('unscrambled');
+          scrambledEl.style.display = 'none';
+          realEl.style.display = 'block';
+          letterEl.style.opacity = '1';
         }
 
-        card.addEventListener('click', function() {
-          if (card.classList.contains('unscrambled')) return;
-          card.classList.add('unscrambled');
-          wordsUnscrambled[i] = true;
-          unscrambledCount++;
-
-          const chip = document.getElementById('chip-' + i);
-          if (chip) {
-            chip.classList.add('unscrambled');
-            chip.innerHTML = '<span style="color:var(--ember);font-size:0.65rem;font-weight:900;">' + word.letter + '</span>' + word.real.slice(1).toLowerCase();
-          }
-
-          if (unscrambledCount >= WORDS.length) {
-            document.getElementById('evidenceInstruction').textContent = 'All words unscrambled. The first letters spell the answer.';
-            const lettersEl = document.getElementById('evidenceLetters');
-            lettersEl.style.display = 'flex';
-            lettersEl.textContent = WORDS.map(function(w) { return w.letter; }).join(' · ');
-            markSlideSolved(19);
-          }
-          saveProgress();
-        });
         board.appendChild(card);
       });
     }
