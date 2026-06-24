@@ -1042,9 +1042,20 @@ window._ihClearProgress = async function() {
 };
 
 const IS_RESTART = new URLSearchParams(location.search).has('r');
+const LS_RESTART_KEY = 'ih_restart_' + HUNT_ID;
 
 function deliver(data) {
-  if (IS_RESTART) { console.log('[hunt-2] restart flag set — skipping restore'); return; }
+  const pendingRestart = IS_RESTART || !!localStorage.getItem(LS_RESTART_KEY);
+  if (pendingRestart) {
+    console.log('[hunt-2] restart flag set — skipping restore, deleting stale Firestore doc');
+    try { localStorage.removeItem(LS_RESTART_KEY); } catch(e) {}
+    /* Also delete the Firestore doc now in case the earlier delete didn't propagate */
+    if (window._ihUser) {
+      deleteDoc(doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID))
+        .catch(e => console.warn('[hunt-2] post-restart deleteDoc failed:', e));
+    }
+    return;
+  }
   try {
     if (window._ihApplyRestore) {
       window._ihApplyRestore(data);
@@ -2981,6 +2992,7 @@ window.repeatHunt = function(){
   if(!confirm('Start Hunt 2 from the beginning? Your current progress will be cleared.')) return;
   const doReload = () => {
     try { localStorage.removeItem(LS_KEY); } catch(e){}
+    try { localStorage.setItem('ih_restart_' + HUNT_ID, '1'); } catch(e){}
     location.href = location.pathname + '?r=1';
   };
   if(window._ihClearProgress){
