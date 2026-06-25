@@ -11,6 +11,80 @@
   <style>
     body { overflow-x:hidden; }
 
+    /* ── Small-screen blocker (hunt 3 only) ──────────────────── */
+    .small-screen-block { display:none; }
+
+    @media (max-width: 720px) {
+      .small-screen-block {
+        display:flex;
+        position:fixed;
+        inset:0;
+        z-index:99999;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        padding:2rem 1.6rem;
+        background:
+          radial-gradient(ellipse 70% 60% at 50% 30%, rgba(212,167,70,0.08) 0%, transparent 70%),
+          var(--ink-deep);
+      }
+      /* Lock everything behind it */
+      body { overflow:hidden; }
+      .hunt-wrap, .letter-overlay { display:none !important; }
+
+      .ssb-seal {
+        width:64px; height:64px;
+        border-radius:50%;
+        display:flex; align-items:center; justify-content:center;
+        font-size:1.7rem;
+        background:radial-gradient(circle at 35% 35%, #b83c1a, var(--ember-dim) 60%, #6b1e08);
+        box-shadow:0 2px 12px rgba(0,0,0,0.6), 0 0 18px rgba(226,87,43,0.3);
+        margin-bottom:1.6rem;
+      }
+      .ssb-eyebrow {
+        font-family:var(--font-mono);
+        font-size:0.62rem;
+        letter-spacing:0.22em;
+        text-transform:uppercase;
+        color:var(--gold);
+        opacity:0.8;
+        margin-bottom:1rem;
+      }
+      .ssb-title {
+        font-family:var(--font-display);
+        font-size:1.6rem;
+        font-weight:700;
+        color:var(--parchment);
+        line-height:1.25;
+        margin-bottom:1rem;
+        max-width:22ch;
+      }
+      .ssb-text {
+        font-family:var(--font-body);
+        font-size:1rem;
+        font-style:italic;
+        color:var(--parchment-dim);
+        line-height:1.65;
+        max-width:34ch;
+        margin-bottom:1.8rem;
+      }
+      .ssb-text strong { color:var(--gold); font-style:normal; }
+      .ssb-back {
+        font-family:var(--font-display);
+        font-size:0.72rem;
+        letter-spacing:0.14em;
+        text-transform:uppercase;
+        padding:0.8rem 1.6rem;
+        border:1px solid var(--gold-dim);
+        border-radius:var(--radius-seal);
+        color:var(--gold);
+        text-decoration:none;
+        transition:all var(--transition);
+      }
+      .ssb-back:hover { background:var(--gold-glow); border-color:var(--gold); color:var(--parchment); }
+    }
+
     /* ── Hunt wrap ───────────────────────────────────────────── */
     .hunt-wrap { min-height:100vh; display:flex; flex-direction:column; }
     .hunt-progress-rail { height:3px; background:rgba(212,167,70,0.1); position:relative; }
@@ -1871,6 +1945,22 @@
   </style>
 </head>
 <body>
+
+<!-- ── Small-screen blocker (screens ≤ 720px) ──────────────── -->
+<div class="small-screen-block" role="alertdialog" aria-modal="true" aria-labelledby="ssbTitle">
+  <div class="ssb-seal" aria-hidden="true">🔒</div>
+  <div class="ssb-eyebrow">The Locked Chamber</div>
+  <h1 class="ssb-title" id="ssbTitle">This hunt needs a larger screen</h1>
+  <p class="ssb-text">
+    The Locked Chamber is a full escape room with fifteen interactive objects —
+    it cannot be played on a screen this small. Please return on a
+    <strong>tablet, laptop, or desktop</strong> (wider than 720px) to begin.
+  </p>
+  <p class="ssb-text" style="font-size:0.85rem; opacity:0.75; margin-bottom:1.8rem;">
+    Hunts 01 and 02 play perfectly on any device.
+  </p>
+  <a href="hunts.html" class="ssb-back">← Back to all hunts</a>
+</div>
 
 <!-- ── Opening letter overlay ──────────────────────────────── -->
 <div id="letterOverlay" class="letter-overlay" role="dialog" aria-modal="true" aria-labelledby="letterTitle">
