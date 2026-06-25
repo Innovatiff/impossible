@@ -1783,7 +1783,7 @@
       border:1px solid #2a1808; border-radius:2px;
       opacity:0; transition:opacity 0.7s; box-shadow:0 2px 6px rgba(0,0,0,0.9); cursor:pointer; }
     .fireplace-scrap.revealed { opacity:1; }
-    .fireplace-scrap::before { content:'A.M.V.'; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    .fireplace-scrap::before { content:'·M·'; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
       font-family:'EB Garamond',serif; font-style:italic; font-size:0.65rem; color:#3a2410; letter-spacing:0.1em; }
     .rake-meter { width:80%; height:4px; background:rgba(14,11,18,0.6); border:1px solid rgba(212,167,70,0.2); border-radius:2px; overflow:hidden; margin:0.6rem auto 0; }
     .rake-fill { height:100%; width:0%; background:linear-gradient(90deg,#c04010,var(--gold)); transition:width 0.15s linear; }
@@ -2442,14 +2442,14 @@
         <p class="insp-desc">There is faint ink bleed-through showing on the back of the page. Flip the letter over.</p>
         <div class="mini-stage">
           <div class="mini-flap" id="letterFlap">
-            <div class="mini-flap-under">A.M.V. = 7 · 3 · 9 · 2</div>
+            <div class="mini-flap-under" style="font-size:0.62rem;line-height:1.5;padding:0.4rem;">He signed three times, then unsigned himself — one mark driven into the wood, one left to the ash, one hidden behind his own face.</div>
             <div class="mini-flap-face" id="letterFlapFace" style="background:linear-gradient(160deg,#e8dcc0,#a08e62);"></div>
           </div>
-          <div class="insp-feedback" id="letterFlipFb">Drag the letter upward to turn it over.</div>
+          <div class="insp-feedback" id="letterFlipFb"></div>
         </div>
         ${clueStrip('letter')}
       `;
-      openInsp('letter', 'Letter from A.M.V.', body);
+      openInsp('letter', 'A Folded Letter', body);
       setTimeout(initLetterFlip, 50);
       return;
     }
@@ -2458,7 +2458,7 @@
       <blockquote style="border-left:2px solid rgba(212,167,70,0.3);padding:0.5rem 1rem;margin:0.5rem 0;font-style:italic;color:var(--parchment-dim);font-size:0.92rem;line-height:1.7;">
         "I have arranged the room as a question. Each object is a word. Only one combination of those words forms the answer.
         Begin with the man on the wall — he kept his secrets close, but not invisible."
-        <br><br>— A.M.V.
+        <br><br>— <span style="opacity:0.3;">▓. ▓. ▓.</span>
       </blockquote>
       ${G.letterRead ? '<p class="insp-feedback ok" style="margin-top:0.8rem;">✓ Letter read.</p>' : ''}
       <div class="insp-action-area" style="margin-top:1rem;">
@@ -2466,7 +2466,7 @@
       </div>
       ${clueStrip('letter')}
     `;
-    openInsp('letter', 'Letter from A.M.V.', body);
+    openInsp('letter', 'A Folded Letter', body);
     if (!G.letterRead) {
       setTimeout(() => {
         const btn = document.getElementById('btnReadLetter');
@@ -2491,7 +2491,7 @@
       face.style.transform = `rotateX(${lift}deg)`;
       if (lift > 100) {
         completeStep(51); persist();
-        if (fb) { fb.textContent = '✓ A.M.V. = 7 · 3 · 9 · 2 — the cipher confirms the passcode.'; fb.className = 'insp-feedback ok'; }
+        if (fb) { fb.textContent = '✓ Three strokes, three hiding places — the wood, the ash, the face.'; fb.className = 'insp-feedback ok'; }
         setTimeout(() => { closeInsp(); setTimeout(handleLetter, 80); }, 1200);
       }
     };
@@ -2601,9 +2601,9 @@
     } else if (!G.completedSteps.has(53)) {
       // Sub-step 53 — Read the painter's signature in the corner
       body = `
-        <p class="insp-desc">The back panel releases. On its underside, a faded painter's mark. Click it to read.</p>
+        <p class="insp-desc">The back panel releases. On its underside, a painter's mark — but the signature has been deliberately scored out, all but one initial left standing. Lean in to read what remains.</p>
         <div class="mini-stage">
-          <button class="insp-btn" id="btnPortraitSig" style="font-family:'EB Garamond',serif;font-style:italic;font-size:1.1rem;letter-spacing:0.06em;padding:0.7rem 1.4rem;background:linear-gradient(160deg,#d4c39a,#8a6840);color:#1a0e02;">— A. M. Venturi, 1879</button>
+          <button class="insp-btn" id="btnPortraitSig" style="font-family:'EB Garamond',serif;font-style:italic;font-size:1.1rem;letter-spacing:0.06em;padding:0.7rem 1.4rem;background:linear-gradient(160deg,#d4c39a,#8a6840);color:#1a0e02;">— <span style="opacity:0.28;">▓. ▓.</span> <strong style="font-size:1.5rem;color:#5a1505;">V</strong><span style="opacity:0.22;">⌁⌁⌁⌁⌁</span> · 1879</button>
         </div>
         ${clueStrip('portrait')}
       `;
@@ -2616,7 +2616,7 @@
       }, 50);
     } else {
       body = `
-        <p class="insp-desc">The painted man gazes outward. His ring finger still points to VII. The corner ornaments rest aligned. A. M. Venturi has signed his work and his message.</p>
+        <p class="insp-desc">The painted man gazes outward. His ring finger still points to VII. The corner ornaments rest aligned. Behind his face, the last of his three scratched-down initials has given itself up.</p>
         <p class="insp-feedback ok">✓ Portrait fully examined.</p>
         ${clueStrip('portrait')}
       `;
@@ -3273,13 +3273,15 @@
 
     } else if (step === 1) {
       const body = `
-        <p class="insp-desc">The drawer contains a folded letter, and beneath it, burnt into the wood with a fine instrument, a single numeral:</p>
+        <p class="insp-desc">The drawer contains a folded letter. Beneath it, burnt into the wood with a fine instrument, a single numeral:</p>
         <div style="text-align:center;margin:1rem 0;">
           <span style="font-family:var(--font-display);font-size:4rem;color:var(--gold);text-shadow:0 0 20px rgba(212,167,70,0.5);">3</span>
         </div>
-        <p style="font-family:'EB Garamond',serif;font-style:italic;color:var(--parchment-dim);font-size:0.88rem;line-height:1.65;">The folded letter reads: <em>"Third of four. The desk remembers what the drawer forgets."</em></p>
+        <p style="font-family:'EB Garamond',serif;font-style:italic;color:var(--parchment-dim);font-size:0.88rem;line-height:1.65;">The letter is signed at the foot — but the hand that wrote it went back and scratched the signature down to almost nothing. Only the first mark was spared:</p>
+        <div style="text-align:center;margin:0.8rem 0;font-family:var(--font-display);font-size:2.6rem;letter-spacing:0.26em;color:var(--gold);text-shadow:0 0 14px rgba(212,167,70,0.4);">A<span style="color:var(--parchment-faint);opacity:0.3;text-decoration:line-through;">.M.V</span></div>
+        <p style="font-family:'EB Garamond',serif;font-style:italic;color:var(--parchment-faint);font-size:0.82rem;text-align:center;opacity:0.72;">The first he kept. The other two he scattered.</p>
         <div class="insp-action-area" style="margin-top:0.8rem;">
-          <button class="insp-btn" id="btnDeskRecord">Record the Digit</button>
+          <button class="insp-btn" id="btnDeskRecord">Take the Letter</button>
         </div>
         ${clueStrip('desk')}
       `;
@@ -4180,7 +4182,7 @@
       }, 50);
     } else if (step === 2) {
       const body = `
-        <p class="insp-desc">Ten letters are scratched into the silver backing, scattered across the frame. Three of them are initials — the rest are debris. Click them in the correct order to spell the former occupant's initials.</p>
+        <p class="insp-desc">The dust lifts away. The silver backing is a field of fine scratches — most are the wear of years. A few were cut deliberately, by the same hand that signed everything else in this room.</p>
         <div id="mirrorLetters" style="display:flex;gap:0.6rem;justify-content:center;margin:1.4rem 0;flex-wrap:wrap;max-width:360px;margin-left:auto;margin-right:auto;">
           <button class="mirror-letter" data-l="E">E</button>
           <button class="mirror-letter" data-l="A" data-idx="0">A</button>
@@ -4193,8 +4195,7 @@
           <button class="mirror-letter" data-l="I">I</button>
           <button class="mirror-letter" data-l="L">L</button>
         </div>
-        <div class="insp-feedback" id="mirrorLfb" style="text-align:center;font-family:var(--font-mono);font-size:1.3rem;letter-spacing:0.4em;color:var(--gold);min-height:1.5em;">_ . _ . _</div>
-        <p style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);opacity:0.5;text-align:center;letter-spacing:0.06em;margin-top:0.6rem;">Spell the initials of the former occupant.</p>
+        <div class="insp-feedback" id="mirrorLfb" style="text-align:center;min-height:1.5em;"></div>
         ${clueStrip('mirror')}
       `;
       openInsp('mirror', 'The Mirror', body);
@@ -4318,11 +4319,6 @@
     const ORDER = ['A','M','V'];
     let pressed = [];
     const fb = document.getElementById('mirrorLfb');
-    const renderDisplay = () => {
-      const slots = ['_','_','_'];
-      pressed.forEach((l, i) => slots[i] = l);
-      fb.textContent = slots.join(' . ');
-    };
     document.querySelectorAll('.mirror-letter').forEach(btn => {
       btn.onclick = () => {
         if (btn.classList.contains('used')) return;
@@ -4331,24 +4327,21 @@
         if (l === want) {
           btn.classList.add('used');
           pressed.push(l);
-          fb.className = 'insp-feedback';
-          renderDisplay();
+          if (fb) { fb.textContent = ''; fb.className = 'insp-feedback'; }
           if (pressed.length === 1) { completeStep(32); persist(); }
           if (pressed.length === ORDER.length) {
-            fb.textContent = 'A . M . V .';
-            fb.className = 'insp-feedback ok';
+            if (fb) { fb.textContent = 'The three strokes hold together — and stop being scratches.'; fb.className = 'insp-feedback ok'; }
             G.objStep.mirror = 3;
             completeStep(33);
             showObjSolved('mirror'); persist();
-            setTimeout(() => { closeInsp(); setTimeout(handleMirror, 80); }, 900);
+            setTimeout(() => { closeInsp(); setTimeout(handleMirror, 80); }, 1100);
           }
         } else {
           btn.classList.add('shake');
           setTimeout(() => btn.classList.remove('shake'), 400);
           pressed = [];
           document.querySelectorAll('.mirror-letter').forEach(b => b.classList.remove('used'));
-          fb.textContent = '_ . _ . _';
-          fb.className = 'insp-feedback err';
+          if (fb) { fb.textContent = 'The scratches blur, and settle back into nothing.'; fb.className = 'insp-feedback err'; }
         }
       };
     });
@@ -4402,7 +4395,7 @@
         <p class="insp-desc">You unfold the scrap carefully. The handwriting is small, careful, and faded.</p>
         <div style="background:linear-gradient(160deg,#d4c39a,#8a6840);border:1px solid #4a3818;border-radius:3px;padding:1.2rem 1.5rem;margin:1rem auto;max-width:320px;font-family:'EB Garamond',serif;font-style:italic;color:#1a0e02;line-height:1.7;box-shadow:0 4px 10px rgba(0,0,0,0.7);">
           "The room remembers. The lock does not.<br>Trust what was kept. Discard what was added."<br><br>
-          <span style="text-align:right;display:block;">— A. M. V.</span>
+          <span style="text-align:right;display:block;">— <span style="opacity:0.22;">▓.</span> <strong style="font-size:1.25rem;">M</strong><span style="opacity:0.22;">. ▓.</span> <span style="font-size:0.66rem;opacity:0.5;font-style:normal;">(the rest burned through)</span></span>
         </div>
         <div class="insp-action-area">
           <button class="insp-btn" id="fpDone">Pocket the Scrap</button>
