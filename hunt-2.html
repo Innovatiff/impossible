@@ -228,7 +228,6 @@
           <div class="card-text" id="cardText">Six whispers sleep within these walls.<br>The master of the house left in haste —<br>and what he hid, the rooms remember.</div>
           <div class="breath-progress"><div class="breath-fill" id="breathFill"></div></div>
         </div>
-        <p class="puzzle-instruction">Press and hold the card for 4 seconds.</p>
       </div>
     </div>
 
@@ -281,7 +280,6 @@
           <p style="font-family:var(--font-display);font-size:1.2rem;color:var(--gold);letter-spacing:0.2em;">INKWELL</p>
           <p style="font-family:var(--font-mono);font-size:0.72rem;color:var(--parchment-faint);margin-top:0.5rem;">The first whisper is collected.</p>
         </div>
-        <p class="puzzle-instruction" id="envInstruction">Click each envelope to inspect its seal, then click in order I → II → III → IV → V</p>
         <div class="answer-feedback" id="envFeedback" style="text-align:center"></div>
       </div>
     </div>
@@ -305,7 +303,6 @@
           </div>
           <div id="rugDiv" style="position:absolute;inset:0;background:repeating-conic-gradient(rgba(139,90,43,0.8) 0% 25%,rgba(100,60,20,0.8) 0% 50%) 0 0/20px 20px;cursor:grab;touch-action:none;"></div>
         </div>
-        <p class="puzzle-instruction">Drag the rug right, then click symbols ①→②→③→④→⑤→⑥</p>
         <div class="answer-feedback" id="rugFeedback" style="text-align:center"></div>
       </div>
     </div>
@@ -346,7 +343,6 @@
           <div style="text-align:center"><div id="gStatus" style="font-family:var(--font-mono);font-size:1.2rem;color:rgba(212,167,70,0.2);">G</div><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);opacity:0.5;">Left eye</div></div>
           <div style="text-align:center"><div id="vStatus" style="font-family:var(--font-mono);font-size:1.2rem;color:rgba(212,167,70,0.2);">V</div><div style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);opacity:0.5;">Right eye</div></div>
         </div>
-        <p class="puzzle-instruction">Hover or touch each eye for 1.5 seconds</p>
       </div>
     </div>
 
@@ -390,7 +386,6 @@
         </svg>
         <div style="text-align:center;margin-top:0.8rem;"><button class="answer-submit" id="clockSubmit">Confirm Time</button></div>
         <div class="answer-feedback" id="clockFeedback" style="text-align:center;margin-top:0.8rem;"></div>
-        <p class="puzzle-instruction">Drag the clock hands to the correct time</p>
       </div>
     </div>
 
@@ -427,7 +422,6 @@
           <button class="answer-submit" id="fogSubmit">Confirm</button>
           <div class="answer-feedback" id="fogFeedback"></div>
         </div>
-        <p class="puzzle-instruction">Drag to erase the frost</p>
       </div>
     </div>
 
@@ -485,7 +479,6 @@
           <button class="answer-submit" id="ashSubmit">Confirm</button>
           <div class="answer-feedback" id="ashFeedback"></div>
         </div>
-        <p class="puzzle-instruction">Drag across the ash to reveal the letters</p>
       </div>
     </div>
 
@@ -515,7 +508,6 @@
           <span id="focusPct" style="font-family:var(--font-mono);font-size:0.65rem;color:var(--gold);">0%</span>
         </div>
         <div class="answer-feedback" id="teleFeedback" style="text-align:center;margin-top:0.5rem;"></div>
-        <p class="puzzle-instruction">Set focus to 65%, then click: A → C → E → B → D</p>
       </div>
     </div>
 
@@ -534,7 +526,6 @@
             "To the seeker:<br>My cabinet opens with three numbers.<br>Look into his eyes — they remember.<br>— G.V."
           </div>
         </div>
-        <p class="puzzle-instruction" id="chaiseInstr">Click the cushion to lift it</p>
         <div class="answer-feedback" id="chaiseFeedback" style="text-align:center;margin-top:0.8rem;"></div>
       </div>
     </div>
@@ -552,7 +543,6 @@
           <div id="cabinet14Door" style="margin-top:1rem;text-align:center;font-family:var(--font-mono);font-size:0.7rem;color:var(--parchment-faint);opacity:0.5;">[ locked ]</div>
         </div>
         <div class="answer-feedback" id="cabinet14Feedback" style="text-align:center;margin-top:0.8rem;"></div>
-        <p class="puzzle-instruction">Set the three dials to the correct combination</p>
       </div>
     </div>
 
@@ -758,7 +748,6 @@
           <button class="answer-submit" id="anatomySubmit">Confirm</button>
           <div class="answer-feedback" id="anatomyFeedback"></div>
         </div>
-        <p class="puzzle-instruction">Click organs 1 → 2 → 3 → 4 → 5 in order</p>
       </div>
     </div>
 
@@ -797,7 +786,6 @@
           <button class="answer-submit" id="wardrobeSubmit">Confirm</button>
           <div class="answer-feedback" id="wardrobeFeedback"></div>
         </div>
-        <p class="puzzle-instruction">Click the wardrobe doors to open them, then click each garment</p>
       </div>
     </div>
 
@@ -902,7 +890,6 @@
         </div>
         <div class="ev-board" id="evBoard29"></div>
         <div id="evLetters29" style="display:none;font-family:var(--font-mono);font-size:1.5rem;letter-spacing:0.4em;color:var(--gold);text-align:center;margin-top:1rem;"></div>
-        <p class="puzzle-instruction">Click a card to reveal its input field</p>
       </div>
     </div>
 
@@ -1219,36 +1206,36 @@ const WORDS = [
 
 const CLUES = [
   null,
-  'Glass holds a breath longer than skin does. Press, and hold, until the cold gives way.',
-  'Light flickers; four silhouettes thrown against the wall carry numerals. Smallest first, largest last.',
-  'Wax remembers what ink forgets. The marks pressed into the seals were made in a deliberate order.',
-  'The hearth-cover is heavier on one side. Move it, then follow the chalk marks the way a child counts — one, two, three.',
-  'One eye watches differently than the other. Linger on each in turn; what is seen is meant to be kept.',
-  'The bookshelf is almost neat. Trust only the ones that refuse to stand straight, in the order they lean.',
-  'A bird in mourning calls when the day fails. Set the hands to that hour, not a minute beyond.',
-  'A torn page near the drum dictates the pins. Match notes to marks, in the order given.',
-  'Cold breath hides a word. Wipe the pane clean — and remember that mirrors are not the only thing that reverses writing.',
-  'Latitude crosses longitude at one stubborn point. The capital sitting beneath those crossed pins is the one to name.',
-  'Burnt fragments scatter the way letters fall on a page. Sweep gently; the remains form a name half-erased.',
-  'A telescope without focus shows nothing. After it sharpens, a pencilled note dictates the path between the points.',
-  'Cushions sink for two reasons: weight, and what is hidden beneath them.',
-  'Three pictures, three numbers, kept somewhere only the eyes go. Trust what you saw in the parlour and turn each dial to match.',
-  'The plate above the handle expects a surname — one you have already seen written in ink, leaned in wood, and pressed into wax.',
-  'Hidden ink yields to warmth alone. The flame brought close, and held, will draw the writing out.',
-  'A spill is not always an accident. Count the largest blots — the number wants to be read, not measured.',
-  'The wheel turns by a fixed amount before the letters make sense. The amount was already counted, on a gas-lit wall.',
-  'A mirror reverses what stands before it. What seems backwards on the desk is forwards in the glass.',
-  'Four pages, four red rings, four notes. Notes are letters; letters in their natural order make a word.',
-  'Only the first line of each unsealed letter matters. Read the openings in turn; do not be tempted by what follows.',
-  'Latin names of organs. Take only the opening character of each label — in the order the doctor numbered them.',
-  'A reader has been at the column with a pencil at a steady interval. Read the marked words as they fall.',
-  'Initials embroidered on cloth, hung in order. Together they spell what a man is called before his surname.',
-  'Seven labels are written in one tongue. One is not. That one wants a closer look.',
-  'A name was on the tag. Seed only the perches that, taken together, spell it — and avoid the rest.',
-  'Six stars, six numbers. Draw the figure in order and the shape will name itself among the constellations.',
-  'Four dials, four numbers — each already glimpsed somewhere in the rooms. A stopped hour. A blotted shape. A doctor\'s count. A herald\'s cry.',
-  'The order in which the words were found is the order they belong in. Restore each scramble; the line they form is no accident.',
-  'Six words, set in the order they were collected. Look only at how each one begins.',
+  'The glass knows what the air has touched.',
+  'The lamp casts more than light.',
+  'Wax pressed in sequence is a kind of handwriting.',
+  'The floor holds what the fireplace conceals.',
+  'The painted gaze is not decorative.',
+  'One shelf carries the answer on its spine.',
+  'The raven does not sing at noon.',
+  'The music sheet and the drum share a language.',
+  'The window remembers the last breath that touched it.',
+  'The pins mark a crossing no accident could arrange.',
+  'Fire leaves a record of what it consumed.',
+  'The astronomer\'s note was not meant for the stars.',
+  'The chaise holds more than it shows.',
+  'The parlour already gave you the numbers.',
+  'A name has been repeated in this house, in three different forms.',
+  'Some letters are written to be hidden.',
+  'The desk was not always so clean.',
+  'The wheel on the wall counts what the disc requires.',
+  'The desk does not face the glass by coincidence.',
+  'The pages carry marks that were not printed.',
+  'The envelopes were opened in a deliberate order.',
+  'The doctor numbered his work.',
+  'Not every word in the column deserves equal attention.',
+  'The cloth was hung before the guest arrived.',
+  'The laboratory speaks one language except in one place.',
+  'The birds were assigned their perches for a reason.',
+  'The stars were numbered before they were named.',
+  'Four rooms, four residues. The dials remember.',
+  'The scrambled words came to you in an order. That order holds.',
+  'The first letter of each word you recovered is enough.',
 ];
 
 // ── state ────────────────────────────────────────────────────────────────────
