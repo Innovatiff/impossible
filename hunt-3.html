@@ -1233,6 +1233,67 @@
     .inv-label { font-family:var(--font-mono); font-size:0.55rem; color:var(--parchment-faint); opacity:0.5; letter-spacing:0.12em; text-transform:uppercase; margin-right:0.3rem; }
     .inv-item { width:2rem; height:2rem; border:1px solid rgba(212,167,70,0.15); border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:1rem; opacity:0.18; transition:all 0.4s ease; filter:grayscale(1); }
     .inv-item.held { opacity:1; filter:grayscale(0); border-color:rgba(212,167,70,0.5); box-shadow:0 0 8px rgba(212,167,70,0.2); }
+    .inv-item.just-gained { animation: invPop 1.2s ease-out; }
+    @keyframes invPop {
+      0%   { transform:scale(0.6); box-shadow:0 0 0 0 rgba(212,167,70,0.9); filter:brightness(2); }
+      40%  { transform:scale(1.5); box-shadow:0 0 24px 12px rgba(212,167,70,0.55); filter:brightness(1.6); }
+      100% { transform:scale(1); box-shadow:0 0 8px rgba(212,167,70,0.2); filter:brightness(1); }
+    }
+
+    /* ── Key reveal stage ─────────────────────────────────────── */
+    .key-reveal-stage { position:relative; width:100%; min-height:160px; display:flex; align-items:center; justify-content:center; margin:1rem auto; }
+    .key-prop {
+      font-size:3.4rem; filter:drop-shadow(0 6px 12px rgba(0,0,0,0.6)) drop-shadow(0 0 18px rgba(212,167,70,0.55));
+      animation: keyRise 1.4s ease-out forwards;
+      cursor:pointer;
+    }
+    @keyframes keyRise {
+      0%   { transform:translateY(40px) rotate(-12deg); opacity:0; filter:drop-shadow(0 0 0 transparent); }
+      60%  { transform:translateY(-10px) rotate(8deg); opacity:1; }
+      100% { transform:translateY(0) rotate(0deg); opacity:1; }
+    }
+    .key-glow-burst { position:absolute; inset:0; pointer-events:none;
+      background:radial-gradient(circle at center, rgba(255,210,120,0.5) 0%, rgba(255,180,80,0.18) 30%, transparent 60%);
+      animation: glowBurst 1.6s ease-out forwards;
+    }
+    @keyframes glowBurst {
+      0% { opacity:0; transform:scale(0.4); }
+      40% { opacity:1; transform:scale(1.1); }
+      100% { opacity:0; transform:scale(1.5); }
+    }
+
+    /* ── Key-in-lock animation (for desk/cabinet entry) ──────── */
+    .lock-stage { position:relative; width:240px; height:160px; margin:1.2rem auto; display:flex; align-items:center; justify-content:center; }
+    .lock-plate {
+      width:120px; height:120px; border-radius:50%;
+      background:radial-gradient(circle at 35% 30%, #d4a850 0%, #8a6420 50%, #3a2810 100%);
+      border:2px solid #2a1808; box-shadow:inset 0 4px 10px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.6);
+      position:relative;
+    }
+    .lock-keyhole {
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:18px; height:42px; background:#0c0805; border-radius:50% 50% 30% 30% / 60% 60% 40% 40%;
+      box-shadow:inset 0 2px 4px rgba(0,0,0,0.9);
+    }
+    .key-insert { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) translateX(120px) rotate(0deg); font-size:2.6rem;
+      filter:drop-shadow(0 3px 6px rgba(0,0,0,0.6));
+      animation: keyTurnIn 2.0s ease-in-out forwards;
+    }
+    @keyframes keyTurnIn {
+      0%   { transform:translate(-50%,-50%) translateX(140px) rotate(0deg); opacity:0; }
+      30%  { transform:translate(-50%,-50%) translateX(0) rotate(0deg); opacity:1; }
+      60%  { transform:translate(-50%,-50%) translateX(0) rotate(90deg); opacity:1; }
+      100% { transform:translate(-50%,-50%) translateX(0) rotate(90deg); opacity:0.85; }
+    }
+    .lock-click-text { position:absolute; bottom:-1.6rem; left:0; right:0; text-align:center;
+      font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.2em; color:var(--gold); opacity:0;
+      animation: lockClick 2.0s ease-in-out forwards;
+    }
+    @keyframes lockClick {
+      0%, 65% { opacity:0; }
+      75% { opacity:1; transform:translateY(0); }
+      100% { opacity:1; transform:translateY(-4px); }
+    }
 
     /* ── Inspection panel ────────────────────────────────────── */
     .insp-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; opacity:0; pointer-events:none; transition:opacity 0.3s ease; backdrop-filter:blur(4px); }
@@ -2032,6 +2093,8 @@
     <span class="inv-label">Inventory</span>
     <div class="inv-item" id="inv-crescent" title="Crescent Medallion">🌙</div>
     <div class="inv-item" id="inv-starKey"  title="Star Key">⭐</div>
+    <div class="inv-item" id="inv-brassKey" title="Brass Key (Desk)">🗝️</div>
+    <div class="inv-item" id="inv-skeletonKey" title="Skeleton Key (Cabinet)">🔑</div>
     <div class="inv-item" id="inv-candle"   title="Lit Candle">🕯️</div>
     <div class="inv-item" id="inv-mapFrag"  title="Map Fragment">📜</div>
   </div>
@@ -2295,8 +2358,26 @@
     if (G.inventory.has(id)) return;
     G.inventory.add(id);
     const el = document.getElementById('inv-' + id);
-    if (el) el.classList.add('held');
+    if (el) {
+      el.classList.add('held');
+      el.classList.add('just-gained');
+      setTimeout(() => el.classList.remove('just-gained'), 1300);
+    }
     persist();
+  }
+
+  /* Shared key-in-lock animated overlay used by desk/cabinet gates */
+  function playLockTurn(icon, onDone) {
+    const stage = document.createElement('div');
+    stage.className = 'lock-stage';
+    stage.innerHTML = `
+      <div class="lock-plate"><div class="lock-keyhole"></div></div>
+      <div class="key-insert">${icon}</div>
+      <div class="lock-click-text">— click —</div>
+    `;
+    const host = document.getElementById('inspBody');
+    if (host) host.appendChild(stage);
+    setTimeout(() => { if (typeof onDone === 'function') onDone(); }, 2050);
   }
 
   /* ── Digits ───────────────────────────────────────────────── */
@@ -3133,6 +3214,27 @@
       openInsp('desk', 'The Writing Desk', body);
       return;
     }
+    if (!G.inventory.has('brassKey')) {
+      const body = `
+        <p class="insp-desc">The star-instrument seats into its slot — but a second lock, brass and worn, sits above the drawer. A key-shaped key, no symbol. Nothing in your pockets fits it.</p>
+        <p class="insp-feedback err" style="margin-top:0.8rem;">A brass key is required to release the drawer.</p>
+        ${clueStrip('desk')}
+      `;
+      openInsp('desk', 'The Writing Desk', body);
+      return;
+    }
+    if (!G._deskKeyTurned) {
+      const body = `
+        <p class="insp-desc">You fit the brass key. It resists, then catches.</p>
+        ${clueStrip('desk')}
+      `;
+      openInsp('desk', 'The Writing Desk', body);
+      setTimeout(() => playLockTurn('🗝️', () => {
+        G._deskKeyTurned = true;
+        closeInsp(); setTimeout(handleDesk, 80);
+      }), 50);
+      return;
+    }
 
     const step = G.objStep.desk;
     if (step === 0) {
@@ -3845,6 +3947,31 @@
     const hasAll = G.inventory.has('crescent') && G.inventory.has('starKey') && G.seenScore && G.discoveredIX;
     const step = G.objStep.cabinet;
 
+    // Gate: a skeleton key must turn the cabinet's outer lock before any panel can be pressed.
+    if (step < 5) {
+      if (!G.inventory.has('skeletonKey')) {
+        const body = `
+          <p class="insp-desc">An iron cabinet. Above the symbol-panels, a heavy ward-lock waits for an old key. The symbol-row will not respond until it turns.</p>
+          <p class="insp-feedback err" style="margin-top:0.8rem;">A skeleton key is required.</p>
+          ${clueStrip('cabinet')}
+        `;
+        openInsp('cabinet', 'The Iron Cabinet', body);
+        return;
+      }
+      if (!G._cabKeyTurned) {
+        const body = `
+          <p class="insp-desc">You fit the skeleton key into the ward-lock. It catches on the second tumbler, then turns.</p>
+          ${clueStrip('cabinet')}
+        `;
+        openInsp('cabinet', 'The Iron Cabinet', body);
+        setTimeout(() => playLockTurn('🔑', () => {
+          G._cabKeyTurned = true;
+          closeInsp(); setTimeout(handleCabinet, 80);
+        }), 50);
+        return;
+      }
+    }
+
     if (step >= 5 && !G.completedSteps.has(65)) {
       // Sub-step 65 — secondary tumbler combination on the cabinet's bottom drawer
       const body = `
@@ -4297,9 +4424,16 @@
           b.onclick = () => {
             if (i === LOOSE) {
               b.classList.add('pushed');
-              if (fb) { fb.textContent = '✓ The brick slides inward — a small cavity is exposed.'; fb.className = 'insp-feedback ok'; }
+              if (fb) { fb.textContent = '✓ The brick slides inward — something glints in the cavity.'; fb.className = 'insp-feedback ok'; }
               completeStep(67); persist();
-              setTimeout(() => { closeInsp(); setTimeout(handleFireplace, 80); }, 1100);
+              const reveal = document.createElement('div');
+              reveal.className = 'key-reveal-stage';
+              reveal.innerHTML = `<div class="key-glow-burst"></div><div class="key-prop" title="A brass key, warm with hidden heat.">🗝️</div>`;
+              reveal.querySelector('.key-prop').onclick = () => {
+                gainItem('brassKey');
+                closeInsp(); setTimeout(handleFireplace, 80);
+              };
+              document.getElementById('inspBody').appendChild(reveal);
             } else {
               b.classList.add('wrong'); setTimeout(() => b.classList.remove('wrong'), 350);
               if (fb) { fb.textContent = 'That one is set firm.'; fb.className = 'insp-feedback err'; }
@@ -4391,18 +4525,19 @@
     } else if (step === 1) {
       const body = `
         <p class="insp-desc">Beneath the worn fingerprint, the lacquer gives way to a thin seam. A small compartment, hidden in the sphere itself, eases open.</p>
-        <div class="globe-compartment open" id="globeComp" style="cursor:pointer;">
-          <p style="font-family:var(--font-mono);font-size:0.7rem;color:var(--gold);letter-spacing:0.1em;text-align:center;">A folded slip waits inside.</p>
-          <p style="text-align:center;font-size:1.6rem;margin-top:0.3rem;">📜</p>
+        <div class="globe-compartment open" id="globeComp">
+          <p style="font-family:var(--font-mono);font-size:0.7rem;color:var(--gold);letter-spacing:0.1em;text-align:center;">A folded slip — and beneath it, the cold weight of iron.</p>
         </div>
-        <div class="insp-action-area" style="margin-top:0.6rem;">
-          <button class="insp-btn" id="globeOpen">Open the Slip</button>
+        <div class="key-reveal-stage">
+          <div class="key-glow-burst"></div>
+          <div class="key-prop" id="globeSkelKey" title="A skeleton key — old, deliberate.">🔑</div>
         </div>
         ${clueStrip('globe')}
       `;
       openInsp('globe', 'The Globe', body);
       setTimeout(() => {
-        document.getElementById('globeOpen').onclick = () => {
+        document.getElementById('globeSkelKey').onclick = () => {
+          gainItem('skeletonKey');
           G.objStep.globe = 2; completeStep(40); persist();
           closeInsp(); setTimeout(handleGlobe, 80);
         };
@@ -5045,6 +5180,8 @@
       clueCount:      G.clueCount,
       unlockedClues:  [...G.unlockedClues],
       _musicPins:     G._musicPins || [null,null,null],
+      _deskKeyTurned: !!G._deskKeyTurned,
+      _cabKeyTurned:  !!G._cabKeyTurned,
       timerSecs:      G.timerSecs,
       completed:      G.completed,
       // account.html compatibility
@@ -5083,6 +5220,8 @@
     G.clueCount      = data.clueCount || 0;
     G.unlockedClues  = new Set(data.unlockedClues || []);
     G._musicPins     = data._musicPins || null;
+    G._deskKeyTurned = !!data._deskKeyTurned;
+    G._cabKeyTurned  = !!data._cabKeyTurned;
     G.timerSecs      = data.timerSecs || 0;
     G.completed      = data.completed ?? false;
 
