@@ -1,1 +1,5 @@
 .claude/
+
+# Firebase admin service account key — never commit
+serviceAccount.json
+scripts/serviceAccount.json
