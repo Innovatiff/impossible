@@ -2248,7 +2248,21 @@
   window._ihSubmitLeaderboard = async (score, secs, clues) => {
     if (!window._ihUser) return;
     const name = window._ihUser.displayName || window._ihUser.email || 'Anonymous';
-    await submitLeaderboard(window._ihUser.uid, name, score, secs, clues);
+    try {
+      await submitLeaderboard(window._ihUser.uid, name, score, secs, clues);
+    } catch (err) {
+      // Leaderboard writes are gated by Firestore rules; if the rules disallow
+      // the write, log and move on — the run is still saved to the user's
+      // own progress doc via _ihSave.
+      console.warn('Leaderboard submit skipped:', err && err.code ? err.code : err);
+    }
+  };
+
+  // Also guard the per-user progress save so a rules mismatch doesn't blow up the run.
+  const _origSave = window._ihSave;
+  window._ihSave = async (data) => {
+    try { await _origSave(data); }
+    catch (err) { console.warn('Progress save skipped:', err && err.code ? err.code : err); }
   };
 
   window._ihClearProgress = async () => {
