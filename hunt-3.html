@@ -1,0 +1,1904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hunt 03: The Locked Chamber — Impossible Hunt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { overflow-x:hidden; }
+
+    /* ── Hunt wrap ───────────────────────────────────────────── */
+    .hunt-wrap { min-height:100vh; padding-top:clamp(60px,8vw,72px); display:flex; flex-direction:column; }
+    .hunt-progress-rail { height:3px; background:rgba(212,167,70,0.1); position:relative; }
+    .hunt-progress-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--ember),var(--gold)); transition:width 0.6s ease; box-shadow:0 0 8px rgba(212,167,70,0.5); }
+    .hunt-meta { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; padding:0.75rem clamp(1rem,4vw,2.5rem); background:var(--ink-mid); border-bottom:1px solid rgba(212,167,70,0.12); }
+    .hunt-title-block { display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; }
+    .hunt-number { font-family:var(--font-mono); font-size:0.62rem; color:var(--gold); opacity:0.7; letter-spacing:0.16em; text-transform:uppercase; }
+    .hunt-name { font-family:var(--font-display); font-size:clamp(0.85rem,2.5vw,1.05rem); font-weight:600; color:var(--parchment); letter-spacing:0.04em; }
+    .hunt-controls { display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; }
+    .timer-display { font-family:var(--font-mono); font-size:1rem; color:var(--gold); letter-spacing:0.1em; background:rgba(14,11,18,0.8); padding:0.28rem 0.7rem; border:1px solid rgba(212,167,70,0.2); border-radius:3px; min-width:72px; text-align:center; }
+    .clue-btn { font-family:var(--font-mono); font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.38rem 0.9rem; border:1px solid rgba(226,87,43,0.4); border-radius:var(--radius-seal); background:transparent; color:var(--ember); cursor:pointer; transition:all var(--transition); }
+    .clue-btn:hover { background:rgba(226,87,43,0.1); border-color:var(--ember); }
+    .step-counter { font-family:var(--font-mono); font-size:0.62rem; color:var(--parchment-faint); opacity:0.55; letter-spacing:0.12em; white-space:nowrap; }
+
+    /* ── Room stage ──────────────────────────────────────────── */
+    .room-stage-wrap { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:clamp(1rem,3vw,2rem) clamp(1rem,4vw,2.5rem) 8rem; }
+    .room-label { font-family:var(--font-mono); font-size:0.58rem; color:var(--mist); opacity:0.5; letter-spacing:0.14em; text-transform:uppercase; margin-bottom:0.8rem; }
+    .room-stage { position:relative; width:100%; max-width:900px; aspect-ratio:16/9; background:#0d0b10; border:1px solid rgba(212,167,70,0.14); border-radius:6px; overflow:hidden; box-shadow:0 0 40px rgba(0,0,0,0.8); }
+
+    /* Victorian room background */
+    .room-bg { position:absolute; inset:0; background:
+      radial-gradient(ellipse 60% 40% at 50% 90%, rgba(180,100,30,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 30% 60% at 15% 50%, rgba(212,167,70,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 25% 50% at 85% 50%, rgba(212,167,70,0.04) 0%, transparent 60%),
+      linear-gradient(180deg, #1a1008 0%, #110d06 40%, #0e0b07 70%, #0c0a08 100%);
+    }
+    /* Floor */
+    .room-floor { position:absolute; bottom:0; left:0; right:0; height:28%; background:linear-gradient(180deg,#1a1208 0%,#120e08 100%); border-top:1px solid rgba(212,167,70,0.08); }
+    /* Wainscoting */
+    .room-wain { position:absolute; bottom:28%; left:0; right:0; height:4px; background:rgba(212,167,70,0.12); }
+    /* Ceiling */
+    .room-ceiling { position:absolute; top:0; left:0; right:0; height:8%; background:linear-gradient(180deg,#0a0806,#110d06); }
+    /* Wall panels suggestion */
+    .room-panel-l { position:absolute; top:8%; left:0; width:14%; bottom:32%; border-right:1px solid rgba(212,167,70,0.07); }
+    .room-panel-r { position:absolute; top:8%; right:0; width:14%; bottom:32%; border-left:1px solid rgba(212,167,70,0.07); }
+
+    /* ── Room objects ────────────────────────────────────────── */
+    .room-obj {
+      position:absolute;
+      background:transparent;
+      border:none;
+      cursor:pointer;
+      padding:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:filter 0.2s, transform 0.15s;
+    }
+    .room-obj:hover .obj-glow { opacity:1; }
+    .room-obj:hover { transform:scale(1.04); }
+    .room-obj:focus-visible { outline:2px solid var(--gold); outline-offset:3px; }
+    .obj-glow { position:absolute; inset:-6px; border-radius:4px; box-shadow:0 0 14px rgba(212,167,70,0.35); opacity:0; transition:opacity 0.2s; pointer-events:none; }
+    .obj-solved .obj-glow { opacity:0.4; box-shadow:0 0 14px rgba(212,167,70,0.6); }
+    .obj-icon { font-size:clamp(1.4rem,2.8vw,2.6rem); line-height:1; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.8)); }
+    .obj-label { position:absolute; bottom:-1.4em; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:0.5rem; color:var(--gold); opacity:0; white-space:nowrap; letter-spacing:0.1em; transition:opacity 0.2s; pointer-events:none; }
+    .room-obj:hover .obj-label { opacity:0.7; }
+
+    /* Object positions (as % of room-stage) */
+    #obj-letter   { left:6%;  top:30%; width:7%;  height:14%; }
+    #obj-portrait { left:38%; top:8%;  width:13%; height:22%; }
+    #obj-clock    { left:70%; top:12%; width:9%;  height:18%; }
+    #obj-bookshelf{ left:78%; top:28%; width:13%; height:38%; }
+    #obj-desk     { left:55%; top:50%; width:16%; height:28%; }
+    #obj-musicbox { left:2%;  top:52%; width:10%; height:18%; }
+    #obj-candle   { left:22%; top:48%; width:5%;  height:16%; }
+    #obj-rug      { left:28%; top:70%; width:30%; height:20%; }
+    #obj-map      { left:15%; top:18%; width:9%;  height:20%; }
+    #obj-cabinet  { left:5%;  top:60%; width:11%; height:30%; }
+
+    /* ── Digit tracker ───────────────────────────────────────── */
+    .bottom-hud { position:fixed; bottom:0; left:0; right:0; background:rgba(10,8,12,0.97); border-top:1px solid rgba(212,167,70,0.14); backdrop-filter:blur(12px); z-index:50; padding:0.6rem clamp(1rem,4vw,2.5rem); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; }
+    .digit-tracker { display:flex; align-items:center; gap:0.5rem; }
+    .digit-label { font-family:var(--font-mono); font-size:0.55rem; color:var(--parchment-faint); opacity:0.5; letter-spacing:0.12em; text-transform:uppercase; margin-right:0.3rem; }
+    .digit-slot { width:2.4rem; height:3rem; border:1px solid rgba(212,167,70,0.2); border-radius:4px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:1.4rem; color:rgba(212,167,70,0.15); background:rgba(14,11,18,0.8); transition:all 0.4s ease; position:relative; }
+    .digit-slot.revealed { color:var(--gold); border-color:rgba(212,167,70,0.6); box-shadow:0 0 12px rgba(212,167,70,0.25); }
+    .digit-slot::after { content:attr(data-digit); }
+    .digit-slot:not(.revealed)::after { content:'?'; }
+
+    /* ── Inventory bar ───────────────────────────────────────── */
+    .inventory-bar { display:flex; align-items:center; gap:0.5rem; }
+    .inv-label { font-family:var(--font-mono); font-size:0.55rem; color:var(--parchment-faint); opacity:0.5; letter-spacing:0.12em; text-transform:uppercase; margin-right:0.3rem; }
+    .inv-item { width:2rem; height:2rem; border:1px solid rgba(212,167,70,0.15); border-radius:3px; display:flex; align-items:center; justify-content:center; font-size:1rem; opacity:0.18; transition:all 0.4s ease; filter:grayscale(1); }
+    .inv-item.held { opacity:1; filter:grayscale(0); border-color:rgba(212,167,70,0.5); box-shadow:0 0 8px rgba(212,167,70,0.2); }
+
+    /* ── Inspection panel ────────────────────────────────────── */
+    .insp-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:200; opacity:0; pointer-events:none; transition:opacity 0.3s ease; backdrop-filter:blur(4px); }
+    .insp-backdrop.open { opacity:1; pointer-events:auto; }
+    .insp-panel { position:fixed; top:50%; left:50%; transform:translate(-50%,-48%) scale(0.94); width:min(720px,94vw); max-height:85vh; background:var(--ink-mid); border:1px solid rgba(212,167,70,0.22); border-radius:var(--radius-card); z-index:201; opacity:0; pointer-events:none; transition:all 0.3s cubic-bezier(0.175,0.885,0.32,1.275); overflow:hidden; display:flex; flex-direction:column; }
+    .insp-panel.open { opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+    .insp-header { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.4rem 0.8rem; border-bottom:1px solid rgba(212,167,70,0.1); flex-shrink:0; }
+    .insp-title { font-family:var(--font-display); font-size:clamp(0.9rem,2vw,1.1rem); color:var(--parchment); letter-spacing:0.06em; }
+    .insp-close { background:transparent; border:1px solid rgba(212,167,70,0.2); color:var(--gold); cursor:pointer; width:2rem; height:2rem; border-radius:50%; font-size:1rem; line-height:1; display:flex; align-items:center; justify-content:center; transition:all 0.2s; flex-shrink:0; }
+    .insp-close:hover { background:rgba(212,167,70,0.1); border-color:var(--gold); }
+    .insp-body { padding:1.4rem; overflow-y:auto; flex:1; }
+
+    /* Common inspection content styles */
+    .insp-desc { font-style:italic; color:var(--parchment-dim); line-height:1.7; margin-bottom:1.2rem; }
+    .insp-action-area { display:flex; flex-direction:column; align-items:center; gap:0.8rem; }
+    .insp-btn { font-family:var(--font-display); font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.55rem 1.4rem; background:transparent; border:1px solid rgba(212,167,70,0.4); color:var(--gold); border-radius:var(--radius-seal); cursor:pointer; transition:all var(--transition); }
+    .insp-btn:hover { background:rgba(212,167,70,0.12); border-color:var(--gold); }
+    .insp-btn:disabled { opacity:0.3; cursor:not-allowed; }
+    .insp-feedback { font-family:var(--font-mono); font-size:0.78rem; letter-spacing:0.06em; text-align:center; min-height:1.4em; }
+    .insp-feedback.ok { color:var(--gold); }
+    .insp-feedback.err { color:var(--ember); }
+    .insp-clue-strip { margin-top:1rem; padding:0.7rem 1rem; background:rgba(226,87,43,0.06); border:1px solid rgba(226,87,43,0.18); border-radius:4px; font-family:var(--font-mono); font-size:0.72rem; color:var(--ember); letter-spacing:0.06em; line-height:1.6; display:none; }
+    .insp-clue-strip.visible { display:block; }
+
+    /* Portrait puzzle */
+    .portrait-art { width:100%; max-width:320px; margin:0 auto; aspect-ratio:3/4; background:linear-gradient(160deg,#1a1208,#0e0b07); border:2px solid rgba(212,167,70,0.2); border-radius:3px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+    .portrait-figure { font-size:6rem; line-height:1; }
+    .portrait-roman { position:absolute; bottom:0.6rem; right:0.8rem; font-family:var(--font-display); font-size:0.85rem; color:rgba(212,167,70,0.5); letter-spacing:0.1em; }
+    .portrait-ring { position:absolute; bottom:2.5rem; right:1.4rem; font-size:0.55rem; color:var(--gold); opacity:0; transition:opacity 0.4s; pointer-events:none; }
+    .portrait-ring.show { opacity:1; }
+
+    /* Clock puzzle */
+    .clock-face { width:min(200px,60vw); aspect-ratio:1; margin:0.8rem auto; border-radius:50%; background:radial-gradient(circle,#1e1507,#100d05); border:2px solid rgba(212,167,70,0.3); position:relative; display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(0,0,0,0.6); }
+    .clock-numeral { position:absolute; font-family:var(--font-display); font-size:0.7rem; color:rgba(212,167,70,0.5); cursor:pointer; width:1.8rem; height:1.8rem; border-radius:50%; display:flex; align-items:center; justify-content:center; transition:all 0.2s; transform-origin:center; }
+    .clock-numeral:hover { color:var(--gold); background:rgba(212,167,70,0.12); }
+    .clock-numeral.selected { color:var(--gold); background:rgba(212,167,70,0.2); box-shadow:0 0 10px rgba(212,167,70,0.4); }
+    .clock-center { width:0.5rem; height:0.5rem; background:var(--gold); border-radius:50%; }
+
+    /* Bookshelf puzzle */
+    .shelf-row { display:flex; gap:0.3rem; justify-content:center; flex-wrap:wrap; margin:0.8rem 0; }
+    .book { width:2rem; min-height:5rem; border-radius:2px 2px 0 0; cursor:pointer; display:flex; align-items:flex-end; justify-content:center; padding-bottom:0.3rem; position:relative; transition:all 0.25s; box-shadow:2px 0 4px rgba(0,0,0,0.5); }
+    .book:hover { transform:translateY(-6px); }
+    .book.pulled { transform:translateY(-14px); }
+    .book-spine { font-family:var(--font-mono); font-size:0.38rem; writing-mode:vertical-rl; transform:rotate(180deg); color:rgba(255,255,255,0.55); letter-spacing:0.05em; }
+
+    /* Desk puzzle */
+    .desk-surface { background:linear-gradient(160deg,#1e1208,#160f07); border:1px solid rgba(212,167,70,0.15); border-radius:6px; padding:1.2rem; position:relative; }
+    .desk-slot { width:2.4rem; height:3.2rem; border:1px dashed rgba(212,167,70,0.3); border-radius:3px; display:inline-flex; align-items:center; justify-content:center; vertical-align:middle; margin:0 0.2rem; font-family:var(--font-mono); font-size:0.6rem; color:rgba(212,167,70,0.3); }
+    .desk-slot.filled { border-style:solid; border-color:rgba(212,167,70,0.5); color:var(--gold); font-size:1.2rem; }
+
+    /* Music box puzzle */
+    .musicbox-lid { width:100%; max-width:340px; margin:0 auto; background:linear-gradient(160deg,#1a1007,#0f0d05); border:1px solid rgba(212,167,70,0.2); border-radius:6px; padding:1rem; }
+    .pin-row { display:flex; gap:0.6rem; justify-content:center; margin:0.8rem 0; }
+    .pin-btn { width:3rem; height:3rem; border:1px solid rgba(212,167,70,0.25); border-radius:4px; background:rgba(14,11,18,0.8); color:var(--gold); font-family:var(--font-mono); font-size:0.85rem; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; }
+    .pin-btn:hover { background:rgba(212,167,70,0.12); border-color:var(--gold); }
+    .pin-btn.active { background:rgba(212,167,70,0.22); border-color:var(--gold); box-shadow:0 0 10px rgba(212,167,70,0.3); }
+    .pin-slots { display:flex; gap:0.5rem; justify-content:center; margin-bottom:0.8rem; }
+    .pin-slot { width:2.4rem; height:2.4rem; border:1px solid rgba(212,167,70,0.2); border-radius:3px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:0.9rem; color:rgba(212,167,70,0.3); background:rgba(14,11,18,0.6); transition:all 0.3s; }
+    .pin-slot.set { color:var(--gold); border-color:rgba(212,167,70,0.5); }
+
+    /* Candle */
+    .candle-vis { display:flex; flex-direction:column; align-items:center; gap:0.3rem; margin:1rem 0; }
+    .candle-flame { font-size:2rem; animation:flicker 1.2s ease-in-out infinite; display:none; }
+    .candle-flame.lit { display:block; }
+    @keyframes flicker { 0%,100%{transform:scaleY(1) rotate(-2deg)} 33%{transform:scaleY(1.08) rotate(2deg)} 66%{transform:scaleY(0.94) rotate(-1deg)} }
+    .candle-body { font-size:2.4rem; }
+    .candle-wick { font-size:1.1rem; }
+
+    /* Rug puzzle */
+    .rug-vis { width:100%; max-width:360px; margin:0 auto; aspect-ratio:2/1; background:linear-gradient(135deg,#3d1a0a,#2a1208,#3d1a0a); border:2px solid rgba(212,167,70,0.2); border-radius:4px; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .rug-pattern { position:absolute; inset:0; display:grid; place-items:center; font-family:var(--font-display); font-size:0.7rem; color:rgba(212,167,70,0.15); letter-spacing:0.15em; }
+    .rug-reveal { position:absolute; font-family:var(--font-mono); font-size:1.8rem; font-weight:700; color:var(--gold); text-shadow:0 0 20px rgba(212,167,70,0.6); opacity:0; transition:opacity 0.8s ease; letter-spacing:0.2em; }
+    .rug-reveal.show { opacity:1; }
+    .rug-burn { position:absolute; inset:0; background:radial-gradient(ellipse 40% 30% at 50% 50%, rgba(220,100,20,0.3) 0%, transparent 70%); opacity:0; transition:opacity 0.6s; }
+    .rug-burn.show { opacity:1; }
+
+    /* Map */
+    .map-vis { width:100%; max-width:380px; margin:0 auto; background:linear-gradient(135deg,#2a1e0a,#1e1608,#2a1e0a); border:1px solid rgba(212,167,70,0.25); border-radius:4px; padding:1.2rem; min-height:180px; position:relative; }
+    .map-marking { font-family:var(--font-display); font-size:0.65rem; color:rgba(212,167,70,0.35); line-height:2; }
+    .map-highlight { color:var(--gold); font-weight:600; }
+    .map-symbols { display:flex; gap:1rem; justify-content:center; margin-top:1rem; font-size:1.4rem; opacity:0.6; }
+    .map-revealed { opacity:0; transition:opacity 0.8s; }
+    .map-revealed.show { opacity:1; }
+
+    /* Cabinet puzzle */
+    .cabinet-vis { width:100%; max-width:360px; margin:0 auto; background:linear-gradient(160deg,#1a1208,#0e0b07); border:1px solid rgba(212,167,70,0.2); border-radius:6px; padding:1.2rem; }
+    .cabinet-symbols { display:grid; grid-template-columns:repeat(2,1fr); gap:0.7rem; margin-bottom:1rem; }
+    .cab-sym-btn { height:3.5rem; border:1px solid rgba(212,167,70,0.2); border-radius:4px; background:rgba(14,11,18,0.8); color:var(--gold); font-size:1.4rem; cursor:pointer; transition:all 0.25s; display:flex; align-items:center; justify-content:center; }
+    .cab-sym-btn:disabled { opacity:0.2; cursor:not-allowed; }
+    .cab-sym-btn:not(:disabled):hover { background:rgba(212,167,70,0.12); border-color:var(--gold); }
+    .cab-sym-btn.pressed { background:rgba(212,167,70,0.22); border-color:var(--gold); box-shadow:0 0 12px rgba(212,167,70,0.3); }
+
+    /* Door — final puzzle */
+    .door-vis { display:flex; flex-direction:column; align-items:center; gap:1.2rem; padding:1rem 0; }
+    .passcode-inputs { display:flex; gap:0.5rem; justify-content:center; }
+    .passcode-input { width:3rem; height:3.8rem; background:rgba(14,11,18,0.9); border:1px solid rgba(212,167,70,0.3); border-radius:4px; text-align:center; font-family:var(--font-mono); font-size:1.6rem; color:var(--gold); letter-spacing:0.05em; -moz-appearance:textfield; }
+    .passcode-input::-webkit-outer-spin-button,
+    .passcode-input::-webkit-inner-spin-button { -webkit-appearance:none; }
+    .passcode-input:focus { outline:none; border-color:var(--gold); box-shadow:0 0 12px rgba(212,167,70,0.3); }
+
+    /* ── Flash & modals ──────────────────────────────────────── */
+    .solved-flash { position:fixed; inset:0; background:rgba(212,167,70,0.06); border:2px solid rgba(212,167,70,0.3); pointer-events:none; opacity:0; z-index:400; transition:opacity 0.3s ease; }
+    .solved-flash.show { opacity:1; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+    .shake { animation:shake 0.4s ease; }
+
+    /* Clue modal */
+    .modal-back { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:500; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+    .modal-back.open { display:flex; }
+    .modal-card { background:var(--ink-mid); border:1px solid rgba(212,167,70,0.22); border-radius:var(--radius-card); padding:2rem; max-width:min(480px,90vw); width:100%; position:relative; }
+    .modal-title { font-family:var(--font-display); font-size:1rem; color:var(--gold); letter-spacing:0.08em; margin-bottom:0.8rem; }
+    .modal-body { font-style:italic; color:var(--parchment-dim); line-height:1.7; font-size:0.95rem; }
+    .modal-credits { font-family:var(--font-mono); font-size:0.68rem; color:var(--ember); margin-top:0.8rem; opacity:0.8; }
+    .modal-actions { display:flex; gap:0.7rem; margin-top:1.4rem; flex-wrap:wrap; }
+    .modal-btn { font-family:var(--font-display); font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.55rem 1.2rem; border:1px solid rgba(212,167,70,0.4); border-radius:var(--radius-seal); background:transparent; color:var(--gold); cursor:pointer; transition:all var(--transition); }
+    .modal-btn:hover { background:rgba(212,167,70,0.1); }
+    .modal-btn.primary { background:var(--gold); color:var(--ink-deep); font-weight:700; border-color:var(--gold); }
+    .modal-btn.primary:hover { background:var(--parchment); }
+    .modal-close { position:absolute; top:0.8rem; right:0.8rem; background:transparent; border:none; color:var(--parchment-faint); font-size:1.2rem; cursor:pointer; opacity:0.5; transition:opacity 0.2s; line-height:1; padding:0.2rem; }
+    .modal-close:hover { opacity:1; }
+
+    /* ── Completion panel ────────────────────────────────────── */
+    .completion-panel { position:fixed; inset:0; background:rgba(10,8,12,0.97); z-index:600; display:none; align-items:center; justify-content:center; backdrop-filter:blur(8px); }
+    .completion-panel.open { display:flex; }
+    .completion-card { text-align:center; max-width:520px; padding:3rem 2rem; }
+    .completion-eyebrow { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--gold); opacity:0.7; display:block; margin-bottom:1rem; }
+    .completion-title { font-size:clamp(2rem,6vw,3.2rem); color:var(--gold); margin-bottom:0.5rem; }
+    .completion-sub { font-style:italic; color:var(--parchment-dim); margin-bottom:2rem; line-height:1.65; }
+    .completion-stats { display:flex; gap:1.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem; }
+    .stat-block { display:flex; flex-direction:column; gap:0.2rem; }
+    .stat-val { font-family:var(--font-mono); font-size:1.4rem; color:var(--gold); }
+    .stat-key { font-family:var(--font-mono); font-size:0.55rem; color:var(--parchment-faint); opacity:0.6; letter-spacing:0.14em; text-transform:uppercase; }
+    .completion-actions { display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap; }
+    .completion-btn { font-family:var(--font-display); font-size:0.75rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.65rem 1.6rem; border:1px solid rgba(212,167,70,0.4); border-radius:var(--radius-seal); background:transparent; color:var(--gold); cursor:pointer; transition:all var(--transition); }
+    .completion-btn.primary { background:var(--gold); color:var(--ink-deep); font-weight:700; border-color:var(--gold); }
+    .completion-btn:hover { background:rgba(212,167,70,0.1); }
+    .completion-btn.primary:hover { background:var(--parchment); }
+
+    /* ── Letter overlay ──────────────────────────────────────── */
+    .letter-overlay { position:fixed; inset:0; background:rgba(10,8,12,0.98); z-index:700; display:flex; align-items:center; justify-content:center; padding:2rem; }
+    .letter-overlay.hidden { display:none; }
+    .letter-paper { max-width:560px; width:100%; background:linear-gradient(160deg,#1e1a0e,#18140a); border:1px solid rgba(212,167,70,0.25); border-radius:6px; padding:clamp(1.5rem,4vw,3rem); box-shadow:0 0 60px rgba(0,0,0,0.8); }
+    .letter-seal { text-align:center; margin-bottom:1.5rem; }
+    .letter-seal-mark { font-size:2.5rem; display:block; margin-bottom:0.3rem; }
+    .letter-seal-text { font-family:var(--font-mono); font-size:0.58rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--gold); opacity:0.6; }
+    .letter-body { font-family:'EB Garamond', serif; font-size:clamp(0.88rem,2vw,1rem); color:var(--parchment); line-height:1.85; font-style:italic; }
+    .letter-body p { margin-bottom:1em; }
+    .letter-sign { text-align:right; font-family:'EB Garamond', serif; font-style:italic; color:var(--parchment-dim); margin-top:1.5rem; font-size:0.95rem; }
+    .letter-enter { margin-top:1.8rem; text-align:center; }
+
+    /* ── Responsive ──────────────────────────────────────────── */
+    @media (max-width:600px) {
+      .room-stage { aspect-ratio:4/5; }
+      #obj-letter   { left:4%;  top:15%; width:11%; height:10%; }
+      #obj-portrait { left:32%; top:5%;  width:18%; height:16%; }
+      #obj-clock    { left:68%; top:8%;  width:14%; height:13%; }
+      #obj-bookshelf{ left:76%; top:24%; width:18%; height:30%; }
+      #obj-desk     { left:46%; top:52%; width:24%; height:22%; }
+      #obj-musicbox { left:2%;  top:50%; width:15%; height:13%; }
+      #obj-candle   { left:20%; top:46%; width:8%;  height:12%; }
+      #obj-rug      { left:24%; top:72%; width:36%; height:16%; }
+      #obj-map      { left:12%; top:16%; width:14%; height:15%; }
+      #obj-cabinet  { left:3%;  top:62%; width:16%; height:24%; }
+      .bottom-hud { flex-direction:column; gap:0.5rem; padding:0.5rem 1rem; }
+      .digit-slot { width:2rem; height:2.6rem; font-size:1.2rem; }
+    }
+    @media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
+  </style>
+</head>
+<body>
+
+<!-- ── Navigation ──────────────────────────────────────────── -->
+<nav class="site-nav" role="navigation" aria-label="Main navigation">
+  <a href="index.html" class="nav-wordmark" aria-label="Impossible Hunt home">
+    <span class="wordmark-impossible">IMPOSSIBLE</span>
+    <span class="wordmark-hunt">HUNT</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Home</a>
+    <a href="account.html" class="nav-link">Account</a>
+  </div>
+</nav>
+
+<!-- ── Opening letter overlay ──────────────────────────────── -->
+<div id="letterOverlay" class="letter-overlay" role="dialog" aria-modal="true" aria-labelledby="letterTitle">
+  <div class="letter-paper">
+    <div class="letter-seal">
+      <span class="letter-seal-mark">🔏</span>
+      <span class="letter-seal-text">Classified — Hunt 03</span>
+    </div>
+    <div class="letter-body">
+      <p>You have been admitted to a room that has not been opened in eleven years.</p>
+      <p>The previous occupant left no note. No forwarding address. Only what you see before you: a chamber sealed from within, its contents undisturbed, its secrets still folded into the furniture like pressed flowers between pages.</p>
+      <p>Four digits comprise the lock on the door at the end of this room. You will not find them written in a single place. You will find them the way all things of value are found — through careful attention to what others dismissed as ornament.</p>
+      <p>The chamber remembers. Begin when you are ready.</p>
+    </div>
+    <div class="letter-sign">— The Warden</div>
+    <div class="letter-enter">
+      <button class="insp-btn" id="btnEnterChamber" style="padding:0.7rem 2rem;font-size:0.8rem;">Enter the Chamber</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Hunt wrap ───────────────────────────────────────────── -->
+<div class="hunt-wrap" id="huntWrap" style="display:none;">
+  <div class="hunt-progress-rail"><div class="hunt-progress-fill" id="progressFill"></div></div>
+  <div class="hunt-meta">
+    <div class="hunt-title-block">
+      <span class="hunt-number">Hunt 03</span>
+      <span class="hunt-name">The Locked Chamber</span>
+    </div>
+    <div class="hunt-controls">
+      <div class="timer-display" id="timerDisplay">00:00</div>
+      <button class="clue-btn" id="clueBtn" aria-label="Request a clue">Clue</button>
+      <span class="step-counter" id="stepCounter">0 / 30</span>
+    </div>
+  </div>
+
+  <!-- Room stage -->
+  <div class="room-stage-wrap">
+    <div class="room-label">The Locked Chamber</div>
+    <div class="room-stage" id="roomStage" role="main" aria-label="Interactive room scene">
+      <div class="room-bg"></div>
+      <div class="room-ceiling"></div>
+      <div class="room-panel-l"></div>
+      <div class="room-panel-r"></div>
+      <div class="room-floor"></div>
+      <div class="room-wain"></div>
+
+      <!-- Letter -->
+      <button class="room-obj" id="obj-letter" aria-label="Inspect letter" title="Letter">
+        <div class="obj-glow"></div>
+        <span class="obj-icon">✉️</span>
+        <span class="obj-label">Letter</span>
+      </button>
+
+      <!-- Portrait -->
+      <button class="room-obj" id="obj-portrait" aria-label="Inspect portrait" title="Portrait">
+        <div class="obj-glow"></div>
+        <span class="obj-icon">🖼️</span>
+        <span class="obj-label">Portrait</span>
+      </button>
+
+      <!-- Clock -->
+      <button class="room-obj" id="obj-clock" aria-label="Inspect clock" title="Clock">
+        <div class="obj-glow"></div>
+        <span class="obj-icon">🕰️</span>
+        <span class="obj-label">Clock</span>
+      </button>
+
+      <!-- Bookshelf -->
+      <button class="room-obj" id="obj-bookshelf" aria-label="Inspect bookshelf" title="Bookshelf">
+        <div class="obj-glow"></div>
+        <span class="obj-icon">📚</span>
+        <span class="obj-label">Bookshelf</span>
+      </button>
+
+      <!-- Desk -->
+      <button class="room-obj" id="obj-desk" aria-label="Inspect desk" title="Desk">
+        <div class="obj-glow"></div>
+        <span class="obj-icon">🗃️</span>
+        <span class="obj-label">Desk</span>
+      </button>
+
+      <!-- Music box -->
+      <button class="room-obj" id="obj-musicbox" aria-label="Inspect music box" title="Music Box">
+        <div class="obj-glow"></div>
+        <span class="obj-icon">🎵</span>
+        <span class="obj-label">Music Box</span>
+      </button>
+
+      <!-- Candle -->
+      <button class="room-obj" id="obj-candle" aria-label="Inspect candle" title="Candle">
+        <div class="obj-glow"></div>
+        <span class="obj-icon" id="candleIcon">🕯️</span>
+        <span class="obj-label">Candle</span>
+      </button>
+
+      <!-- Rug -->
+      <button class="room-obj" id="obj-rug" aria-label="Inspect rug" title="Rug">
+        <div class="obj-glow"></div>
+        <span class="obj-icon">🟫</span>
+        <span class="obj-label">Rug</span>
+      </button>
+
+      <!-- Map -->
+      <button class="room-obj" id="obj-map" aria-label="Inspect map" title="Map on wall">
+        <div class="obj-glow"></div>
+        <span class="obj-icon">🗺️</span>
+        <span class="obj-label">Map</span>
+      </button>
+
+      <!-- Cabinet -->
+      <button class="room-obj" id="obj-cabinet" aria-label="Inspect cabinet" title="Cabinet">
+        <div class="obj-glow"></div>
+        <span class="obj-icon">🗄️</span>
+        <span class="obj-label">Cabinet</span>
+      </button>
+
+    </div><!-- /room-stage -->
+  </div><!-- /room-stage-wrap -->
+
+  <!-- Door button — appears when all 4 digits are found -->
+  <div id="doorWrap" style="display:none;text-align:center;margin:-2rem 0 1rem;">
+    <button class="room-obj" id="obj-door" style="position:static;display:inline-flex;flex-direction:column;align-items:center;gap:0.3rem;padding:0.6rem 1.2rem;border:1px solid rgba(212,167,70,0.3);border-radius:6px;cursor:pointer;background:rgba(14,11,18,0.7);" aria-label="Approach the door">
+      <span style="font-size:2.2rem;">🚪</span>
+      <span style="font-family:var(--font-mono);font-size:0.55rem;color:var(--gold);letter-spacing:0.12em;">The Door</span>
+    </button>
+  </div>
+
+</div><!-- /hunt-wrap -->
+
+<!-- ── Bottom HUD ──────────────────────────────────────────── -->
+<div class="bottom-hud" id="bottomHud" style="display:none;">
+  <div class="digit-tracker">
+    <span class="digit-label">Passcode</span>
+    <div class="digit-slot" id="dv1" data-digit="?" aria-label="Digit 1"></div>
+    <div class="digit-slot" id="dv2" data-digit="?" aria-label="Digit 2"></div>
+    <div class="digit-slot" id="dv3" data-digit="?" aria-label="Digit 3"></div>
+    <div class="digit-slot" id="dv4" data-digit="?" aria-label="Digit 4"></div>
+  </div>
+  <div class="inventory-bar">
+    <span class="inv-label">Inventory</span>
+    <div class="inv-item" id="inv-crescent" title="Crescent Medallion">🌙</div>
+    <div class="inv-item" id="inv-starKey"  title="Star Key">⭐</div>
+    <div class="inv-item" id="inv-candle"   title="Lit Candle">🕯️</div>
+    <div class="inv-item" id="inv-mapFrag"  title="Map Fragment">📜</div>
+  </div>
+</div>
+
+<!-- ── Inspection panel ────────────────────────────────────── -->
+<div class="insp-backdrop" id="inspBackdrop" aria-hidden="true"></div>
+<div class="insp-panel" id="inspPanel" role="dialog" aria-modal="true" aria-labelledby="inspTitle">
+  <div class="insp-header">
+    <h2 class="insp-title" id="inspTitle">Inspection</h2>
+    <button class="insp-close" id="inspClose" aria-label="Close inspection">✕</button>
+  </div>
+  <div class="insp-body" id="inspBody"></div>
+</div>
+
+<!-- ── Clue modal ──────────────────────────────────────────── -->
+<div class="modal-back" id="clueModal" role="dialog" aria-modal="true" aria-labelledby="clueModalTitle">
+  <div class="modal-card">
+    <button class="modal-close" id="clueModalClose" aria-label="Close">✕</button>
+    <div class="modal-title" id="clueModalTitle">Request a Clue</div>
+    <div class="modal-body" id="clueModalBody">Each clue costs one credit. You have <span id="clueCreditCount">—</span> remaining.</div>
+    <div class="modal-credits" id="clueModalSub"></div>
+    <div class="modal-actions">
+      <button class="modal-btn" id="clueModalCancel">Cancel</button>
+      <button class="modal-btn primary" id="clueModalConfirm">Use a Credit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Credits modal (no credits) ─────────────────────────── -->
+<div class="modal-back" id="noCreditsModal" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <button class="modal-close" id="noCreditsClose" aria-label="Close">✕</button>
+    <div class="modal-title">No Clue Credits</div>
+    <div class="modal-body">You've used all your clue credits. Return to your account to earn more, or continue without assistance.</div>
+    <div class="modal-actions">
+      <button class="modal-btn" id="noCreditsCancel">Continue Hunting</button>
+      <a href="account.html" class="modal-btn primary" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">Go to Account</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── Flash ───────────────────────────────────────────────── -->
+<div class="solved-flash" id="solvedFlash" aria-hidden="true"></div>
+
+<!-- ── Completion panel ────────────────────────────────────── -->
+<div class="completion-panel" id="completionPanel" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
+  <div class="completion-card">
+    <span class="completion-eyebrow">Hunt 03 Complete</span>
+    <h1 class="completion-title" id="completionTitle">Chamber Unlocked</h1>
+    <p class="completion-sub">The door yields. Eleven years of silence end in a single turn of the dial.</p>
+    <div class="completion-stats">
+      <div class="stat-block"><span class="stat-val" id="statTime">—</span><span class="stat-key">Time</span></div>
+      <div class="stat-block"><span class="stat-val" id="statClues">—</span><span class="stat-key">Clues Used</span></div>
+      <div class="stat-block"><span class="stat-val" id="statScore">—</span><span class="stat-key">Score</span></div>
+    </div>
+    <div class="completion-actions">
+      <a href="account.html" class="completion-btn primary" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">View Dossier</a>
+      <a href="index.html" class="completion-btn" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">All Hunts</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── Firebase module ────────────────────────────────────── -->
+<script type="module">
+  import { initializeApp }            from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, increment }
+    from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
+
+  const app = initializeApp({
+    apiKey:            'AIzaSyAfd15maH07AH9P-dRehUkACx48VofFq-I',
+    authDomain:        'impossible-9ac8d.firebaseapp.com',
+    projectId:         'impossible-9ac8d',
+    storageBucket:     'impossible-9ac8d.firebasestorage.app',
+    messagingSenderId: '93504469684',
+    appId:             '1:93504469684:web:d0c3ef054df765d5fd35e1',
+    measurementId:     'G-YYC9HPYBDC',
+  });
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  const HUNT_ID = 'hunt-3';
+
+  async function loadProgress(uid) {
+    const snap = await getDoc(doc(db, 'users', uid, 'progress', HUNT_ID));
+    return snap.exists() ? snap.data() : null;
+  }
+
+  async function saveProgress(uid, data) {
+    await setDoc(doc(db, 'users', uid, 'progress', HUNT_ID), data, { merge: true });
+  }
+
+  async function loadCredits(uid) {
+    const snap = await getDoc(doc(db, 'users', uid));
+    return snap.exists() ? (snap.data().clueCredits ?? 3) : 3;
+  }
+
+  async function spendCredit(uid) {
+    await updateDoc(doc(db, 'users', uid), { clueCredits: increment(-1) });
+  }
+
+  async function submitLeaderboard(uid, displayName, score, secs, clues) {
+    const entry = { uid, displayName: displayName || 'Anonymous', score, secs, clues, ts: Date.now() };
+    await setDoc(doc(db, 'leaderboard', HUNT_ID, 'entries', uid), entry, { merge: true });
+  }
+
+  onAuthStateChanged(auth, async user => {
+    window._ihUser = user || null;
+    if (user) {
+      const credits = await loadCredits(user.uid);
+      window._ihSetClueCredits && window._ihSetClueCredits(credits);
+      const progress = await loadProgress(user.uid);
+      if (progress) {
+        if (window._ihApplyRestore) window._ihApplyRestore(progress);
+        else window._ihPendingRestore = progress;
+      }
+    }
+  });
+
+  window._ihSave = async (data) => {
+    if (!window._ihUser) return;
+    await saveProgress(window._ihUser.uid, data);
+  };
+
+  window._ihUseClue = async () => {
+    if (!window._ihUser) return false;
+    const credits = await loadCredits(window._ihUser.uid);
+    if (credits <= 0) return false;
+    await spendCredit(window._ihUser.uid);
+    const newCredits = credits - 1;
+    window._ihSetClueCredits && window._ihSetClueCredits(newCredits);
+    return true;
+  };
+
+  window._ihSubmitLeaderboard = async (score, secs, clues) => {
+    if (!window._ihUser) return;
+    const name = window._ihUser.displayName || window._ihUser.email || 'Anonymous';
+    await submitLeaderboard(window._ihUser.uid, name, score, secs, clues);
+  };
+
+  window._ihClearProgress = async () => {
+    if (!window._ihUser) return;
+    await setDoc(doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID), { restarted: true }, { merge: false });
+  };
+</script>
+
+<!-- ── Game script ─────────────────────────────────────────── -->
+<script>
+(function() {
+  'use strict';
+
+  const HUNT_ID  = 'hunt-3';
+  const LS_KEY   = 'ih_progress_hunt-3';
+  const PASSCODE = [7, 3, 9, 2];
+  const TOTAL_STEPS = 30;
+
+  /* ── State ────────────────────────────────────────────────── */
+  let G = {
+    letterRead:    false,
+    objStep: { portrait:0, clock:0, bookshelf:0, desk:0, musicbox:0, candle:0, rug:0, map:0, cabinet:0, door:0 },
+    inventory:     new Set(),
+    seenScore:     false,
+    discoveredIX:  false,
+    cabinetPressed:[],
+    digits:        [null, null, null, null],
+    completedSteps:new Set(),
+    clueCount:     0,
+    clueCredits:   3,
+    unlockedClues: new Set(),
+    timerSecs:     0,
+    timerRunning:  false,
+    startTs:       null,
+    completed:     false,
+  };
+
+  const CLUES = {
+    portrait:  'The subject of the painting did not choose his pose carelessly.',
+    clock:     'The portrait made a gesture toward the hour. The clock is listening.',
+    bookshelf: 'One resident of the shelf decided against standing with the others.',
+    desk:      'The shaped hollow in the slot was not left by accident.',
+    musicbox:  'A score and a cylinder are two halves of the same thought.',
+    candle:    'The flame does not belong in a dark room for no reason.',
+    rug:       'The map fragment did not point to the ceiling.',
+    map:       'Heat wakes what cold preserved.',
+    cabinet:   'Four marks were left in this room — all of them return here.',
+    door:      'You were not meant to guess. You were meant to discover.',
+  };
+
+  /* ── Utility ──────────────────────────────────────────────── */
+  function fmtTime(s) {
+    const m = Math.floor(s/60), sec = s%60;
+    return String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+  }
+  function flash() {
+    const el = document.getElementById('solvedFlash');
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 700);
+  }
+  function completeStep(n) {
+    if (G.completedSteps.has(n)) return;
+    G.completedSteps.add(n);
+    updateProgress();
+    persist();
+    flash();
+  }
+  function updateProgress() {
+    const pct = (G.completedSteps.size / TOTAL_STEPS) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('stepCounter').textContent = G.completedSteps.size + ' / ' + TOTAL_STEPS;
+  }
+  function showObjSolved(id) {
+    const el = document.getElementById('obj-' + id);
+    if (el) el.classList.add('obj-solved');
+  }
+
+  /* ── Timer ────────────────────────────────────────────────── */
+  let timerInterval = null;
+  function startTimer() {
+    if (G.timerRunning || G.completed) return;
+    G.timerRunning = true;
+    G.startTs = G.startTs || Date.now();
+    timerInterval = setInterval(() => {
+      G.timerSecs++;
+      document.getElementById('timerDisplay').textContent = fmtTime(G.timerSecs);
+    }, 1000);
+  }
+  function stopTimer() {
+    clearInterval(timerInterval);
+    G.timerRunning = false;
+  }
+
+  /* ── Inventory ────────────────────────────────────────────── */
+  function gainItem(id) {
+    if (G.inventory.has(id)) return;
+    G.inventory.add(id);
+    const el = document.getElementById('inv-' + id);
+    if (el) el.classList.add('held');
+    persist();
+  }
+
+  /* ── Digits ───────────────────────────────────────────────── */
+  function revealDigit(idx, val) {
+    if (G.digits[idx] !== null) return;
+    G.digits[idx] = val;
+    const slot = document.getElementById('dv' + (idx+1));
+    slot.setAttribute('data-digit', val);
+    slot.classList.add('revealed');
+    persist();
+    if (G.digits.every(d => d !== null)) {
+      document.getElementById('doorWrap').style.display = 'block';
+    }
+  }
+
+  /* ── Inspection panel ─────────────────────────────────────── */
+  let currentObjId = null;
+  function openInsp(id, title, bodyHtml) {
+    currentObjId = id;
+    document.getElementById('inspTitle').textContent = title;
+    document.getElementById('inspBody').innerHTML = bodyHtml;
+    document.getElementById('inspBackdrop').classList.add('open');
+    document.getElementById('inspPanel').classList.add('open');
+    document.getElementById('inspBackdrop').setAttribute('aria-hidden','false');
+    document.getElementById('inspPanel').removeAttribute('aria-hidden');
+    // bind close
+    document.getElementById('inspClose').onclick = closeInsp;
+    document.getElementById('inspBackdrop').onclick = closeInsp;
+  }
+  function closeInsp() {
+    document.getElementById('inspBackdrop').classList.remove('open');
+    document.getElementById('inspPanel').classList.remove('open');
+    document.getElementById('inspBackdrop').setAttribute('aria-hidden','true');
+    currentObjId = null;
+  }
+
+  function clueStrip(objId) {
+    const clue = CLUES[objId];
+    const unlocked = G.unlockedClues.has(objId);
+    if (!unlocked) return '';
+    return '<div class="insp-clue-strip visible">🕯 ' + clue + '</div>';
+  }
+
+  /* ── OBJECT HANDLERS ─────────────────────────────────────── */
+
+  /* 1. Letter (step 1) */
+  function handleLetter() {
+    const body = `
+      <p class="insp-desc">A folded note lies on the side table. The paper is aged, the ink still clear.</p>
+      <blockquote style="border-left:2px solid rgba(212,167,70,0.3);padding:0.5rem 1rem;margin:0.5rem 0;font-style:italic;color:var(--parchment-dim);font-size:0.92rem;line-height:1.7;">
+        "I have arranged the room as a question. Each object is a word. Only one combination of those words forms the answer.
+        Begin with the man on the wall — he kept his secrets close, but not invisible."
+        <br><br>— A.M.V.
+      </blockquote>
+      ${G.letterRead ? '<p class="insp-feedback ok" style="margin-top:0.8rem;">✓ Letter read.</p>' : ''}
+      <div class="insp-action-area" style="margin-top:1rem;">
+        ${!G.letterRead ? '<button class="insp-btn" id="btnReadLetter">Read the Letter</button>' : ''}
+      </div>
+      ${clueStrip('letter')}
+    `;
+    openInsp('letter', 'Letter from A.M.V.', body);
+    if (!G.letterRead) {
+      setTimeout(() => {
+        const btn = document.getElementById('btnReadLetter');
+        if (btn) btn.onclick = () => {
+          G.letterRead = true;
+          completeStep(1);
+          startTimer();
+          closeInsp();
+          setTimeout(() => handleLetter(), 80);
+        };
+      }, 50);
+    }
+  }
+
+  /* Portrait (steps 2-4) */
+  function handlePortrait() {
+    const step = G.objStep.portrait;
+    let body = '';
+
+    if (step === 0) {
+      body = `
+        <div class="portrait-art">
+          <div class="portrait-figure">🧑‍🎨</div>
+          <div class="portrait-roman">VII</div>
+        </div>
+        <p class="insp-desc" style="margin-top:0.8rem;">A painted man in formal dress. His left hand rests at his side; his right is raised slightly, the ring finger extended toward the lower-right corner of the canvas — where a Roman numeral is faintly painted.</p>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="btnPortrait1">Study the Pose</button>
+        </div>
+        ${clueStrip('portrait')}
+      `;
+      openInsp('portrait', 'The Portrait', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnPortrait1');
+        if (btn) btn.onclick = () => {
+          G.objStep.portrait = 1;
+          completeStep(2);
+          closeInsp();
+          setTimeout(() => handlePortrait(), 80);
+        };
+      }, 50);
+
+    } else if (step === 1) {
+      body = `
+        <div class="portrait-art">
+          <div class="portrait-figure">🧑‍🎨</div>
+          <div class="portrait-roman">VII</div>
+          <div class="portrait-ring show" style="bottom:3.2rem;right:2.2rem;">☞</div>
+        </div>
+        <p class="insp-desc" style="margin-top:0.8rem;">The ring finger is unmistakably directed at the numeral <strong style="color:var(--gold);">VII</strong> in the corner. Not decoration — a deliberate gesture. Whoever sat for this portrait wanted the viewer to remember VII.</p>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="btnPortrait2">Take Note of VII</button>
+        </div>
+        ${clueStrip('portrait')}
+      `;
+      openInsp('portrait', 'The Portrait', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnPortrait2');
+        if (btn) btn.onclick = () => {
+          G.objStep.portrait = 2;
+          completeStep(3);
+          closeInsp();
+          setTimeout(() => handlePortrait(), 80);
+        };
+      }, 50);
+
+    } else if (step === 2) {
+      body = `
+        <div class="portrait-art">
+          <div class="portrait-figure">🧑‍🎨</div>
+          <div class="portrait-roman">VII</div>
+          <div class="portrait-ring show" style="bottom:3.2rem;right:2.2rem;">☞</div>
+        </div>
+        <p class="insp-desc" style="margin-top:0.8rem;">Behind the canvas, tucked into the frame, something slides free — a <strong style="color:var(--gold);">crescent medallion</strong>, cold and tarnished. A key, perhaps. Or a credential.</p>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="btnPortrait3">Take the Medallion</button>
+        </div>
+        ${clueStrip('portrait')}
+      `;
+      openInsp('portrait', 'The Portrait', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnPortrait3');
+        if (btn) btn.onclick = () => {
+          G.objStep.portrait = 3;
+          gainItem('crescent');
+          completeStep(4);
+          showObjSolved('portrait');
+          closeInsp();
+        };
+      }, 50);
+
+    } else {
+      body = `
+        <p class="insp-desc">The painted man gazes outward. You have taken what he was hiding. His ring finger still points to VII.</p>
+        <p class="insp-feedback ok">✓ Crescent medallion recovered.</p>
+        ${clueStrip('portrait')}
+      `;
+      openInsp('portrait', 'The Portrait', body);
+    }
+  }
+
+  /* Clock (steps 5-7) */
+  function handleClock() {
+    if (!G.inventory.has('crescent')) {
+      const body = `
+        <p class="insp-desc">An ornate mantel clock. The hands have stopped at an unknown hour. The clock's face shows Roman numerals I through XII.</p>
+        <p class="insp-feedback err" style="margin-top:0.8rem;">The clock face has a small crescent-shaped indent near the winding mechanism. Something is missing.</p>
+        ${clueStrip('clock')}
+      `;
+      openInsp('clock', 'The Mantel Clock', body);
+      return;
+    }
+
+    const step = G.objStep.clock;
+    if (step === 0) {
+      body_clock_0();
+    } else if (step === 1) {
+      body_clock_1();
+    } else {
+      const body = `
+        <p class="insp-desc">The clock is wound and set. The hands rest at VII. The first digit of the passcode is revealed.</p>
+        <p class="insp-feedback ok">✓ Digit 1 = 7</p>
+        ${clueStrip('clock')}
+      `;
+      openInsp('clock', 'The Mantel Clock', body);
+    }
+
+    function body_clock_0() {
+      const body = `
+        <p class="insp-desc">The crescent medallion fits the indent perfectly. With a click, the clock begins to tick. The face shows Roman numerals on a ring — I through XII. Only one position will set it correctly.</p>
+        <div id="clockFaceWrap" style="display:flex;flex-direction:column;align-items:center;gap:0.6rem;margin:0.6rem 0;">
+          <div class="clock-face" id="clockFace">
+            <div class="clock-center"></div>
+          </div>
+          <p style="font-family:var(--font-mono);font-size:0.65rem;color:var(--parchment-faint);opacity:0.6;letter-spacing:0.08em;">Click the correct numeral.</p>
+        </div>
+        <div class="insp-feedback" id="clockFeedback"></div>
+        ${clueStrip('clock')}
+      `;
+      openInsp('clock', 'The Mantel Clock', body);
+      setTimeout(buildClockFace, 50);
+    }
+
+    function body_clock_1() {
+      const body = `
+        <p class="insp-desc">The clock is set. The hands point to <strong style="color:var(--gold);">VII</strong>.</p>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="btnClockRecord">Record the Hour</button>
+        </div>
+        ${clueStrip('clock')}
+      `;
+      openInsp('clock', 'The Mantel Clock', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnClockRecord');
+        if (btn) btn.onclick = () => {
+          G.objStep.clock = 2;
+          revealDigit(0, 7);
+          completeStep(7);
+          showObjSolved('clock');
+          closeInsp();
+        };
+      }, 50);
+    }
+  }
+
+  function buildClockFace() {
+    const face = document.getElementById('clockFace');
+    if (!face) return;
+    const numerals = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+    const r = 43; // % radius
+    numerals.forEach((n, i) => {
+      const angle = (i / 12) * 360 - 90;
+      const rad = angle * Math.PI / 180;
+      const x = 50 + r * Math.cos(rad);
+      const y = 50 + r * Math.sin(rad);
+      const el = document.createElement('button');
+      el.className = 'clock-numeral';
+      el.style.left = x + '%';
+      el.style.top  = y + '%';
+      el.style.transform = 'translate(-50%,-50%)';
+      el.textContent = n;
+      el.setAttribute('aria-label', 'Select ' + n);
+      el.onclick = () => onClockClick(n, el);
+      face.appendChild(el);
+    });
+
+    // Complete step 5 for inserting medallion
+    if (!G.completedSteps.has(5)) {
+      completeStep(5);
+      G.objStep.clock = 0;
+    }
+  }
+
+  function onClockClick(numeral, el) {
+    const fb = document.getElementById('clockFeedback');
+    document.querySelectorAll('.clock-numeral').forEach(n => n.classList.remove('selected'));
+    el.classList.add('selected');
+    if (numeral === 'VII') {
+      if (!G.completedSteps.has(6)) completeStep(6);
+      G.objStep.clock = 1;
+      persist();
+      if (fb) { fb.textContent = 'The clock hands lock at VII.'; fb.className = 'insp-feedback ok'; }
+      setTimeout(() => {
+        closeInsp();
+        setTimeout(() => handleClock(), 80);
+      }, 800);
+    } else {
+      if (fb) { fb.textContent = 'The mechanism resists. Try again.'; fb.className = 'insp-feedback err'; }
+      el.classList.add('shake');
+      setTimeout(() => el.classList.remove('shake'), 500);
+    }
+  }
+
+  /* Bookshelf (steps 8-10) */
+  function handleBookshelf() {
+    const step = G.objStep.bookshelf;
+    const books = [
+      { color:'#3d1a0a', title:'Rosencrantz' },
+      { color:'#0a2a1a', title:'De Rerum Natura' },
+      { color:'#1a0a2a', title:'The Analects' },
+      { color:'#2a1a0a', title:'Score & Cipher' },
+      { color:'#0a1a2a', title:'Heliodore' },
+      { color:'#2a0a0a', title:'Principia' },
+      { color:'#0a2a2a', title:'Memoirs of IX' },
+    ];
+    // Index 3 = "Score & Cipher" is the special book
+    const SPECIAL = 3;
+
+    let booksHtml = '<div class="shelf-row">';
+    books.forEach((b, i) => {
+      const isPulled = (step >= 1 && i === SPECIAL);
+      booksHtml += `<div class="book ${isPulled?'pulled':''}" id="book-${i}" style="background:${b.color};" title="${b.title}" tabindex="0" role="button" aria-label="Book: ${b.title}">
+        <div class="book-spine">${b.title}</div>
+      </div>`;
+    });
+    booksHtml += '</div>';
+
+    let noteHtml = '';
+    if (step >= 1) {
+      noteHtml = `<div style="background:rgba(14,11,18,0.8);border:1px solid rgba(212,167,70,0.2);border-radius:4px;padding:1rem;margin:0.8rem 0;max-width:320px;margin-left:auto;margin-right:auto;">
+        <p style="font-family:'EB Garamond',serif;font-style:italic;font-size:0.9rem;color:var(--parchment);line-height:1.7;margin-bottom:0.5rem;">Inside the book: a musical score. Three notes are circled in sequence:</p>
+        <p style="text-align:center;font-family:var(--font-display);font-size:1.8rem;color:var(--gold);letter-spacing:0.3em;">G · E · D</p>
+        <p style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);opacity:0.6;text-align:center;margin-top:0.4rem;">Set three pins in this order.</p>
+      </div>`;
+    }
+    let starKeyHtml = '';
+    if (step >= 2) {
+      starKeyHtml = `<p class="insp-feedback ok">✓ Star key recovered from the back page.</p>`;
+    }
+
+    const body = `
+      <p class="insp-desc">A wall of shelved volumes. Most stand upright, spines flush. One leans slightly outward — as if frequently consulted, or as if left that way on purpose.</p>
+      ${booksHtml}
+      ${noteHtml}
+      ${starKeyHtml}
+      <div class="insp-action-area" id="bookshelfActions" style="margin-top:0.5rem;">
+        ${step === 1 ? '<button class="insp-btn" id="btnBookshelfKey">Take the Star Key (hidden in back pages)</button>' : ''}
+      </div>
+      ${clueStrip('bookshelf')}
+    `;
+    openInsp('bookshelf', 'The Bookshelf', body);
+
+    setTimeout(() => {
+      // Bind book clicks
+      books.forEach((b, i) => {
+        const el = document.getElementById('book-' + i);
+        if (!el) return;
+        el.onclick = () => onBookClick(i, SPECIAL);
+        el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onBookClick(i, SPECIAL); } };
+      });
+      const keyBtn = document.getElementById('btnBookshelfKey');
+      if (keyBtn) keyBtn.onclick = () => {
+        G.objStep.bookshelf = 2;
+        gainItem('starKey');
+        completeStep(10);
+        showObjSolved('bookshelf');
+        persist();
+        closeInsp();
+        setTimeout(() => handleBookshelf(), 80);
+      };
+    }, 50);
+  }
+
+  function onBookClick(idx, special) {
+    if (idx !== special) return;
+    if (G.objStep.bookshelf >= 1) return;
+    G.objStep.bookshelf = 1;
+    G.seenScore = true;
+    completeStep(8);
+    completeStep(9);
+    persist();
+    closeInsp();
+    setTimeout(() => handleBookshelf(), 80);
+  }
+
+  /* Desk (steps 11-13) */
+  function handleDesk() {
+    if (!G.inventory.has('starKey')) {
+      const body = `
+        <p class="insp-desc">A writing desk, surface cleared. A brass-lined slot runs along the front edge — shaped as if to receive a specific instrument.</p>
+        <p class="insp-feedback err" style="margin-top:0.8rem;">The slot is star-shaped. Something must fit here precisely.</p>
+        ${clueStrip('desk')}
+      `;
+      openInsp('desk', 'The Writing Desk', body);
+      return;
+    }
+
+    const step = G.objStep.desk;
+    if (step === 0) {
+      const body = `
+        <p class="insp-desc">The star key slots in cleanly. A hidden drawer springs open. Inside: a folded sheet, and a marking in the wood beneath the paper.</p>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="btnDeskOpen">Open the Drawer</button>
+        </div>
+        ${clueStrip('desk')}
+      `;
+      openInsp('desk', 'The Writing Desk', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnDeskOpen');
+        if (btn) btn.onclick = () => {
+          G.objStep.desk = 1;
+          completeStep(11);
+          persist();
+          closeInsp();
+          setTimeout(() => handleDesk(), 80);
+        };
+      }, 50);
+
+    } else if (step === 1) {
+      const body = `
+        <p class="insp-desc">The drawer contains a folded letter, and beneath it, burnt into the wood with a fine instrument, a single numeral:</p>
+        <div style="text-align:center;margin:1rem 0;">
+          <span style="font-family:var(--font-display);font-size:4rem;color:var(--gold);text-shadow:0 0 20px rgba(212,167,70,0.5);">3</span>
+        </div>
+        <p style="font-family:'EB Garamond',serif;font-style:italic;color:var(--parchment-dim);font-size:0.88rem;line-height:1.65;">The folded letter reads: <em>"Third of four. The desk remembers what the drawer forgets."</em></p>
+        <div class="insp-action-area" style="margin-top:0.8rem;">
+          <button class="insp-btn" id="btnDeskRecord">Record the Digit</button>
+        </div>
+        ${clueStrip('desk')}
+      `;
+      openInsp('desk', 'The Writing Desk', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnDeskRecord');
+        if (btn) btn.onclick = () => {
+          G.objStep.desk = 2;
+          completeStep(12);
+          persist();
+          closeInsp();
+          setTimeout(() => handleDesk(), 80);
+        };
+      }, 50);
+
+    } else if (step === 2) {
+      const body = `
+        <p class="insp-desc">The numeral 3 is still visible in the wood. The second digit of the passcode.</p>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="btnDeskConfirm">Confirm Digit 2 = 3</button>
+        </div>
+        ${clueStrip('desk')}
+      `;
+      openInsp('desk', 'The Writing Desk', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnDeskConfirm');
+        if (btn) btn.onclick = () => {
+          G.objStep.desk = 3;
+          revealDigit(1, 3);
+          completeStep(13);
+          showObjSolved('desk');
+          persist();
+          closeInsp();
+        };
+      }, 50);
+
+    } else {
+      const body = `
+        <p class="insp-desc">The drawer is open, star key still slotted. The numeral 3 is burnt into the wood.</p>
+        <p class="insp-feedback ok">✓ Digit 2 = 3</p>
+        ${clueStrip('desk')}
+      `;
+      openInsp('desk', 'The Writing Desk', body);
+    }
+  }
+
+  /* Music box (steps 14-16) */
+  const PIN_NOTES = ['C','D','E','F','G','A','B'];
+  const PIN_SOLUTION = ['G','E','D'];
+
+  function handleMusicbox() {
+    if (!G.seenScore) {
+      const body = `
+        <p class="insp-desc">A lacquered music box on the mantel. The lid is closed. A cylinder with raised pins sits inside a glass aperture. Without knowing the sequence, nothing will play.</p>
+        <p class="insp-feedback err" style="margin-top:0.8rem;">You need to know which notes to set.</p>
+        ${clueStrip('musicbox')}
+      `;
+      openInsp('musicbox', 'The Music Box', body);
+      return;
+    }
+
+    const step = G.objStep.musicbox;
+    const pins = G.cabinetPressed.length > 0 && false ? G.cabinetPressed : (G._musicPins || [null, null, null]);
+    const currentPins = G._musicPins || [null, null, null];
+
+    const pinSlotsHtml = `<div class="pin-slots">
+      ${currentPins.map((p,i) => `<div class="pin-slot ${p?'set':''}" id="pinSlot${i}">${p||'?'}</div>`).join('')}
+    </div>`;
+
+    const pinBtnsHtml = `<div class="pin-row">
+      ${PIN_NOTES.map(n => `<button class="pin-btn ${currentPins.includes(n)?'active':''}" data-note="${n}">${n}</button>`).join('')}
+    </div>`;
+
+    let resultHtml = '';
+    if (step >= 2) {
+      resultHtml = `<p class="insp-feedback ok">✓ G · E · D plays. A map fragment falls from beneath the lid.</p>`;
+    }
+
+    const body = `
+      <div class="musicbox-lid">
+        <p style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);opacity:0.6;letter-spacing:0.1em;text-align:center;margin-bottom:0.5rem;">SET THREE PINS IN ORDER</p>
+        ${pinSlotsHtml}
+        ${pinBtnsHtml}
+        <div class="insp-feedback" id="mbFeedback"></div>
+        <div style="text-align:center;margin-top:0.6rem;">
+          <button class="insp-btn" id="btnMBClear" style="margin-right:0.5rem;font-size:0.62rem;padding:0.3rem 0.8rem;">Clear</button>
+          <button class="insp-btn" id="btnMBPlay" style="font-size:0.62rem;padding:0.3rem 0.8rem;">Play</button>
+        </div>
+        ${resultHtml}
+        <div style="text-align:center;margin-top:0.5rem;font-family:var(--font-mono);font-size:0.55rem;color:var(--gold);opacity:0.5;letter-spacing:0.06em;">Lid: IX</div>
+      </div>
+      ${clueStrip('musicbox')}
+    `;
+    openInsp('musicbox', 'The Music Box', body);
+
+    // Reveal IX hint
+    if (!G.discoveredIX && step === 0) {
+      G.discoveredIX = true; // noted from lid
+    }
+
+    setTimeout(() => {
+      if (!G._musicPins) G._musicPins = [null, null, null];
+      const pins = G._musicPins;
+
+      document.querySelectorAll('.pin-btn').forEach(btn => {
+        btn.onclick = () => {
+          const note = btn.getAttribute('data-note');
+          const nextSlot = pins.findIndex(p => p === null);
+          if (nextSlot === -1) return;
+          pins[nextSlot] = note;
+          closeInsp();
+          setTimeout(() => handleMusicbox(), 50);
+        };
+      });
+      const clearBtn = document.getElementById('btnMBClear');
+      if (clearBtn) clearBtn.onclick = () => {
+        G._musicPins = [null, null, null];
+        closeInsp();
+        setTimeout(() => handleMusicbox(), 50);
+      };
+      const playBtn = document.getElementById('btnMBPlay');
+      if (playBtn) playBtn.onclick = () => {
+        const current = G._musicPins || [null, null, null];
+        const fb = document.getElementById('mbFeedback');
+        if (current.includes(null)) {
+          if (fb) { fb.textContent = 'Set all three pins first.'; fb.className = 'insp-feedback err'; }
+          return;
+        }
+        const correct = current.every((p, i) => p === PIN_SOLUTION[i]);
+        if (correct) {
+          if (!G.completedSteps.has(14)) completeStep(14);
+          if (!G.completedSteps.has(15)) completeStep(15);
+          if (!G.completedSteps.has(16)) completeStep(16);
+          G.objStep.musicbox = 2;
+          gainItem('mapFrag');
+          G.discoveredIX = true;
+          showObjSolved('musicbox');
+          persist();
+          closeInsp();
+          setTimeout(() => handleMusicbox(), 80);
+        } else {
+          if (!G.completedSteps.has(14)) completeStep(14);
+          if (fb) { fb.textContent = 'The melody is wrong. Listen again.'; fb.className = 'insp-feedback err'; }
+          G._musicPins = [null, null, null];
+          setTimeout(() => { closeInsp(); setTimeout(() => handleMusicbox(), 80); }, 700);
+        }
+      };
+    }, 50);
+  }
+
+  /* Candle (steps 17-18) */
+  function handleCandle() {
+    const step = G.objStep.candle;
+    if (step >= 2 || G.inventory.has('candle')) {
+      const body = `
+        <p class="insp-desc">The candle is lit. A warm flame. You carry it with you.</p>
+        <p class="insp-feedback ok">✓ Lit candle in inventory.</p>
+        ${clueStrip('candle')}
+      `;
+      openInsp('candle', 'The Candle', body);
+      return;
+    }
+
+    if (step === 0) {
+      const body = `
+        <div class="candle-vis">
+          <div class="candle-wick">𝄩</div>
+          <div class="candle-body">🕯️</div>
+        </div>
+        <p class="insp-desc">An unlit candle on a brass holder. The wick is intact. A box of matches sits beneath it.</p>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="btnLightCandle">Strike a Match</button>
+        </div>
+        ${clueStrip('candle')}
+      `;
+      openInsp('candle', 'The Candle', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnLightCandle');
+        if (btn) btn.onclick = () => {
+          G.objStep.candle = 1;
+          completeStep(17);
+          persist();
+          closeInsp();
+          setTimeout(() => handleCandle(), 80);
+        };
+      }, 50);
+
+    } else if (step === 1) {
+      const body = `
+        <div class="candle-vis">
+          <div class="candle-flame lit">🔥</div>
+          <div class="candle-body">🕯️</div>
+        </div>
+        <p class="insp-desc">The flame catches. The room shifts. Shadows that were static now move. Take the candle — you'll need it.</p>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="btnTakeCandle">Take the Lit Candle</button>
+        </div>
+        ${clueStrip('candle')}
+      `;
+      openInsp('candle', 'The Candle', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnTakeCandle');
+        if (btn) btn.onclick = () => {
+          G.objStep.candle = 2;
+          gainItem('candle');
+          completeStep(18);
+          showObjSolved('candle');
+          document.getElementById('candleIcon').textContent = '🔥';
+          persist();
+          closeInsp();
+        };
+      }, 50);
+    }
+  }
+
+  /* Rug (steps 19-21) */
+  function handleRug() {
+    const hasCandle = G.inventory.has('candle');
+    const hasFrag   = G.inventory.has('mapFrag');
+
+    if (!hasCandle || !hasFrag) {
+      let missing = [];
+      if (!hasCandle) missing.push('a light source');
+      if (!hasFrag)   missing.push('the map fragment');
+      const body = `
+        <p class="insp-desc">A heavy Persian rug. Something about the pattern suggests the weave was not purely decorative.</p>
+        <p class="insp-feedback err" style="margin-top:0.8rem;">You need ${missing.join(' and ')} to examine this properly.</p>
+        ${clueStrip('rug')}
+      `;
+      openInsp('rug', 'The Rug', body);
+      return;
+    }
+
+    const step = G.objStep.rug;
+    if (step === 0) {
+      const body = `
+        <p class="insp-desc">You hold the map fragment over the rug and bring the candle close. The heat reveals a hidden numeral in the weave — something treated with a heat-reactive ink.</p>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="btnHeatRug">Pass the Candle Over the Rug</button>
+        </div>
+        ${clueStrip('rug')}
+      `;
+      openInsp('rug', 'The Rug', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnHeatRug');
+        if (btn) btn.onclick = () => {
+          G.objStep.rug = 1;
+          completeStep(19);
+          persist();
+          closeInsp();
+          setTimeout(() => handleRug(), 80);
+        };
+      }, 50);
+
+    } else if (step === 1) {
+      const body = `
+        <div class="rug-vis">
+          <div class="rug-pattern">✦ ✧ ✦ ✧ ✦</div>
+          <div class="rug-burn show"></div>
+          <div class="rug-reveal show">9</div>
+        </div>
+        <p class="insp-desc" style="margin-top:0.8rem;">The heat-sensitive ink blooms. The numeral <strong style="color:var(--gold);">9</strong> appears clearly at the center of the rug.</p>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="btnRecordRug">Record the Digit</button>
+        </div>
+        ${clueStrip('rug')}
+      `;
+      openInsp('rug', 'The Rug', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnRecordRug');
+        if (btn) btn.onclick = () => {
+          G.objStep.rug = 2;
+          completeStep(20);
+          persist();
+          closeInsp();
+          setTimeout(() => handleRug(), 80);
+        };
+      }, 50);
+
+    } else if (step === 2) {
+      const body = `
+        <p class="insp-desc">The numeral 9 is still visible in the rug weave.</p>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="btnConfirmRug">Confirm Digit 3 = 9</button>
+        </div>
+        ${clueStrip('rug')}
+      `;
+      openInsp('rug', 'The Rug', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnConfirmRug');
+        if (btn) btn.onclick = () => {
+          G.objStep.rug = 3;
+          revealDigit(2, 9);
+          completeStep(21);
+          G.discoveredIX = true;
+          showObjSolved('rug');
+          persist();
+          closeInsp();
+        };
+      }, 50);
+
+    } else {
+      const body = `
+        <p class="insp-desc">The numeral 9 is preserved in the rug's heat-reactive weave.</p>
+        <p class="insp-feedback ok">✓ Digit 3 = 9</p>
+        ${clueStrip('rug')}
+      `;
+      openInsp('rug', 'The Rug', body);
+    }
+  }
+
+  /* Map (steps 22-24) */
+  function handleMap() {
+    if (!G.inventory.has('candle')) {
+      const body = `
+        <p class="insp-desc">A large map pinned to the wall. The paper is aged, the routes faded. Certain areas are marked with symbols, but in this dim room they're difficult to read.</p>
+        <p class="insp-feedback err" style="margin-top:0.8rem;">You need more light to read the markings.</p>
+        ${clueStrip('map')}
+      `;
+      openInsp('map', 'The Wall Map', body);
+      return;
+    }
+
+    const step = G.objStep.map;
+    if (step === 0) {
+      const body = `
+        <p class="insp-desc">By candlelight, the map reveals hidden annotations. Four symbols are marked at intervals: 🌙 · ⭐ · ♩ · IX — each corresponding to a location in the room. They converge on a single point: the cabinet.</p>
+        <div class="map-vis">
+          <div class="map-marking">
+            Route A: <span class="map-highlight">🌙</span> — northern alcove<br>
+            Route B: <span class="map-highlight">⭐</span> — eastern shelf<br>
+            Route C: <span class="map-highlight">♩</span> — western mantel<br>
+            Route D: <span class="map-highlight">IX</span> — woven into the floor<br>
+            <br>
+            All routes lead: <span class="map-highlight" style="font-size:0.8rem;">the cabinet</span>
+          </div>
+          <div class="map-symbols map-revealed show">🌙 &nbsp; ⭐ &nbsp; ♩ &nbsp; IX</div>
+        </div>
+        <div class="insp-action-area" style="margin-top:0.8rem;">
+          <button class="insp-btn" id="btnMapStudy">Study the Symbols</button>
+        </div>
+        ${clueStrip('map')}
+      `;
+      openInsp('map', 'The Wall Map', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnMapStudy');
+        if (btn) btn.onclick = () => {
+          G.objStep.map = 1;
+          completeStep(22);
+          persist();
+          closeInsp();
+          setTimeout(() => handleMap(), 80);
+        };
+      }, 50);
+
+    } else if (step === 1) {
+      const body = `
+        <p class="insp-desc">The four symbols are clear. Each was placed in this room by the previous occupant as a sequence to be pressed on the cabinet.</p>
+        <div class="map-vis">
+          <div class="map-marking">
+            🌙 → ⭐ → ♩ → IX<br><br>
+            <span style="color:rgba(212,167,70,0.5);font-size:0.78rem;">Press them at the cabinet in this order.</span>
+          </div>
+        </div>
+        <div class="insp-action-area" style="margin-top:0.8rem;">
+          <button class="insp-btn" id="btnMapNote">Note the Sequence</button>
+        </div>
+        ${clueStrip('map')}
+      `;
+      openInsp('map', 'The Wall Map', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnMapNote');
+        if (btn) btn.onclick = () => {
+          G.objStep.map = 2;
+          completeStep(23);
+          persist();
+          closeInsp();
+          setTimeout(() => handleMap(), 80);
+        };
+      }, 50);
+
+    } else if (step === 2) {
+      const body = `
+        <p class="insp-desc">The symbols are committed. A small Roman numeral II is inked beside the cabinet marker — a reference number, or a reminder.</p>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="btnMapConfirm">Mark It in Memory</button>
+        </div>
+        ${clueStrip('map')}
+      `;
+      openInsp('map', 'The Wall Map', body);
+      setTimeout(() => {
+        const btn = document.getElementById('btnMapConfirm');
+        if (btn) btn.onclick = () => {
+          G.objStep.map = 3;
+          completeStep(24);
+          showObjSolved('map');
+          persist();
+          closeInsp();
+        };
+      }, 50);
+
+    } else {
+      const body = `
+        <p class="insp-desc">The map shows the four symbols and their convergence at the cabinet. The sequence: 🌙 → ⭐ → ♩ → IX.</p>
+        <p class="insp-feedback ok">✓ Sequence noted.</p>
+        ${clueStrip('map')}
+      `;
+      openInsp('map', 'The Wall Map', body);
+    }
+  }
+
+  /* Cabinet (steps 25-29) */
+  const CAB_SYMBOLS = ['🌙','⭐','♩','IX'];
+  const CAB_SOLUTION = ['🌙','⭐','♩','IX'];
+
+  function handleCabinet() {
+    const hasAll = G.inventory.has('crescent') && G.inventory.has('starKey') && G.seenScore && G.discoveredIX;
+    const step = G.objStep.cabinet;
+
+    if (step >= 5) {
+      const body = `
+        <p class="insp-desc">The cabinet is open. The fourth digit is engraved inside: 2.</p>
+        <p class="insp-feedback ok">✓ Digit 4 = 2</p>
+        ${clueStrip('cabinet')}
+      `;
+      openInsp('cabinet', 'The Cabinet', body);
+      return;
+    }
+
+    const pressed = G.cabinetPressed || [];
+
+    const symBtns = CAB_SYMBOLS.map((s, i) => {
+      const isAvail = hasAll;
+      const wasPressed = pressed.includes(s);
+      const isNext = isAvail && !wasPressed && CAB_SOLUTION.indexOf(s) === pressed.length;
+      return `<button class="cab-sym-btn ${wasPressed?'pressed':''}" id="cab-sym-${i}"
+        ${!isAvail ? 'disabled' : ''}
+        aria-label="Press symbol ${s}"
+        aria-pressed="${wasPressed}">${s}</button>`;
+    }).join('');
+
+    let lockMsg = '';
+    if (!hasAll) {
+      const missing = [];
+      if (!G.inventory.has('crescent')) missing.push('crescent medallion');
+      if (!G.inventory.has('starKey'))  missing.push('star key');
+      if (!G.seenScore)                 missing.push('the musical score');
+      if (!G.discoveredIX)              missing.push('knowledge of IX');
+      lockMsg = `<p class="insp-feedback err" style="margin-top:0.5rem;">Still missing: ${missing.join(', ')}.</p>`;
+    }
+
+    let resultHtml = '';
+    if (step >= 5) {
+      resultHtml = `<div style="text-align:center;margin:1rem 0;">
+        <span style="font-family:var(--font-display);font-size:4rem;color:var(--gold);text-shadow:0 0 20px rgba(212,167,70,0.5);">2</span>
+      </div>
+      <p style="font-family:var(--font-mono);font-size:0.7rem;color:var(--parchment-faint);text-align:center;">The fourth digit of the passcode.</p>`;
+    }
+
+    const body = `
+      <p class="insp-desc">An iron cabinet with no visible keyhole. Instead, four symbol-etched panels are set into the door in a row. Each can be depressed. The sequence matters.</p>
+      ${lockMsg}
+      <div class="cabinet-vis" style="margin-top:0.8rem;">
+        <div class="cabinet-symbols">${symBtns}</div>
+        <div class="insp-feedback" id="cabFeedback">
+          ${pressed.length > 0 ? 'Pressed: ' + pressed.join(' → ') : 'No symbols pressed yet.'}
+        </div>
+      </div>
+      ${resultHtml}
+      ${clueStrip('cabinet')}
+    `;
+    openInsp('cabinet', 'The Cabinet', body);
+
+    setTimeout(() => {
+      CAB_SYMBOLS.forEach((s, i) => {
+        const btn = document.getElementById('cab-sym-' + i);
+        if (!btn || btn.disabled) return;
+        btn.onclick = () => onCabinetPress(s);
+      });
+    }, 50);
+  }
+
+  function onCabinetPress(sym) {
+    const pressed = G.cabinetPressed;
+    const expected = CAB_SOLUTION[pressed.length];
+    if (sym === expected) {
+      pressed.push(sym);
+      const stepNum = 24 + pressed.length; // steps 25-28
+      if (!G.completedSteps.has(stepNum)) completeStep(stepNum);
+      if (pressed.length === 4) {
+        // All pressed correctly
+        G.objStep.cabinet = 5;
+        completeStep(29);
+        revealDigit(3, 2);
+        showObjSolved('cabinet');
+        persist();
+        closeInsp();
+        setTimeout(() => handleCabinet(), 80);
+      } else {
+        persist();
+        closeInsp();
+        setTimeout(() => handleCabinet(), 80);
+      }
+    } else {
+      G.cabinetPressed = [];
+      persist();
+      const fb = document.getElementById('cabFeedback');
+      if (fb) { fb.textContent = 'Wrong sequence. The cabinet resets.'; fb.className = 'insp-feedback err'; }
+      closeInsp();
+      setTimeout(() => handleCabinet(), 80);
+    }
+  }
+
+  /* Door (step 30) */
+  function handleDoor() {
+    const body = `
+      <p class="insp-desc">The door at the end of the chamber. A brass dial with four slots, each accepting a single digit. The lock has waited eleven years for these four numbers.</p>
+      <div class="door-vis">
+        <div class="passcode-inputs">
+          <input type="number" class="passcode-input" id="pc1" min="0" max="9" maxlength="1" aria-label="Digit 1" placeholder="·">
+          <input type="number" class="passcode-input" id="pc2" min="0" max="9" maxlength="1" aria-label="Digit 2" placeholder="·">
+          <input type="number" class="passcode-input" id="pc3" min="0" max="9" maxlength="1" aria-label="Digit 3" placeholder="·">
+          <input type="number" class="passcode-input" id="pc4" min="0" max="9" maxlength="1" aria-label="Digit 4" placeholder="·">
+        </div>
+        <button class="insp-btn" id="btnDoorUnlock" style="padding:0.7rem 2rem;font-size:0.8rem;">Turn the Dial</button>
+        <div class="insp-feedback" id="doorFeedback"></div>
+      </div>
+      ${clueStrip('door')}
+    `;
+    openInsp('door', 'The Locked Door', body);
+
+    setTimeout(() => {
+      // Pre-fill from revealed digits
+      G.digits.forEach((d, i) => {
+        if (d !== null) {
+          const inp = document.getElementById('pc' + (i+1));
+          if (inp) inp.value = d;
+        }
+      });
+
+      // Single-char input enforcement
+      ['pc1','pc2','pc3','pc4'].forEach((id, i) => {
+        const inp = document.getElementById(id);
+        if (!inp) return;
+        inp.addEventListener('input', () => {
+          const val = inp.value.replace(/\D/g,'');
+          inp.value = val.slice(-1);
+          if (inp.value && i < 3) {
+            const next = document.getElementById('pc' + (i+2));
+            if (next) next.focus();
+          }
+        });
+      });
+
+      const btn = document.getElementById('btnDoorUnlock');
+      if (btn) btn.onclick = () => {
+        const entered = ['pc1','pc2','pc3','pc4'].map(id => {
+          const el = document.getElementById(id);
+          return el ? parseInt(el.value, 10) : NaN;
+        });
+        const correct = entered.every((d, i) => d === PASSCODE[i]);
+        const fb = document.getElementById('doorFeedback');
+        if (correct) {
+          completeStep(30);
+          G.objStep.door = 1;
+          persist();
+          closeInsp();
+          setTimeout(triggerCompletion, 300);
+        } else {
+          if (fb) { fb.textContent = 'The dial doesn\'t turn. Check your digits.'; fb.className = 'insp-feedback err'; }
+          document.querySelector('.passcode-inputs').classList.add('shake');
+          setTimeout(() => document.querySelector('.passcode-inputs').classList.remove('shake'), 500);
+        }
+      };
+    }, 50);
+  }
+
+  /* ── Completion ───────────────────────────────────────────── */
+  function triggerCompletion() {
+    if (G.completed) return;
+    G.completed = true;
+    stopTimer();
+    const score = Math.max(0, 10000 - Math.floor(G.timerSecs / 8) - G.clueCount * 500);
+    document.getElementById('statTime').textContent  = fmtTime(G.timerSecs);
+    document.getElementById('statClues').textContent = G.clueCount;
+    document.getElementById('statScore').textContent = score.toLocaleString();
+    document.getElementById('completionPanel').classList.add('open');
+    window._ihSubmitLeaderboard && window._ihSubmitLeaderboard(score, G.timerSecs, G.clueCount);
+    persist();
+  }
+
+  /* ── Clue system ──────────────────────────────────────────── */
+  window._ihSetClueCredits = function(n) {
+    G.clueCredits = n;
+    document.getElementById('clueCreditCount').textContent = n;
+  };
+
+  window._ihShowClueInline = function(objId) {
+    G.unlockedClues.add(objId);
+    persist();
+  };
+
+  window._ihIsClueUnlocked = function(objId) {
+    return G.unlockedClues.has(objId);
+  };
+
+  function openClueModal() {
+    if (G.clueCredits <= 0) {
+      document.getElementById('noCreditsModal').classList.add('open');
+      return;
+    }
+    const focused = currentObjId || guessCurrentObj();
+    document.getElementById('clueCreditCount').textContent = G.clueCredits;
+    document.getElementById('clueModalSub').textContent = focused
+      ? 'Clue for: ' + focused
+      : 'Inspecting an object first may give a more targeted clue.';
+    document.getElementById('clueModal').classList.add('open');
+    document.getElementById('clueModal').setAttribute('data-obj', focused || '');
+  }
+
+  function guessCurrentObj() {
+    // Find the object with the most recent incomplete step
+    const order = ['letter','portrait','clock','bookshelf','desk','musicbox','candle','rug','map','cabinet','door'];
+    for (const id of order) {
+      if (!G.completedSteps.has(getMaxStepForObj(id))) return id;
+    }
+    return null;
+  }
+
+  function getMaxStepForObj(id) {
+    const map = { letter:1, portrait:4, clock:7, bookshelf:10, desk:13, musicbox:16, candle:18, rug:21, map:24, cabinet:29, door:30 };
+    return map[id] || 1;
+  }
+
+  document.getElementById('clueBtn').onclick = openClueModal;
+
+  document.getElementById('clueModalClose').onclick =
+  document.getElementById('clueModalCancel').onclick = () => {
+    document.getElementById('clueModal').classList.remove('open');
+  };
+
+  document.getElementById('noCreditsClose').onclick =
+  document.getElementById('noCreditsCancel').onclick = () => {
+    document.getElementById('noCreditsModal').classList.remove('open');
+  };
+
+  document.getElementById('clueModalConfirm').onclick = async () => {
+    const objId = document.getElementById('clueModal').getAttribute('data-obj') || guessCurrentObj() || 'letter';
+    const ok = await (window._ihUseClue ? window._ihUseClue() : Promise.resolve(false));
+    if (ok || true) { // allow even without auth (offline play)
+      if (window._ihUseClue) {
+        const spent = await window._ihUseClue().catch(() => false);
+        if (!spent && G.clueCredits <= 0) {
+          document.getElementById('clueModal').classList.remove('open');
+          document.getElementById('noCreditsModal').classList.add('open');
+          return;
+        }
+      }
+      G.clueCount++;
+      G.clueCredits = Math.max(0, G.clueCredits - 1);
+      G.unlockedClues.add(objId);
+      document.getElementById('clueModal').classList.remove('open');
+      persist();
+      // Re-open inspection with clue now visible
+      if (currentObjId === objId) {
+        closeInsp();
+        setTimeout(() => dispatchObj(objId), 80);
+      }
+    }
+  };
+
+  /* ── Persist & Restore ────────────────────────────────────── */
+  function serializeState() {
+    return {
+      letterRead:     G.letterRead,
+      objStep:        G.objStep,
+      inventory:      [...G.inventory],
+      seenScore:      G.seenScore,
+      discoveredIX:   G.discoveredIX,
+      cabinetPressed: G.cabinetPressed,
+      digits:         G.digits,
+      completedSteps: [...G.completedSteps],
+      clueCount:      G.clueCount,
+      unlockedClues:  [...G.unlockedClues],
+      _musicPins:     G._musicPins || [null,null,null],
+      timerSecs:      G.timerSecs,
+      completed:      G.completed,
+      // account.html compatibility
+      currentSlide:   G.completedSteps.size,
+      totalSlides:    TOTAL_STEPS,
+      solvedSlides:   [...G.completedSteps],
+      slideSolved:    [...G.completedSteps],
+      elapsedSeconds: G.timerSecs,
+      cluesUsed:      G.clueCount,
+      bestScore:      G.completed ? Math.max(0, 10000 - Math.floor(G.timerSecs/8) - G.clueCount*500) : null,
+    };
+  }
+
+  function persist() {
+    const data = serializeState();
+    localStorage.setItem(LS_KEY, JSON.stringify(data));
+    window._ihSave && window._ihSave(data);
+  }
+
+  function applyRestore(data) {
+    if (!data || data.restarted) return;
+    G.letterRead     = data.letterRead ?? false;
+    G.objStep        = Object.assign({ portrait:0,clock:0,bookshelf:0,desk:0,musicbox:0,candle:0,rug:0,map:0,cabinet:0,door:0 }, data.objStep || {});
+    G.inventory      = new Set(data.inventory || []);
+    G.seenScore      = data.seenScore ?? false;
+    G.discoveredIX   = data.discoveredIX ?? false;
+    G.cabinetPressed = data.cabinetPressed || [];
+    G.digits         = data.digits || [null,null,null,null];
+    G.completedSteps = new Set(data.completedSteps || []);
+    G.clueCount      = data.clueCount || 0;
+    G.unlockedClues  = new Set(data.unlockedClues || []);
+    G._musicPins     = data._musicPins || null;
+    G.timerSecs      = data.timerSecs || 0;
+    G.completed      = data.completed ?? false;
+
+    // Re-apply UI state
+    document.getElementById('timerDisplay').textContent = fmtTime(G.timerSecs);
+    updateProgress();
+
+    // Inventory UI
+    G.inventory.forEach(id => {
+      const el = document.getElementById('inv-' + id);
+      if (el) el.classList.add('held');
+    });
+
+    // Candle icon
+    if (G.inventory.has('candle')) {
+      document.getElementById('candleIcon').textContent = '🔥';
+    }
+
+    // Digits UI
+    G.digits.forEach((d, i) => {
+      if (d !== null) {
+        const slot = document.getElementById('dv' + (i+1));
+        slot.setAttribute('data-digit', d);
+        slot.classList.add('revealed');
+      }
+    });
+
+    // Door wrap
+    if (G.digits.every(d => d !== null)) {
+      document.getElementById('doorWrap').style.display = 'block';
+    }
+
+    // Solved objects
+    const objMaxSteps = { portrait:4, clock:7, bookshelf:10, desk:13, musicbox:16, candle:18, rug:21, map:24, cabinet:29, door:30 };
+    Object.entries(objMaxSteps).forEach(([id, maxStep]) => {
+      if (G.completedSteps.has(maxStep)) showObjSolved(id);
+    });
+
+    // If was already in game (letter read), skip overlay
+    if (G.letterRead) {
+      document.getElementById('letterOverlay').classList.add('hidden');
+      document.getElementById('huntWrap').style.display = 'flex';
+      document.getElementById('bottomHud').style.display = 'flex';
+      if (!G.completed) startTimer();
+    }
+
+    if (G.completed) {
+      triggerCompletion();
+    }
+  }
+
+  window._ihApplyRestore = applyRestore;
+
+  /* ── Enter chamber ────────────────────────────────────────── */
+  document.getElementById('btnEnterChamber').onclick = () => {
+    document.getElementById('letterOverlay').classList.add('hidden');
+    document.getElementById('huntWrap').style.display = 'flex';
+    document.getElementById('bottomHud').style.display = 'flex';
+  };
+
+  /* ── Object dispatch ──────────────────────────────────────── */
+  function dispatchObj(id) {
+    switch (id) {
+      case 'letter':    handleLetter();    break;
+      case 'portrait':  handlePortrait();  break;
+      case 'clock':     handleClock();     break;
+      case 'bookshelf': handleBookshelf(); break;
+      case 'desk':      handleDesk();      break;
+      case 'musicbox':  handleMusicbox();  break;
+      case 'candle':    handleCandle();    break;
+      case 'rug':       handleRug();       break;
+      case 'map':       handleMap();       break;
+      case 'cabinet':   handleCabinet();   break;
+      case 'door':      handleDoor();      break;
+    }
+  }
+
+  // Bind room object clicks
+  ['letter','portrait','clock','bookshelf','desk','musicbox','candle','rug','map','cabinet'].forEach(id => {
+    const el = document.getElementById('obj-' + id);
+    if (el) {
+      el.onclick = () => dispatchObj(id);
+      el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dispatchObj(id); } };
+    }
+  });
+
+  // Door
+  const doorEl = document.getElementById('obj-door');
+  if (doorEl) {
+    doorEl.onclick = () => handleDoor();
+    doorEl.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDoor(); } };
+  }
+
+  // Keyboard close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeInsp();
+      document.getElementById('clueModal').classList.remove('open');
+      document.getElementById('noCreditsModal').classList.remove('open');
+    }
+  });
+
+  /* ── Boot ─────────────────────────────────────────────────── */
+  (function boot() {
+    // Try localStorage first
+    try {
+      const saved = localStorage.getItem(LS_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (!data.restarted) {
+          applyRestore(data);
+        }
+      }
+    } catch(_) {}
+
+    // Firebase restore comes via _ihApplyRestore after auth resolves
+    if (window._ihPendingRestore) {
+      applyRestore(window._ihPendingRestore);
+      window._ihPendingRestore = null;
+    }
+
+    updateProgress();
+  })();
+
+})();
+</script>
+
+</body>
+</html>
