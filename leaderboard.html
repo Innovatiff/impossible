@@ -253,14 +253,45 @@
       ].map(e => ({ ...e, score: Math.max(0, 10000 - Math.floor(e.time / 8) - e.cluesUsed * 500), seeded: true })),
 
       'hunt-3': [
-        { name: 'V. Ashworth',    time: 3841, cluesUsed: 0 }, // 64:01 — first blood, no clues
-        { name: 'T. Lindqvist',   time: 4112, cluesUsed: 0 }, // 68:32
-        { name: 'M. Castellano',  time: 4389, cluesUsed: 1 }, // 73:09
-        { name: 'R. Oyelaran',    time: 4714, cluesUsed: 0 }, // 78:34
-        { name: 'A. Bergstrom',   time: 5023, cluesUsed: 1 }, // 83:43
-        { name: 'S. Nakamura',    time: 5388, cluesUsed: 2 }, // 89:48
-        { name: 'F. Dubois',      time: 5905, cluesUsed: 1 }, // 98:25
-        { name: 'E. Mokoena',     time: 6241, cluesUsed: 3 }, // 104:01
+        { name: 'V. Ashworth',     time: 3841, cluesUsed: 0 }, // 64:01 — first blood, no clues
+        { name: 'T. Lindqvist',    time: 4112, cluesUsed: 0 }, // 68:32
+        { name: 'M. Castellano',   time: 4389, cluesUsed: 1 }, // 73:09
+        { name: 'R. Oyelaran',     time: 4714, cluesUsed: 0 }, // 78:34
+        { name: 'A. Bergstrom',    time: 5023, cluesUsed: 1 }, // 83:43
+        { name: 'S. Nakamura',     time: 5388, cluesUsed: 2 }, // 89:48
+        { name: 'F. Dubois',       time: 5905, cluesUsed: 1 }, // 98:25
+        { name: 'E. Mokoena',      time: 6241, cluesUsed: 3 }, // 104:01
+        { name: 'H. Volkov',       time: 3977, cluesUsed: 0 }, // 66:17
+        { name: 'C. Albright',     time: 4203, cluesUsed: 0 }, // 70:03
+        { name: 'N. Petrova',      time: 4456, cluesUsed: 0 }, // 74:16
+        { name: 'D. Whitlock',     time: 4538, cluesUsed: 1 }, // 75:38
+        { name: 'L. Marchetti',    time: 4602, cluesUsed: 0 }, // 76:42
+        { name: 'P. Okonkwo',      time: 4790, cluesUsed: 1 }, // 79:50
+        { name: 'G. Sørensen',     time: 4865, cluesUsed: 0 }, // 81:05
+        { name: 'I. Vukovic',      time: 4951, cluesUsed: 2 }, // 82:31
+        { name: 'B. Hargreaves',   time: 5097, cluesUsed: 0 }, // 84:57
+        { name: 'K. Adeyemi',      time: 5168, cluesUsed: 1 }, // 86:08
+        { name: 'O. Lindgren',     time: 5240, cluesUsed: 0 }, // 87:20
+        { name: 'W. Pemberton',    time: 5319, cluesUsed: 2 }, // 88:39
+        { name: 'J. Moreau',       time: 5471, cluesUsed: 1 }, // 91:11
+        { name: 'Z. Khoury',       time: 5544, cluesUsed: 0 }, // 92:24
+        { name: 'Y. Sokolova',     time: 5630, cluesUsed: 2 }, // 93:50
+        { name: 'C. Fairbanks',    time: 5718, cluesUsed: 1 }, // 95:18
+        { name: 'M. Esposito',     time: 5803, cluesUsed: 3 }, // 96:43
+        { name: 'A. Nwosu',        time: 5990, cluesUsed: 0 }, // 99:50
+        { name: 'T. Bjornsson',    time: 6078, cluesUsed: 2 }, // 101:18
+        { name: 'R. Sinclair',     time: 6155, cluesUsed: 1 }, // 102:35
+        { name: 'E. Kovac',        time: 6330, cluesUsed: 2 }, // 105:30
+        { name: 'D. Achterberg',   time: 6417, cluesUsed: 0 }, // 106:57
+        { name: 'S. Mbeki',        time: 6502, cluesUsed: 3 }, // 108:22
+        { name: 'F. Lombardi',     time: 6588, cluesUsed: 1 }, // 109:48
+        { name: 'L. Haugen',       time: 6671, cluesUsed: 2 }, // 111:11
+        { name: 'N. Dragomir',     time: 6754, cluesUsed: 0 }, // 112:34
+        { name: 'P. Castellanos',  time: 6840, cluesUsed: 4 }, // 114:00
+        { name: 'A. Tremblay',     time: 6925, cluesUsed: 1 }, // 115:25
+        { name: 'V. Rasmussen',    time: 7011, cluesUsed: 2 }, // 116:51
+        { name: 'O. Babatunde',    time: 7098, cluesUsed: 3 }, // 118:18
+        { name: 'C. Devereux',     time: 7184, cluesUsed: 1 }, // 119:44
       ].map(e => ({ ...e, score: Math.max(0, 10000 - Math.floor(e.time / 10) - e.cluesUsed * 600), seeded: true })),
     };
 
@@ -280,9 +311,20 @@
     let userLibrary = {};
 
     async function seed(huntId) {
+      const seeds = SEEDS[huntId] || [];
+      if (!seeds.length) return;
+
+      // Fetch existing entries and collect the names of already-seeded rows so
+      // we can add any missing seeds without duplicating ones already present.
       const snap = await getDocs(collection(db, 'leaderboard', huntId, 'entries'));
-      if (!snap.empty) return;
-      for (const e of (SEEDS[huntId] || [])) {
+      const existingSeedNames = new Set();
+      snap.forEach(d => {
+        const data = d.data();
+        if (data.seeded) existingSeedNames.add(data.name);
+      });
+
+      for (const e of seeds) {
+        if (existingSeedNames.has(e.name)) continue;
         await addDoc(collection(db, 'leaderboard', huntId, 'entries'), {
           ...e, completedAt: serverTimestamp(), uid: null,
         });
