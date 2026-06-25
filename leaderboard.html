@@ -358,18 +358,22 @@
 
       let yourRank = null;
       tbody.innerHTML = entries.map((e, i) => {
-        const rank    = i + 1;
-        const isYou   = currentUser && e.uid === currentUser.uid;
+        const rank     = i + 1;
+        const isYou    = currentUser && e.uid === currentUser.uid;
         if (isYou) yourRank = rank;
-        const topCls  = rank <= 3 ? ' top' : '';
-        const youCls  = isYou ? ' is-you' : '';
-        const youTag  = isYou ? '<span class="you-tag">· you</span>' : '';
-        const medal   = rank === 1 ? '🥇 ' : rank === 2 ? '🥈 ' : rank === 3 ? '🥉 ' : '';
+        const topCls   = rank <= 3 ? ' top' : '';
+        const youCls   = isYou ? ' is-you' : '';
+        const youTag   = isYou ? '<span class="you-tag">· you</span>' : '';
+        const medal    = rank === 1 ? '🥇 ' : rank === 2 ? '🥈 ' : rank === 3 ? '🥉 ' : '';
+        // Support both field-name schemas (old: displayName/secs/clues, new: name/time/cluesUsed)
+        const solverName  = e.name || e.displayName || 'Anonymous';
+        const solverTime  = e.time  != null ? e.time  : e.secs;
+        const solverClues = e.cluesUsed != null ? e.cluesUsed : e.clues;
         return `<tr class="${youCls}">
           <td class="td-rank${topCls}">${medal}#${rank}</td>
-          <td class="td-name">${e.name}${youTag}</td>
-          <td class="td-time">${fmt(e.time)}</td>
-          <td class="td-clues">${e.cluesUsed}</td>
+          <td class="td-name">${solverName}${youTag}</td>
+          <td class="td-time">${solverTime != null ? fmt(solverTime) : '—'}</td>
+          <td class="td-clues">${solverClues != null ? solverClues : '—'}</td>
           <td class="td-score">${e.score.toLocaleString()}</td>
         </tr>`;
       }).join('');

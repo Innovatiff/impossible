@@ -2213,7 +2213,14 @@
   }
 
   async function submitLeaderboard(uid, displayName, score, secs, clues) {
-    const entry = { uid, displayName: displayName || 'Anonymous', score, secs, clues, ts: Date.now() };
+    const entry = {
+      uid,
+      name:        displayName || 'Anonymous',
+      score,
+      time:        secs,
+      cluesUsed:   clues,
+      completedAt: serverTimestamp(),
+    };
     await setDoc(doc(db, 'leaderboard', HUNT_ID, 'entries', uid), entry, { merge: true });
   }
 
