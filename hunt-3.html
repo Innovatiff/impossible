@@ -1511,6 +1511,165 @@
     .clock-confirm-input:focus { outline:none; border-color:var(--gold); box-shadow:0 0 10px rgba(212,167,70,0.3); }
     .clock-confirm-input::-webkit-outer-spin-button, .clock-confirm-input::-webkit-inner-spin-button { -webkit-appearance:none; }
 
+    /* ── Mini-puzzle primitives (steps 51-70) ────────────────── */
+    .mini-stage { display:flex; flex-direction:column; align-items:center; gap:0.8rem; margin:0.6rem 0; }
+    .mini-row   { display:flex; gap:0.5rem; justify-content:center; flex-wrap:wrap; }
+    .mini-btn {
+      width:3rem; height:3rem; border:1px solid rgba(212,167,70,0.35);
+      background:rgba(14,11,18,0.85); color:var(--gold); cursor:pointer;
+      border-radius:4px; font-family:var(--font-mono); font-size:0.95rem;
+      transition:all 0.2s; display:flex; align-items:center; justify-content:center;
+    }
+    .mini-btn:hover { background:rgba(212,167,70,0.18); border-color:var(--gold); transform:translateY(-1px); }
+    .mini-btn.on    { background:rgba(212,167,70,0.32); border-color:var(--gold); box-shadow:0 0 12px rgba(212,167,70,0.45); }
+    .mini-btn.wrong { animation:shake 0.4s ease; border-color:var(--ember); color:var(--ember); }
+    .mini-meter { width:240px; height:6px; background:rgba(14,11,18,0.85); border:1px solid rgba(212,167,70,0.3); border-radius:3px; overflow:hidden; }
+    .mini-meter-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--ember),var(--gold)); transition:width 0.15s linear; }
+
+    /* Drag-rotate dial (clock-winder, compass, combination) */
+    .mini-dial {
+      width:130px; height:130px; border-radius:50%; position:relative;
+      background:
+        repeating-conic-gradient(rgba(0,0,0,0.2) 0deg 4deg, transparent 4deg 30deg),
+        radial-gradient(circle at 30% 28%, #ffe090 0%, #d4a040 25%, #6a4218 70%, #2a1808 100%);
+      border:2px solid #1a0e02;
+      box-shadow:0 4px 8px rgba(0,0,0,0.7), inset 0 0 0 2px rgba(255,230,160,0.4), inset 0 -3px 4px rgba(0,0,0,0.5);
+      cursor:grab; touch-action:none; user-select:none;
+    }
+    .mini-dial.dragging { cursor:grabbing; }
+    .mini-dial::after {
+      content:''; position:absolute; left:50%; top:8%; transform:translateX(-50%);
+      width:4px; height:34%;
+      background:linear-gradient(180deg, #1a0e02, #5a3818);
+      border-radius:2px;
+      box-shadow:0 0 3px rgba(0,0,0,0.7);
+    }
+    .mini-dial-axle {
+      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      width:18%; aspect-ratio:1; border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, #ffe090, #4a2e08);
+      border:1px solid #0a0402;
+      z-index:2;
+    }
+
+    /* Slider for tilt/angle (mirror angle, axis tilt) */
+    .mini-slider-wrap { width:260px; }
+    .mini-slider-bar  { position:relative; height:6px; background:rgba(14,11,18,0.85); border:1px solid rgba(212,167,70,0.3); border-radius:3px; }
+    .mini-slider-fill { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg,var(--ember),var(--gold)); border-radius:3px; }
+    .mini-slider-knob { position:absolute; top:50%; transform:translate(-50%,-50%); width:18px; height:18px; border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, #ffe090, #6a4218 70%);
+      border:1px solid #1a0e02; cursor:grab; touch-action:none;
+      box-shadow:0 2px 4px rgba(0,0,0,0.7);
+    }
+    .mini-slider-knob.dragging { cursor:grabbing; }
+    .mini-slider-target {
+      position:absolute; top:-10px; width:2px; height:26px;
+      background:var(--ember); transform:translateX(-50%);
+      box-shadow:0 0 6px rgba(226,87,43,0.7);
+    }
+
+    /* Click-to-rotate fragment (portrait alignment) */
+    .mini-frag {
+      width:60px; height:60px; cursor:pointer;
+      background:linear-gradient(135deg,#5a3818,#2a1808);
+      border:2px solid rgba(212,167,70,0.4);
+      border-radius:3px;
+      display:flex; align-items:center; justify-content:center;
+      transition:transform 0.3s ease;
+      font-family:'Cinzel',serif; font-size:1.3rem; color:var(--gold);
+      box-shadow:0 2px 4px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(212,167,70,0.3);
+    }
+    .mini-frag.aligned { box-shadow:0 0 0 2px var(--gold), 0 0 12px rgba(212,167,70,0.45); }
+
+    /* Drag-lift (rug corner, page flip) */
+    .mini-flap {
+      position:relative; width:240px; height:140px; cursor:grab; touch-action:none;
+      perspective:600px;
+    }
+    .mini-flap-face {
+      position:absolute; inset:0; transform-origin:bottom center;
+      background:linear-gradient(160deg,#5a2a14, #3a1808);
+      border:1px solid #1a0a04;
+      box-shadow:inset 0 0 12px rgba(0,0,0,0.5), 0 3px 6px rgba(0,0,0,0.7);
+      transition:transform 0.06s linear;
+    }
+    .mini-flap-under {
+      position:absolute; inset:0;
+      background:linear-gradient(160deg,#1a1208,#0a0604);
+      border:1px solid rgba(212,167,70,0.25);
+      display:flex; align-items:center; justify-content:center;
+      font-family:'EB Garamond',serif; font-style:italic; color:var(--gold);
+      letter-spacing:0.1em; font-size:0.9rem;
+    }
+
+    /* Combination dial set */
+    .combo-wrap { display:flex; gap:0.6rem; justify-content:center; }
+    .combo-dial {
+      width:60px; height:60px; border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, #d4a040, #5a3818 70%, #1a0e02 100%);
+      border:1px solid #0a0402; position:relative; cursor:grab;
+      touch-action:none; user-select:none;
+      box-shadow:0 2px 4px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,230,160,0.4);
+    }
+    .combo-dial::after {
+      content:''; position:absolute; left:50%; top:10%;
+      transform:translateX(-50%); width:3px; height:30%; background:#1a0e02;
+      border-radius:2px;
+    }
+    .combo-dial-num {
+      position:absolute; bottom:-1.4em; left:50%; transform:translateX(-50%);
+      font-family:var(--font-mono); font-size:0.9rem; color:var(--gold);
+    }
+
+    /* Brick grid (fireplace loose-brick puzzle) */
+    .brick-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:3px; max-width:280px; margin:0 auto; }
+    .brick { aspect-ratio:1.6/1; cursor:pointer; transition:all 0.2s;
+      background:linear-gradient(180deg, #5a4632, #2a1c0e);
+      border:1px solid #050201;
+      box-shadow:inset 0 1px 1px rgba(220,180,120,0.3), inset 0 -2px 2px rgba(0,0,0,0.6);
+      border-radius:1px;
+    }
+    .brick:hover { transform:translateY(-2px); box-shadow:0 0 8px rgba(212,167,70,0.3); }
+    .brick.loose { animation:brickWobble 1.4s ease-in-out infinite; }
+    @keyframes brickWobble { 0%,100%{transform:none} 50%{transform:translateY(-1px) rotate(0.4deg)} }
+    .brick.pushed { transform:translate(-3px,2px); background:linear-gradient(180deg,#1a0a04,#050201); }
+
+    /* Coordinate readout (globe latitude finder) */
+    .coord-readout { font-family:var(--font-mono); color:var(--gold); font-size:0.9rem;
+      background:rgba(14,11,18,0.85); border:1px solid rgba(212,167,70,0.3);
+      padding:0.5rem 1rem; border-radius:3px; letter-spacing:0.05em;
+    }
+
+    /* Stamp / hold-click (candle wax drip) */
+    .hold-btn {
+      width:90px; height:90px; border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, #c44, #7a1a1a 60%, #4a0e0e);
+      border:2px solid #1a0e02; color:#fff;
+      font-family:var(--font-display); letter-spacing:0.1em;
+      cursor:pointer; user-select:none; touch-action:none;
+      box-shadow:0 3px 6px rgba(0,0,0,0.7), inset 0 1px 2px rgba(255,180,180,0.4);
+      position:relative; overflow:hidden;
+      font-size:0.65rem;
+    }
+    .hold-btn .ring {
+      position:absolute; inset:0; border-radius:50%;
+      box-shadow:inset 0 0 0 4px rgba(212,167,70,0.7);
+      clip-path:polygon(50% 50%, 50% 0%, 50% 0%, 50% 50%);
+      transition:clip-path 0.1s linear;
+    }
+    .hold-btn.full { background:radial-gradient(circle at 30% 30%, #ffe090, #d4a040 60%, #6a4218); }
+
+    /* Listen — rhythm tap (clock tick) */
+    .rhythm-bar { display:flex; gap:0.4rem; justify-content:center; }
+    .rhythm-cell {
+      width:22px; height:36px; background:rgba(14,11,18,0.85);
+      border:1px solid rgba(212,167,70,0.3); border-radius:3px;
+      transition:all 0.15s;
+    }
+    .rhythm-cell.tick { background:rgba(212,167,70,0.5); box-shadow:0 0 10px rgba(212,167,70,0.6); }
+    .rhythm-cell.hit  { background:rgba(212,167,70,0.85); }
+    .rhythm-cell.miss { background:rgba(226,87,43,0.6); }
+
     /* ── Responsive ──────────────────────────────────────────── */
     @media (max-width:600px) {
       .room-stage { aspect-ratio:3/4; }
@@ -1696,7 +1855,7 @@
       <div class="timer-display" id="timerDisplay">00:00</div>
       <button class="clue-btn" id="clueBtn" aria-label="Request a clue">Clue</button>
       <button class="restart-btn" id="restartBtn" aria-label="Restart hunt">Restart</button>
-      <span class="step-counter" id="stepCounter">0 / 50</span>
+      <span class="step-counter" id="stepCounter">0 / 70</span>
     </div>
   </div>
 
@@ -2059,7 +2218,7 @@
   const HUNT_ID  = 'hunt-3';
   const LS_KEY   = 'ih_progress_hunt-3';
   const PASSCODE = [7, 3, 9, 2];
-  const TOTAL_STEPS = 50;
+  const TOTAL_STEPS = 70;
 
   /* ── State ────────────────────────────────────────────────── */
   let G = {
@@ -2192,8 +2351,25 @@
 
   /* ── OBJECT HANDLERS ─────────────────────────────────────── */
 
-  /* 1. Letter (step 1) */
+  /* 1. Letter (steps 1, 51) */
   function handleLetter() {
+    // Sub-step 51 — flip the page over to reveal a back-side cipher key
+    if (G.letterRead && !G.completedSteps.has(51)) {
+      const body = `
+        <p class="insp-desc">There is faint ink bleed-through showing on the back of the page. Flip the letter over.</p>
+        <div class="mini-stage">
+          <div class="mini-flap" id="letterFlap">
+            <div class="mini-flap-under">A.M.V. = 7 · 3 · 9 · 2</div>
+            <div class="mini-flap-face" id="letterFlapFace" style="background:linear-gradient(160deg,#e8dcc0,#a08e62);"></div>
+          </div>
+          <div class="insp-feedback" id="letterFlipFb">Drag the letter upward to turn it over.</div>
+        </div>
+        ${clueStrip('letter')}
+      `;
+      openInsp('letter', 'Letter from A.M.V.', body);
+      setTimeout(initLetterFlip, 50);
+      return;
+    }
     const body = `
       <p class="insp-desc">A folded note lies on the side table. The paper is aged, the ink still clear.</p>
       <blockquote style="border-left:2px solid rgba(212,167,70,0.3);padding:0.5rem 1rem;margin:0.5rem 0;font-style:italic;color:var(--parchment-dim);font-size:0.92rem;line-height:1.7;">
@@ -2220,6 +2396,35 @@
         };
       }, 50);
     }
+  }
+
+  function initLetterFlip() {
+    const flap = document.getElementById('letterFlap');
+    const face = document.getElementById('letterFlapFace');
+    const fb   = document.getElementById('letterFlipFb');
+    if (!face) return;
+    let dragging = false, startY = 0, lift = 0;
+    const update = () => {
+      face.style.transform = `rotateX(${lift}deg)`;
+      if (lift > 100) {
+        completeStep(51); persist();
+        if (fb) { fb.textContent = '✓ A.M.V. = 7 · 3 · 9 · 2 — the cipher confirms the passcode.'; fb.className = 'insp-feedback ok'; }
+        setTimeout(() => { closeInsp(); setTimeout(handleLetter, 80); }, 1200);
+      }
+    };
+    const onMove = (e) => {
+      if (!dragging) return;
+      const pt = e.touches ? e.touches[0] : e;
+      const dy = startY - pt.clientY;
+      lift = Math.max(0, Math.min(180, dy * 1.4));
+      update();
+    };
+    flap.addEventListener('mousedown', e => { dragging = true; startY = e.clientY; });
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', () => dragging = false);
+    flap.addEventListener('touchstart', e => { e.preventDefault(); dragging = true; startY = e.touches[0].clientY; }, {passive:false});
+    flap.addEventListener('touchmove',  e => { e.preventDefault(); onMove(e); }, {passive:false});
+    flap.addEventListener('touchend',   () => dragging = false);
   }
 
   /* Portrait (steps 2-4) */
@@ -2294,14 +2499,70 @@
         };
       }, 50);
 
+    } else if (!G.completedSteps.has(52)) {
+      // Sub-step 52 — Align three frame corner ornaments (each click rotates 90°)
+      body = `
+        <p class="insp-desc">Three corner ornaments on the frame have been rotated out of true. Click each piece to rotate it; align them all upright (☥ symbol pointing up) to release the back panel.</p>
+        <div class="mini-stage">
+          <div class="mini-row" id="portraitFrags">
+            <div class="mini-frag" data-rot="90">☥</div>
+            <div class="mini-frag" data-rot="180">☥</div>
+            <div class="mini-frag" data-rot="270">☥</div>
+          </div>
+          <div class="insp-feedback" id="portraitFragFb"></div>
+        </div>
+        ${clueStrip('portrait')}
+      `;
+      openInsp('portrait', 'The Portrait', body);
+      setTimeout(initPortraitFrags, 50);
+    } else if (!G.completedSteps.has(53)) {
+      // Sub-step 53 — Read the painter's signature in the corner
+      body = `
+        <p class="insp-desc">The back panel releases. On its underside, a faded painter's mark. Click it to read.</p>
+        <div class="mini-stage">
+          <button class="insp-btn" id="btnPortraitSig" style="font-family:'EB Garamond',serif;font-style:italic;font-size:1.1rem;letter-spacing:0.06em;padding:0.7rem 1.4rem;background:linear-gradient(160deg,#d4c39a,#8a6840);color:#1a0e02;">— A. M. Venturi, 1879</button>
+        </div>
+        ${clueStrip('portrait')}
+      `;
+      openInsp('portrait', 'The Portrait', body);
+      setTimeout(() => {
+        document.getElementById('btnPortraitSig').onclick = () => {
+          completeStep(53); persist();
+          closeInsp(); setTimeout(handlePortrait, 80);
+        };
+      }, 50);
     } else {
       body = `
-        <p class="insp-desc">The painted man gazes outward. You have taken what he was hiding. His ring finger still points to VII.</p>
-        <p class="insp-feedback ok">✓ Crescent medallion recovered.</p>
+        <p class="insp-desc">The painted man gazes outward. His ring finger still points to VII. The corner ornaments rest aligned. A. M. Venturi has signed his work and his message.</p>
+        <p class="insp-feedback ok">✓ Portrait fully examined.</p>
         ${clueStrip('portrait')}
       `;
       openInsp('portrait', 'The Portrait', body);
     }
+  }
+
+  function initPortraitFrags() {
+    const frags = document.querySelectorAll('#portraitFrags .mini-frag');
+    const fb = document.getElementById('portraitFragFb');
+    const check = () => {
+      const allGood = Array.from(frags).every(f => (parseInt(f.dataset.rot, 10) % 360) === 0);
+      if (allGood) {
+        frags.forEach(f => f.classList.add('aligned'));
+        if (fb) { fb.textContent = '✓ All three pieces aligned. The back panel releases.'; fb.className = 'insp-feedback ok'; }
+        completeStep(52); persist();
+        setTimeout(() => { closeInsp(); setTimeout(handlePortrait, 80); }, 900);
+      }
+    };
+    frags.forEach(f => {
+      f.style.transform = `rotate(${f.dataset.rot}deg)`;
+      f.onclick = () => {
+        const r = (parseInt(f.dataset.rot, 10) + 90) % 360;
+        f.dataset.rot = r;
+        f.style.transform = `rotate(${r}deg)`;
+        if (r === 0) f.classList.add('aligned'); else f.classList.remove('aligned');
+        check();
+      };
+    });
   }
 
   function initPortraitTilt() {
@@ -2378,10 +2639,43 @@
       body_clock_0();
     } else if (step === 1) {
       body_clock_1();
+    } else if (!G.completedSteps.has(54)) {
+      // Sub-step 54 — Drag the winding key in circles to wind the mainspring
+      const body = `
+        <p class="insp-desc">The mainspring is slack. Drag the winding key in circles to wind it before the mechanism stops.</p>
+        <div class="mini-stage">
+          <div class="mini-dial" id="clockWinder">
+            <div class="mini-dial-axle"></div>
+          </div>
+          <div class="mini-meter"><div class="mini-meter-fill" id="clockWindFill"></div></div>
+          <div class="insp-feedback" id="clockWindFb">Drag the key in circles.</div>
+        </div>
+        ${clueStrip('clock')}
+      `;
+      openInsp('clock', 'The Mantel Clock', body);
+      setTimeout(() => initWindDial('clockWinder', 'clockWindFill', 'clockWindFb', 54, handleClock), 50);
+    } else if (!G.completedSteps.has(55)) {
+      // Sub-step 55 — Tap the rhythm: click each cell when it lights up
+      const body = `
+        <p class="insp-desc">The clock now ticks. Tap each cell as it pulses — match the pendulum's rhythm three times.</p>
+        <div class="mini-stage">
+          <div class="rhythm-bar" id="clockRhythm">
+            <div class="rhythm-cell" data-i="0"></div>
+            <div class="rhythm-cell" data-i="1"></div>
+            <div class="rhythm-cell" data-i="2"></div>
+            <div class="rhythm-cell" data-i="3"></div>
+            <div class="rhythm-cell" data-i="4"></div>
+          </div>
+          <div class="insp-feedback" id="clockRhythmFb">Tap the lit cell three times in a row.</div>
+        </div>
+        ${clueStrip('clock')}
+      `;
+      openInsp('clock', 'The Mantel Clock', body);
+      setTimeout(initClockRhythm, 50);
     } else {
       const body = `
-        <p class="insp-desc">The clock is wound and set. The hands rest at VII. The first digit of the passcode is revealed.</p>
-        <p class="insp-feedback ok">✓ Digit 1 = 7</p>
+        <p class="insp-desc">The clock is wound, set, and ticking in cadence. The hands rest at VII.</p>
+        <p class="insp-feedback ok">✓ Digit 1 = 7 · Clock fully tuned.</p>
         ${clueStrip('clock')}
       `;
       openInsp('clock', 'The Mantel Clock', body);
@@ -2453,6 +2747,78 @@
     }
   }
 
+  /* Shared mini-puzzle helpers (used across many steps) */
+  function initWindDial(dialId, fillId, fbId, completeId, returnHandler) {
+    const dial = document.getElementById(dialId);
+    const fill = document.getElementById(fillId);
+    const fb   = document.getElementById(fbId);
+    if (!dial) return;
+    let dragging = false, lastA = 0, total = 0, firstWind = false;
+    const TARGET = 720;
+    const getA = (e) => {
+      const r = dial.getBoundingClientRect();
+      const pt = e.touches ? e.touches[0] : e;
+      return Math.atan2(pt.clientY - (r.top + r.height/2), pt.clientX - (r.left + r.width/2)) * 180 / Math.PI;
+    };
+    const onMove = (e) => {
+      if (!dragging) return;
+      const a = getA(e);
+      let d = a - lastA;
+      if (d > 180) d -= 360;
+      if (d < -180) d += 360;
+      if (d > 0 && d < 90) {
+        total += d;
+        if (!firstWind && fb) { firstWind = true; fb.textContent = 'Winding…'; }
+        dial.style.transform = `rotate(${total}deg)`;
+        if (fill) fill.style.width = Math.min(100, total / TARGET * 100) + '%';
+        if (total >= TARGET) {
+          if (fb) { fb.textContent = '✓ Fully wound.'; fb.className = 'insp-feedback ok'; }
+          completeStep(completeId); persist();
+          setTimeout(() => { closeInsp(); setTimeout(returnHandler, 80); }, 800);
+        }
+      }
+      lastA = a;
+    };
+    dial.addEventListener('mousedown', e => { dragging = true; dial.classList.add('dragging'); lastA = getA(e); });
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', () => { dragging = false; dial.classList.remove('dragging'); });
+    dial.addEventListener('touchstart', e => { e.preventDefault(); dragging = true; dial.classList.add('dragging'); lastA = getA(e); }, {passive:false});
+    dial.addEventListener('touchmove',  e => { e.preventDefault(); onMove(e); }, {passive:false});
+    dial.addEventListener('touchend',   () => { dragging = false; dial.classList.remove('dragging'); });
+  }
+
+  function initClockRhythm() {
+    const cells = document.querySelectorAll('#clockRhythm .rhythm-cell');
+    const fb = document.getElementById('clockRhythmFb');
+    if (!cells.length) return;
+    let lit = -1, hits = 0;
+    const litCells = () => cells.forEach((c, i) => c.classList.toggle('tick', i === lit));
+    const step = () => {
+      lit = Math.floor(Math.random() * cells.length);
+      litCells();
+    };
+    cells.forEach((c, i) => {
+      c.onclick = () => {
+        if (i === lit) {
+          c.classList.add('hit'); setTimeout(() => c.classList.remove('hit'), 250);
+          hits++;
+          if (fb) fb.textContent = `Hits: ${hits} / 3`;
+          if (hits >= 3) {
+            if (fb) { fb.textContent = '✓ In rhythm.'; fb.className = 'insp-feedback ok'; }
+            completeStep(55); persist();
+            setTimeout(() => { closeInsp(); setTimeout(handleClock, 80); }, 800);
+            return;
+          }
+          step();
+        } else {
+          c.classList.add('miss'); setTimeout(() => c.classList.remove('miss'), 350);
+          if (fb) { fb.textContent = 'Off-beat. Stay with the pulse.'; fb.className = 'insp-feedback err'; }
+        }
+      };
+    });
+    step();
+  }
+
   function onClockClick(numeral, el) {
     const fb = document.getElementById('clockFeedback');
     document.querySelectorAll('.clock-numeral').forEach(n => n.classList.remove('selected'));
@@ -2499,6 +2865,10 @@
   /* Bookshelf (steps 8-10) */
   function handleBookshelf() {
     const step = G.objStep.bookshelf;
+    // Sub-step gates after main puzzle (step >= 2 means star key taken)
+    if (step >= 2 && !G.completedSteps.has(56)) return handleBookshelfSort();
+    if (step >= 2 && !G.completedSteps.has(57)) return handleBookshelfLoose();
+    if (step >= 2 && !G.completedSteps.has(58)) return handleBookshelfBookmark();
     const books = [
       { color:'#3d1a0a', title:'Rosencrantz' },
       { color:'#0a2a1a', title:'De Rerum Natura' },
@@ -2631,6 +3001,128 @@
     stage.addEventListener('touchmove', e => { e.preventDefault(); onMove(e); }, {passive:false});
   }
 
+  /* Bookshelf sub-step 56 — sort 3 dated books oldest → newest */
+  function handleBookshelfSort() {
+    const TARGET = ['1611','1687','1859'];
+    let order = ['1859','1611','1687'];
+    const body = `
+      <p class="insp-desc">Three dated volumes have been knocked loose from the second shelf. Click them in order — oldest to newest — to re-shelve them.</p>
+      <div class="mini-stage">
+        <div class="mini-row" id="bsSort"></div>
+        <div class="insp-feedback" id="bsSortFb">Click in chronological order.</div>
+      </div>
+      ${clueStrip('bookshelf')}
+    `;
+    openInsp('bookshelf', 'The Bookshelf', body);
+    setTimeout(() => {
+      const row = document.getElementById('bsSort');
+      const fb = document.getElementById('bsSortFb');
+      let picked = [];
+      const render = () => {
+        row.innerHTML = '';
+        order.forEach(y => {
+          const b = document.createElement('button');
+          b.className = 'mini-btn' + (picked.includes(y) ? ' on' : '');
+          b.style.width = '4.5rem';
+          b.textContent = y;
+          b.disabled = picked.includes(y);
+          b.onclick = () => {
+            if (TARGET[picked.length] === y) {
+              picked.push(y); render();
+              if (fb) fb.textContent = `${picked.length} of 3 shelved.`;
+              if (picked.length === 3) {
+                if (fb) { fb.textContent = '✓ Volumes correctly re-shelved.'; fb.className = 'insp-feedback ok'; }
+                completeStep(56); persist();
+                setTimeout(() => { closeInsp(); setTimeout(handleBookshelf, 80); }, 900);
+              }
+            } else {
+              b.classList.add('wrong'); setTimeout(() => b.classList.remove('wrong'), 400);
+              picked = [];
+              if (fb) { fb.textContent = 'Wrong order. Start again.'; fb.className = 'insp-feedback err'; }
+              setTimeout(render, 500);
+            }
+          };
+          row.appendChild(b);
+        });
+      };
+      render();
+    }, 50);
+  }
+
+  /* Bookshelf sub-step 57 — find the volume out of place */
+  function handleBookshelfLoose() {
+    const LOOSE = 7; // index in a 12-book row
+    const body = `
+      <p class="insp-desc">One book on the lower shelf is leaning slightly outward — it doesn't quite belong with the rest. Click the one that's out of place.</p>
+      <div class="mini-stage">
+        <div class="mini-row" id="bsLoose" style="gap:2px;flex-wrap:nowrap;"></div>
+        <div class="insp-feedback" id="bsLooseFb"></div>
+      </div>
+      ${clueStrip('bookshelf')}
+    `;
+    openInsp('bookshelf', 'The Bookshelf', body);
+    setTimeout(() => {
+      const row = document.getElementById('bsLoose');
+      const fb = document.getElementById('bsLooseFb');
+      const colors = ['#7a2418','#1a3a4a','#2a4a1a','#4a3a1a','#3a1a4a','#5a3818','#2a5a3a','#4a1a1a','#1a5a4a','#3a3a1a','#5a2a3a','#1a2a5a'];
+      for (let i = 0; i < 12; i++) {
+        const b = document.createElement('button');
+        b.className = 'mini-btn';
+        b.style.cssText = `width:22px;height:90px;padding:0;background:linear-gradient(180deg,${colors[i]},#1a0e02);border-radius:1px;${i===LOOSE?'transform:translateY(-4px) rotate(-4deg);':''}`;
+        b.onclick = () => {
+          if (i === LOOSE) {
+            if (fb) { fb.textContent = '✓ A loose pamphlet falls out. A pressed leaf bookmark slips free.'; fb.className = 'insp-feedback ok'; }
+            completeStep(57); persist();
+            setTimeout(() => { closeInsp(); setTimeout(handleBookshelf, 80); }, 1000);
+          } else {
+            b.classList.add('wrong'); setTimeout(() => b.classList.remove('wrong'), 350);
+            if (fb) { fb.textContent = 'That one fits the row.'; fb.className = 'insp-feedback err'; }
+          }
+        };
+        row.appendChild(b);
+      }
+    }, 50);
+  }
+
+  /* Bookshelf sub-step 58 — lift the pressed bookmark to read */
+  function handleBookshelfBookmark() {
+    const body = `
+      <p class="insp-desc">The pressed leaf was used as a bookmark. Lift it carefully to read the page beneath.</p>
+      <div class="mini-stage">
+        <div class="mini-flap" id="bsBookmark">
+          <div class="mini-flap-under">"The number on the door is not on the door."</div>
+          <div class="mini-flap-face" id="bsBookmarkFace" style="background:linear-gradient(160deg,#3a5a18,#1a3a08);"></div>
+        </div>
+        <div class="insp-feedback" id="bsBookmarkFb">Drag the leaf upward.</div>
+      </div>
+      ${clueStrip('bookshelf')}
+    `;
+    openInsp('bookshelf', 'The Bookshelf', body);
+    setTimeout(() => {
+      const face = document.getElementById('bsBookmarkFace');
+      const fb = document.getElementById('bsBookmarkFb');
+      if (!face) return;
+      let dragging = false, startY = 0, lift = 0;
+      const onMove = (e) => {
+        if (!dragging) return;
+        const pt = e.touches ? e.touches[0] : e;
+        lift = Math.max(0, Math.min(150, (startY - pt.clientY) * 1.3));
+        face.style.transform = `rotateX(${lift}deg)`;
+        if (lift > 90) {
+          completeStep(58); persist();
+          if (fb) { fb.textContent = '✓ A faint pencil note: "The number on the door is not on the door."'; fb.className = 'insp-feedback ok'; }
+          setTimeout(() => { closeInsp(); setTimeout(handleBookshelf, 80); }, 1500);
+        }
+      };
+      face.addEventListener('mousedown', e => { dragging = true; startY = e.clientY; });
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', () => dragging = false);
+      face.addEventListener('touchstart', e => { e.preventDefault(); dragging = true; startY = e.touches[0].clientY; }, {passive:false});
+      face.addEventListener('touchmove',  e => { e.preventDefault(); onMove(e); }, {passive:false});
+      face.addEventListener('touchend',   () => dragging = false);
+    }, 50);
+  }
+
   function onBookClick(idx, special) {
     if (idx !== special) return;
     if (G.objStep.bookshelf >= 1) return;
@@ -2720,14 +3212,112 @@
         };
       }, 50);
 
+    } else if (!G.completedSteps.has(59)) {
+      // Sub-step 59 — drag the dip-pen across a blotter to write 3 strokes
+      const body = `
+        <p class="insp-desc">A fresh inkwell and a steel-nib pen rest on the blotter. Drag across the parchment to leave three deliberate strokes.</p>
+        <div class="mini-stage">
+          <canvas id="deskInk" width="320" height="140" style="background:linear-gradient(160deg,#e8dcc0,#c9b78f);border:1px solid #4a3210;border-radius:3px;cursor:crosshair;touch-action:none;box-shadow:inset 0 0 10px rgba(60,40,15,0.5);"></canvas>
+          <div class="mini-meter"><div class="mini-meter-fill" id="deskInkFill"></div></div>
+          <div class="insp-feedback" id="deskInkFb">Drag your pen across the paper.</div>
+        </div>
+        ${clueStrip('desk')}
+      `;
+      openInsp('desk', 'The Writing Desk', body);
+      setTimeout(initDeskInk, 50);
+    } else if (!G.completedSteps.has(60)) {
+      // Sub-step 60 — press the wax stamp by holding the seal down
+      const body = `
+        <p class="insp-desc">A small wax stick has been melted onto a blank sheet. Press and hold the seal to leave a clean impression.</p>
+        <div class="mini-stage">
+          <button class="hold-btn" id="deskStamp">SEAL<div class="ring" id="deskStampRing"></div></button>
+          <div class="insp-feedback" id="deskStampFb">Press and hold the seal.</div>
+        </div>
+        ${clueStrip('desk')}
+      `;
+      openInsp('desk', 'The Writing Desk', body);
+      setTimeout(() => initHoldButton('deskStamp', 'deskStampRing', 'deskStampFb', 60, handleDesk, 1500), 50);
     } else {
       const body = `
-        <p class="insp-desc">The drawer is open, star key still slotted. The numeral 3 is burnt into the wood.</p>
-        <p class="insp-feedback ok">✓ Digit 2 = 3</p>
+        <p class="insp-desc">The drawer is open. A signed sheet rests beside a wax-sealed note. The numeral 3 is still in the wood.</p>
+        <p class="insp-feedback ok">✓ Digit 2 = 3 · Correspondence prepared.</p>
         ${clueStrip('desk')}
       `;
       openInsp('desk', 'The Writing Desk', body);
     }
+  }
+
+  function initDeskInk() {
+    const canvas = document.getElementById('deskInk');
+    const fill   = document.getElementById('deskInkFill');
+    const fb     = document.getElementById('deskInkFb');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#1a0e02'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+    let drawing = false, strokes = 0, strokeLen = 0;
+    const pos = (e) => {
+      const r = canvas.getBoundingClientRect();
+      const pt = e.touches ? e.touches[0] : e;
+      return [(pt.clientX - r.left) * canvas.width / r.width, (pt.clientY - r.top) * canvas.height / r.height];
+    };
+    const start = (e) => { drawing = true; const [x,y] = pos(e); ctx.beginPath(); ctx.moveTo(x,y); strokeLen = 0; };
+    const move = (e) => {
+      if (!drawing) return;
+      const [x,y] = pos(e);
+      ctx.lineTo(x,y); ctx.stroke();
+      strokeLen++;
+    };
+    const end = () => {
+      if (!drawing) return;
+      drawing = false;
+      if (strokeLen > 5) {
+        strokes++;
+        if (fill) fill.style.width = Math.min(100, strokes / 3 * 100) + '%';
+        if (fb) fb.textContent = `Strokes: ${strokes} / 3`;
+        if (strokes >= 3) {
+          if (fb) { fb.textContent = '✓ The page is signed.'; fb.className = 'insp-feedback ok'; }
+          completeStep(59); persist();
+          setTimeout(() => { closeInsp(); setTimeout(handleDesk, 80); }, 900);
+        }
+      }
+    };
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('mouseup', end);
+    canvas.addEventListener('mouseleave', end);
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); start(e); }, {passive:false});
+    canvas.addEventListener('touchmove',  e => { e.preventDefault(); move(e); }, {passive:false});
+    canvas.addEventListener('touchend', end);
+  }
+
+  function initHoldButton(btnId, ringId, fbId, completeId, returnHandler, holdMs) {
+    const btn = document.getElementById(btnId);
+    const ring = document.getElementById(ringId);
+    const fb = document.getElementById(fbId);
+    if (!btn) return;
+    let holding = false, startTs = 0, raf = null;
+    const tick = () => {
+      if (!holding) return;
+      const elapsed = Date.now() - startTs;
+      const pct = Math.min(1, elapsed / holdMs);
+      const a = -90 + pct * 360;
+      if (ring) ring.style.clipPath = `polygon(50% 50%, 50% 0%, ${50 + 60 * Math.sin(a*Math.PI/180)}% ${50 - 60*Math.cos(a*Math.PI/180)}%, 50% 0%)`;
+      if (pct >= 1) {
+        btn.classList.add('full');
+        if (fb) { fb.textContent = '✓ Impression set.'; fb.className = 'insp-feedback ok'; }
+        completeStep(completeId); persist();
+        setTimeout(() => { closeInsp(); setTimeout(returnHandler, 80); }, 800);
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    const start = () => { holding = true; startTs = Date.now(); if (fb) fb.textContent = 'Holding…'; tick(); };
+    const end = () => { if (holding) { holding = false; cancelAnimationFrame(raf); if (ring) ring.style.clipPath = 'polygon(50% 50%, 50% 0%, 50% 0%, 50% 50%)'; if (fb && !btn.classList.contains('full')) fb.textContent = 'Released too soon.'; } };
+    btn.addEventListener('mousedown', start);
+    btn.addEventListener('mouseup', end);
+    btn.addEventListener('mouseleave', end);
+    btn.addEventListener('touchstart', e => { e.preventDefault(); start(); }, {passive:false});
+    btn.addEventListener('touchend', end);
   }
 
   /* Music box (steps 14-16) */
@@ -2735,6 +3325,39 @@
   const PIN_SOLUTION = ['G','E','D'];
 
   function handleMusicbox() {
+    // Sub-step 61 — find the hidden corner latch
+    if (G.objStep.musicbox >= 2 && !G.completedSteps.has(61)) {
+      const body = `
+        <p class="insp-desc">There is a faint outline of a hinge on one of the inlaid brass corners. Press the correct corner to release a second compartment.</p>
+        <div class="mini-stage">
+          <div style="position:relative;width:200px;height:140px;background:linear-gradient(180deg,#5a1e08,#2a0a02);border:1px solid #0a0202;border-radius:3px;box-shadow:inset 0 1px 1px rgba(255,140,80,0.25);">
+            <button class="mini-btn" data-c="tl" style="position:absolute;top:8%;left:6%;width:30px;height:30px;background:radial-gradient(circle at 30% 30%,#d4a040,#5a3810);border-radius:1px;"></button>
+            <button class="mini-btn" data-c="tr" style="position:absolute;top:8%;right:6%;width:30px;height:30px;background:radial-gradient(circle at 30% 30%,#d4a040,#5a3810);border-radius:1px;"></button>
+            <button class="mini-btn" data-c="bl" style="position:absolute;bottom:8%;left:6%;width:30px;height:30px;background:radial-gradient(circle at 30% 30%,#d4a040,#5a3810);border-radius:1px;"></button>
+            <button class="mini-btn" data-c="br" style="position:absolute;bottom:8%;right:6%;width:30px;height:30px;background:radial-gradient(circle at 30% 30%,#d4a040,#5a3810);border-radius:1px;box-shadow:0 0 0 1px rgba(212,167,70,0.6), inset 0 0 4px rgba(212,167,70,0.4);"></button>
+          </div>
+          <div class="insp-feedback" id="mbLatchFb">Find the corner that hinges.</div>
+        </div>
+        ${clueStrip('musicbox')}
+      `;
+      openInsp('musicbox', 'The Music Box', body);
+      setTimeout(() => {
+        const fb = document.getElementById('mbLatchFb');
+        document.querySelectorAll('[data-c]').forEach(b => {
+          b.onclick = () => {
+            if (b.dataset.c === 'br') {
+              if (fb) { fb.textContent = '✓ A pin spring releases. A second compartment opens.'; fb.className = 'insp-feedback ok'; }
+              completeStep(61); persist();
+              setTimeout(() => { closeInsp(); setTimeout(handleMusicbox, 80); }, 900);
+            } else {
+              b.classList.add('wrong'); setTimeout(() => b.classList.remove('wrong'), 400);
+              if (fb) { fb.textContent = 'That corner is solid. Try another.'; fb.className = 'insp-feedback err'; }
+            }
+          };
+        });
+      }, 50);
+      return;
+    }
     if (!G.seenScore) {
       const body = `
         <p class="insp-desc">A lacquered music box on the mantel. The lid is closed. A cylinder with raised pins sits inside a glass aperture. Without knowing the sequence, nothing will play.</p>
@@ -2837,9 +3460,23 @@
   /* Candle (steps 17-18) */
   function handleCandle() {
     const step = G.objStep.candle;
+    if ((step >= 2 || G.inventory.has('candle')) && !G.completedSteps.has(62)) {
+      // Sub-step 62 — drip molten wax onto the envelope (hold the candle over)
+      const body = `
+        <p class="insp-desc">A blank parchment from the desk drawer lies beside the candle. Hold the candle over it to drip wax and seal it.</p>
+        <div class="mini-stage">
+          <button class="hold-btn" id="candleDrip">DRIP<div class="ring" id="candleDripRing"></div></button>
+          <div class="insp-feedback" id="candleDripFb">Press and hold the candle.</div>
+        </div>
+        ${clueStrip('candle')}
+      `;
+      openInsp('candle', 'The Candle', body);
+      setTimeout(() => initHoldButton('candleDrip', 'candleDripRing', 'candleDripFb', 62, handleCandle, 1800), 50);
+      return;
+    }
     if (step >= 2 || G.inventory.has('candle')) {
       const body = `
-        <p class="insp-desc">The candle is lit. A warm flame. You carry it with you.</p>
+        <p class="insp-desc">The candle is lit. A warm flame. You carry it with you. A small wax seal has been left on a folded note.</p>
         <p class="insp-feedback ok">✓ Lit candle in inventory.</p>
         ${clueStrip('candle')}
       `;
@@ -2963,14 +3600,54 @@
         };
       }, 50);
 
+    } else if (!G.completedSteps.has(63)) {
+      // Sub-step 63 — lift the rug corner to expose a floorboard mark
+      const body = `
+        <p class="insp-desc">A corner of the rug is curling. Lift it to see what was tucked beneath.</p>
+        <div class="mini-stage">
+          <div class="mini-flap" id="rugFlap">
+            <div class="mini-flap-under">A chalk arrow, drawn under the rug, points to the cabinet.</div>
+            <div class="mini-flap-face" id="rugFlapFace"></div>
+          </div>
+          <div class="insp-feedback" id="rugLiftFb">Drag the rug corner upward.</div>
+        </div>
+        ${clueStrip('rug')}
+      `;
+      openInsp('rug', 'The Rug', body);
+      setTimeout(() => initDragFlap('rugFlapFace', 'rugLiftFb', 63, handleRug), 50);
     } else {
       const body = `
-        <p class="insp-desc">The numeral 9 is preserved in the rug's heat-reactive weave.</p>
-        <p class="insp-feedback ok">✓ Digit 3 = 9</p>
+        <p class="insp-desc">The numeral 9 is preserved in the rug's heat-reactive weave. A chalk arrow was drawn under the rug pointing at the cabinet.</p>
+        <p class="insp-feedback ok">✓ Digit 3 = 9 · Rug fully searched.</p>
         ${clueStrip('rug')}
       `;
       openInsp('rug', 'The Rug', body);
     }
+  }
+
+  /* Shared drag-flap helper for lift interactions */
+  function initDragFlap(faceId, fbId, completeId, returnHandler) {
+    const face = document.getElementById(faceId);
+    const fb = document.getElementById(fbId);
+    if (!face) return;
+    let dragging = false, startY = 0, lift = 0;
+    const onMove = (e) => {
+      if (!dragging) return;
+      const pt = e.touches ? e.touches[0] : e;
+      lift = Math.max(0, Math.min(150, (startY - pt.clientY) * 1.3));
+      face.style.transform = `rotateX(${lift}deg)`;
+      if (lift > 90) {
+        completeStep(completeId); persist();
+        if (fb) { fb.textContent = '✓ Revealed.'; fb.className = 'insp-feedback ok'; }
+        setTimeout(() => { closeInsp(); setTimeout(returnHandler, 80); }, 1300);
+      }
+    };
+    face.addEventListener('mousedown', e => { dragging = true; startY = e.clientY; });
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', () => dragging = false);
+    face.addEventListener('touchstart', e => { e.preventDefault(); dragging = true; startY = e.touches[0].clientY; }, {passive:false});
+    face.addEventListener('touchmove',  e => { e.preventDefault(); onMove(e); }, {passive:false});
+    face.addEventListener('touchend',   () => dragging = false);
   }
 
   function initRugHeat() {
@@ -3107,14 +3784,69 @@
         };
       }, 50);
 
+    } else if (!G.completedSteps.has(64)) {
+      // Sub-step 64 — rotate a compass rose to true north
+      const body = `
+        <p class="insp-desc">A small compass rose has been drawn in the map's lower corner — it has been spun out of alignment. Rotate it until N points up.</p>
+        <div class="mini-stage">
+          <div class="mini-dial" id="mapCompass">
+            <div class="mini-dial-axle"></div>
+            <div style="position:absolute;top:4%;left:50%;transform:translateX(-50%);font-family:'Cinzel',serif;font-size:0.8rem;color:#1a0e02;font-weight:700;">N</div>
+            <div style="position:absolute;bottom:4%;left:50%;transform:translateX(-50%);font-family:'Cinzel',serif;font-size:0.7rem;color:#1a0e02;">S</div>
+            <div style="position:absolute;left:4%;top:50%;transform:translateY(-50%);font-family:'Cinzel',serif;font-size:0.7rem;color:#1a0e02;">W</div>
+            <div style="position:absolute;right:4%;top:50%;transform:translateY(-50%);font-family:'Cinzel',serif;font-size:0.7rem;color:#1a0e02;">E</div>
+          </div>
+          <div class="insp-feedback" id="mapCompassFb">Rotate until N points straight up.</div>
+        </div>
+        ${clueStrip('map')}
+      `;
+      openInsp('map', 'The Wall Map', body);
+      setTimeout(initMapCompass, 50);
     } else {
       const body = `
-        <p class="insp-desc">The map shows the four symbols and their convergence at the cabinet. The sequence: 🌙 → ⭐ → ♩ → IX.</p>
-        <p class="insp-feedback ok">✓ Sequence noted.</p>
+        <p class="insp-desc">The map shows the four symbols converging at the cabinet. The compass rose now points true north.</p>
+        <p class="insp-feedback ok">✓ Sequence noted · Compass aligned.</p>
         ${clueStrip('map')}
       `;
       openInsp('map', 'The Wall Map', body);
     }
+  }
+
+  function initMapCompass() {
+    const dial = document.getElementById('mapCompass');
+    const fb = document.getElementById('mapCompassFb');
+    if (!dial) return;
+    let rot = 145, dragging = false, lastA = 0;
+    const update = () => {
+      dial.style.transform = `rotate(${rot}deg)`;
+      const norm = ((rot % 360) + 360) % 360;
+      if (norm < 8 || norm > 352) {
+        if (fb) { fb.textContent = '✓ Compass aligned to true north.'; fb.className = 'insp-feedback ok'; }
+        completeStep(64); persist();
+        setTimeout(() => { closeInsp(); setTimeout(handleMap, 80); }, 800);
+      }
+    };
+    update();
+    const getA = (e) => {
+      const r = dial.getBoundingClientRect();
+      const pt = e.touches ? e.touches[0] : e;
+      return Math.atan2(pt.clientY - (r.top + r.height/2), pt.clientX - (r.left + r.width/2)) * 180 / Math.PI;
+    };
+    const onMove = (e) => {
+      if (!dragging) return;
+      const a = getA(e);
+      let d = a - lastA;
+      if (d > 180) d -= 360;
+      if (d < -180) d += 360;
+      rot += d; lastA = a;
+      update();
+    };
+    dial.addEventListener('mousedown', e => { dragging = true; dial.classList.add('dragging'); lastA = getA(e); });
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', () => { dragging = false; dial.classList.remove('dragging'); });
+    dial.addEventListener('touchstart', e => { e.preventDefault(); dragging = true; dial.classList.add('dragging'); lastA = getA(e); }, {passive:false});
+    dial.addEventListener('touchmove',  e => { e.preventDefault(); onMove(e); }, {passive:false});
+    dial.addEventListener('touchend',   () => { dragging = false; dial.classList.remove('dragging'); });
   }
 
   /* Cabinet (steps 25-29) */
@@ -3125,10 +3857,28 @@
     const hasAll = G.inventory.has('crescent') && G.inventory.has('starKey') && G.seenScore && G.discoveredIX;
     const step = G.objStep.cabinet;
 
+    if (step >= 5 && !G.completedSteps.has(65)) {
+      // Sub-step 65 — secondary tumbler combination on the cabinet's bottom drawer
+      const body = `
+        <p class="insp-desc">A second compartment hides in the cabinet's base. Three brass tumblers must each be set to the correct number to release it. The combination is the passcode minus its first digit: <strong style="color:var(--gold);">3 · 9 · 2</strong>.</p>
+        <div class="mini-stage">
+          <div class="combo-wrap" id="cabCombo">
+            <div><div class="combo-dial" data-i="0" data-val="0"></div><div class="combo-dial-num" id="cd0">0</div></div>
+            <div><div class="combo-dial" data-i="1" data-val="0"></div><div class="combo-dial-num" id="cd1">0</div></div>
+            <div><div class="combo-dial" data-i="2" data-val="0"></div><div class="combo-dial-num" id="cd2">0</div></div>
+          </div>
+          <div class="insp-feedback" id="cabComboFb" style="margin-top:1.4rem;">Drag each dial to set the digit.</div>
+        </div>
+        ${clueStrip('cabinet')}
+      `;
+      openInsp('cabinet', 'The Cabinet', body);
+      setTimeout(initCabCombo, 50);
+      return;
+    }
     if (step >= 5) {
       const body = `
-        <p class="insp-desc">The cabinet is open. The fourth digit is engraved inside: 2.</p>
-        <p class="insp-feedback ok">✓ Digit 4 = 2</p>
+        <p class="insp-desc">The cabinet is open. The fourth digit is engraved inside: 2. The base compartment has also been unlocked.</p>
+        <p class="insp-feedback ok">✓ Digit 4 = 2 · Cabinet fully searched.</p>
         ${clueStrip('cabinet')}
       `;
       openInsp('cabinet', 'The Cabinet', body);
@@ -3219,6 +3969,55 @@
     }
   }
 
+  function initCabCombo() {
+    const TARGET = [3, 9, 2];
+    const dials = document.querySelectorAll('#cabCombo .combo-dial');
+    const fb = document.getElementById('cabComboFb');
+    const states = [0, 0, 0];
+    dials.forEach((dial, i) => {
+      let dragging = false, lastA = 0, totalRot = 0;
+      const getA = (e) => {
+        const r = dial.getBoundingClientRect();
+        const pt = e.touches ? e.touches[0] : e;
+        return Math.atan2(pt.clientY - (r.top + r.height/2), pt.clientX - (r.left + r.width/2)) * 180 / Math.PI;
+      };
+      const update = () => {
+        const num = Math.floor(((totalRot % 360) + 360) % 360 / 36) % 10;
+        states[i] = num;
+        document.getElementById('cd' + i).textContent = num;
+        dial.style.transform = `rotate(${totalRot}deg)`;
+        if (states.every((s, j) => s === TARGET[j])) {
+          if (fb) { fb.textContent = '✓ 3 · 9 · 2 — the base compartment slides open.'; fb.className = 'insp-feedback ok'; }
+          completeStep(65); persist();
+          setTimeout(() => { closeInsp(); setTimeout(handleCabinet, 80); }, 1000);
+        }
+      };
+      dial.addEventListener('mousedown', e => { dragging = true; lastA = getA(e); });
+      window.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        const a = getA(e);
+        let d = a - lastA;
+        if (d > 180) d -= 360;
+        if (d < -180) d += 360;
+        totalRot += d; lastA = a;
+        update();
+      });
+      window.addEventListener('mouseup', () => dragging = false);
+      dial.addEventListener('touchstart', e => { e.preventDefault(); dragging = true; lastA = getA(e); }, {passive:false});
+      dial.addEventListener('touchmove',  e => {
+        e.preventDefault();
+        if (!dragging) return;
+        const a = getA(e);
+        let d = a - lastA;
+        if (d > 180) d -= 360;
+        if (d < -180) d += 360;
+        totalRot += d; lastA = a;
+        update();
+      }, {passive:false});
+      dial.addEventListener('touchend', () => dragging = false);
+    });
+  }
+
   /* ─────────────────────────────────────────────────────────────
      MIRROR — drag-to-wipe canvas + ordered letter selection
      Steps 30-33
@@ -3272,14 +4071,65 @@
       `;
       openInsp('mirror', 'The Mirror', body);
       setTimeout(initMirrorLetters, 50);
+    } else if (!G.completedSteps.has(66)) {
+      // Sub-step 66 — tilt the mirror to catch firelight at the correct angle
+      const body = `
+        <p class="insp-desc">Angle the mirror so that the firelight bounces onto the opposite wall. The correct tilt is between 45° and 55°.</p>
+        <div class="mini-stage">
+          <div class="mini-slider-wrap">
+            <div class="mini-slider-bar">
+              <div class="mini-slider-fill" id="mirrAngleFill"></div>
+              <div class="mini-slider-target" style="left:50%;"></div>
+              <div class="mini-slider-knob" id="mirrAngleKnob" style="left:10%;"></div>
+            </div>
+          </div>
+          <div class="insp-feedback" id="mirrAngleFb">Current tilt: 10°</div>
+        </div>
+        ${clueStrip('mirror')}
+      `;
+      openInsp('mirror', 'The Mirror', body);
+      setTimeout(() => initSlider('mirrAngleKnob', 'mirrAngleFill', 'mirrAngleFb', 45, 55, '°', 66, handleMirror), 50);
     } else {
       const body = `
-        <p class="insp-desc">The mirror is clean. The initials <strong style="color:var(--gold);">A. M. V.</strong> are scratched into the silver backing — A. M. Venturi.</p>
-        <p class="insp-feedback ok">✓ Mirror examined.</p>
+        <p class="insp-desc">The mirror is clean. The initials <strong style="color:var(--gold);">A. M. V.</strong> are scratched into the silver backing — A. M. Venturi. A bright reflection of firelight now plays across the opposite wall.</p>
+        <p class="insp-feedback ok">✓ Mirror fully examined.</p>
         ${clueStrip('mirror')}
       `;
       openInsp('mirror', 'The Mirror', body);
     }
+  }
+
+  /* Shared slider helper */
+  function initSlider(knobId, fillId, fbId, targetMin, targetMax, unit, completeId, returnHandler) {
+    const knob = document.getElementById(knobId);
+    const fill = document.getElementById(fillId);
+    const fb = document.getElementById(fbId);
+    if (!knob) return;
+    const bar = knob.parentElement;
+    let dragging = false;
+    const update = (pct) => {
+      pct = Math.max(0, Math.min(100, pct));
+      knob.style.left = pct + '%';
+      if (fill) fill.style.width = pct + '%';
+      const val = Math.round(pct * 0.9);
+      if (fb) fb.textContent = `Current: ${val}${unit}`;
+      if (val >= targetMin && val <= targetMax) {
+        if (fb) { fb.textContent = `✓ ${val}${unit} — held.`; fb.className = 'insp-feedback ok'; }
+        completeStep(completeId); persist();
+        setTimeout(() => { closeInsp(); setTimeout(returnHandler, 80); }, 900);
+      }
+    };
+    const setFromEvent = (e) => {
+      const r = bar.getBoundingClientRect();
+      const pt = e.touches ? e.touches[0] : e;
+      update(((pt.clientX - r.left) / r.width) * 100);
+    };
+    knob.addEventListener('mousedown', e => { dragging = true; knob.classList.add('dragging'); e.preventDefault(); });
+    window.addEventListener('mousemove', e => { if (dragging) setFromEvent(e); });
+    window.addEventListener('mouseup', () => { dragging = false; knob.classList.remove('dragging'); });
+    knob.addEventListener('touchstart', e => { e.preventDefault(); dragging = true; knob.classList.add('dragging'); }, {passive:false});
+    window.addEventListener('touchmove', e => { if (dragging) { e.preventDefault(); setFromEvent(e); } }, {passive:false});
+    window.addEventListener('touchend', () => { dragging = false; knob.classList.remove('dragging'); });
   }
 
   function initMirrorWipe() {
@@ -3439,10 +4289,42 @@
           closeInsp();
         };
       }, 50);
+    } else if (!G.completedSteps.has(67)) {
+      // Sub-step 67 — find the loose brick (it wobbles)
+      const body = `
+        <p class="insp-desc">One brick in the surround is loose — you can see it shift faintly. Find and press it.</p>
+        <div class="mini-stage">
+          <div class="brick-grid" id="fpBricks"></div>
+          <div class="insp-feedback" id="fpBrickFb">Click the loose brick.</div>
+        </div>
+        ${clueStrip('fireplace')}
+      `;
+      openInsp('fireplace', 'The Fireplace', body);
+      setTimeout(() => {
+        const grid = document.getElementById('fpBricks');
+        const fb = document.getElementById('fpBrickFb');
+        const LOOSE = 6; // mid-row, second column
+        for (let i = 0; i < 12; i++) {
+          const b = document.createElement('button');
+          b.className = 'brick' + (i === LOOSE ? ' loose' : '');
+          b.onclick = () => {
+            if (i === LOOSE) {
+              b.classList.add('pushed');
+              if (fb) { fb.textContent = '✓ The brick slides inward — a small cavity is exposed.'; fb.className = 'insp-feedback ok'; }
+              completeStep(67); persist();
+              setTimeout(() => { closeInsp(); setTimeout(handleFireplace, 80); }, 1100);
+            } else {
+              b.classList.add('wrong'); setTimeout(() => b.classList.remove('wrong'), 350);
+              if (fb) { fb.textContent = 'That one is set firm.'; fb.className = 'insp-feedback err'; }
+            }
+          };
+          grid.appendChild(b);
+        }
+      }, 50);
     } else {
       const body = `
-        <p class="insp-desc">The hearth is cold and the ashes are scattered. The scrap is folded in your pocket.</p>
-        <p class="insp-feedback ok">✓ Fireplace examined.</p>
+        <p class="insp-desc">The hearth is cold and the ashes are scattered. The scrap is folded in your pocket. The loose brick has been pressed in.</p>
+        <p class="insp-feedback ok">✓ Fireplace fully examined.</p>
         ${clueStrip('fireplace')}
       `;
       openInsp('fireplace', 'The Fireplace', body);
@@ -3559,10 +4441,57 @@
           closeInsp();
         };
       }, 50);
+    } else if (!G.completedSteps.has(68)) {
+      // Sub-step 68 — pick the correct coordinate from three faded entries
+      const body = `
+        <p class="insp-desc">Of the three latitudes inside the compartment, only one is the home port. The other two are decoys. The home is at 12° E — pick it.</p>
+        <div class="mini-stage">
+          <button class="phono-choice" data-c="a">47° 31′ N · 19° 03′ E</button>
+          <button class="phono-choice" data-c="b">47° 31′ N · 12° 04′ E</button>
+          <button class="phono-choice" data-c="c">09° 18′ S · 12° 04′ E</button>
+          <div class="insp-feedback" id="globeCoordFb"></div>
+        </div>
+        ${clueStrip('globe')}
+      `;
+      openInsp('globe', 'The Globe', body);
+      setTimeout(() => {
+        const fb = document.getElementById('globeCoordFb');
+        document.querySelectorAll('[data-c]').forEach(b => {
+          b.onclick = () => {
+            if (b.dataset.c === 'b') {
+              b.classList.add('right');
+              if (fb) { fb.textContent = '✓ The home port — Salzburg, 1879.'; fb.className = 'insp-feedback ok'; }
+              completeStep(68); persist();
+              setTimeout(() => { closeInsp(); setTimeout(handleGlobe, 80); }, 1000);
+            } else {
+              b.classList.add('wrong'); setTimeout(() => b.classList.remove('wrong'), 400);
+              if (fb) { fb.textContent = 'Not this one. Look again.'; fb.className = 'insp-feedback err'; }
+            }
+          };
+        });
+      }, 50);
+    } else if (!G.completedSteps.has(69)) {
+      // Sub-step 69 — set the axis tilt to 23° (Earth's true axial tilt)
+      const body = `
+        <p class="insp-desc">The globe's axis has been knocked off true. Set it to its astronomical tilt — between 22° and 24°.</p>
+        <div class="mini-stage">
+          <div class="mini-slider-wrap">
+            <div class="mini-slider-bar">
+              <div class="mini-slider-fill" id="globeAxisFill"></div>
+              <div class="mini-slider-target" style="left:25.5%;"></div>
+              <div class="mini-slider-knob" id="globeAxisKnob" style="left:5%;"></div>
+            </div>
+          </div>
+          <div class="insp-feedback" id="globeAxisFb">Current tilt: 5°</div>
+        </div>
+        ${clueStrip('globe')}
+      `;
+      openInsp('globe', 'The Globe', body);
+      setTimeout(() => initSlider('globeAxisKnob', 'globeAxisFill', 'globeAxisFb', 22, 24, '°', 69, handleGlobe), 50);
     } else {
       const body = `
-        <p class="insp-desc">The globe rests still. The slip is back in the compartment, the compartment closed.</p>
-        <p class="insp-feedback ok">✓ Globe examined.</p>
+        <p class="insp-desc">The globe rests still on its true axial tilt. The compartment is closed. The home port is noted.</p>
+        <p class="insp-feedback ok">✓ Globe fully examined.</p>
         ${clueStrip('globe')}
       `;
       openInsp('globe', 'The Globe', body);
@@ -3663,14 +4592,65 @@
           closeInsp();
         };
       }, 50);
+    } else if (!G.completedSteps.has(70)) {
+      // Sub-step 70 — solve a second mate-in-one puzzle
+      const body = `
+        <p class="insp-desc">A second board has been set up nearby — a different problem. White to move, mate in one. Move the rook to deliver mate.</p>
+        <div class="chess-board-int" id="chessBoard3"></div>
+        <div class="insp-feedback" id="chess3Fb" style="margin-top:0.5rem;text-align:center;">Click the Rook, then the target square.</div>
+        ${clueStrip('chess')}
+      `;
+      openInsp('chess', 'The Chess Board', body);
+      setTimeout(initChess2, 50);
     } else {
       const body = `
-        <p class="insp-desc">The board is in checkmate. The king lies on his side.</p>
-        <p class="insp-feedback ok">✓ Chess board examined.</p>
+        <p class="insp-desc">Both boards are resolved. Both kings have fallen.</p>
+        <p class="insp-feedback ok">✓ Chess fully examined.</p>
         ${clueStrip('chess')}
       `;
       openInsp('chess', 'The Chess Board', body);
     }
+  }
+
+  /* Second chess puzzle: King at 3 (top-right area), Rook at 15 (bottom-right), target index 7 (right edge) */
+  function initChess2() {
+    const board = document.getElementById('chessBoard3');
+    const fb = document.getElementById('chess3Fb');
+    if (!board) return;
+    const KING = 3, ROOK = 15, TARGET = 7;
+    let rookPos = ROOK, selected = null;
+    const render = () => {
+      board.innerHTML = '';
+      for (let i = 0; i < 16; i++) {
+        const row = Math.floor(i / 4), col = i % 4;
+        const sq = document.createElement('div');
+        const isLight = (row + col) % 2 === 0;
+        sq.className = 'chess-sq ' + (isLight ? 'light' : 'dark');
+        if (i === TARGET) sq.classList.add('target');
+        if (i === selected) sq.classList.add('selected');
+        if (i === KING) sq.innerHTML = '<span class="chess-piece">♚</span>';
+        if (i === rookPos) sq.innerHTML = '<span class="chess-piece">♖</span>';
+        sq.onclick = () => onSq(i, sq);
+        board.appendChild(sq);
+      }
+    };
+    const onSq = (i, el) => {
+      if (selected === null) {
+        if (i === rookPos) { selected = i; render(); }
+        return;
+      }
+      if (i === TARGET) {
+        rookPos = TARGET; selected = null; render();
+        if (fb) { fb.textContent = '✓ Mate.'; fb.className = 'insp-feedback ok'; }
+        completeStep(70); persist();
+        setTimeout(() => { closeInsp(); setTimeout(handleChess, 80); }, 900);
+      } else {
+        el.classList.add('shake'); setTimeout(() => el.classList.remove('shake'), 400);
+        if (fb) { fb.textContent = 'Not mate. The king escapes.'; fb.className = 'insp-feedback err'; }
+        selected = null; render();
+      }
+    };
+    render();
   }
 
   /* 4×4 board, index 0..15 reading left-to-right top-to-bottom.
@@ -4017,7 +4997,7 @@
   }
 
   function getMaxStepForObj(id) {
-    const m = { letter:1, portrait:4, clock:7, bookshelf:10, desk:13, musicbox:16, candle:18, rug:21, map:24, cabinet:29, mirror:33, fireplace:37, globe:41, chess:45, phonograph:49, door:50 };
+    const m = { letter:51, portrait:53, clock:55, bookshelf:58, desk:60, musicbox:61, candle:62, rug:63, map:64, cabinet:65, mirror:66, fireplace:67, globe:69, chess:70, phonograph:49, door:50 };
     return m[id] || 1;
   }
 
@@ -4144,7 +5124,7 @@
     });
 
     // Solved objects
-    const objMaxSteps = { portrait:4, clock:7, bookshelf:10, desk:13, musicbox:16, candle:18, rug:21, map:24, cabinet:29, mirror:33, fireplace:37, globe:41, chess:45, phonograph:49, door:50 };
+    const objMaxSteps = { portrait:53, clock:55, bookshelf:58, desk:60, musicbox:61, candle:62, rug:63, map:64, cabinet:65, mirror:66, fireplace:67, globe:69, chess:70, phonograph:49, door:50 };
     Object.entries(objMaxSteps).forEach(([id, maxStep]) => {
       if (G.completedSteps.has(maxStep)) showObjSolved(id);
     });
