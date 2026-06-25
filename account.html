@@ -720,6 +720,9 @@
     .hunt-card-actions {
       padding: 0.8rem 1.4rem;
       border-top: 1px solid rgba(212,167,70,0.06);
+      /* Keep the action buttons above the locked veil so Unlock stays clickable */
+      position: relative;
+      z-index: 2;
       display: flex;
       flex-direction: column;
       gap: 0.45rem;
@@ -781,6 +784,8 @@
       justify-content: center;
       gap: 0.6rem;
       backdrop-filter: blur(2px);
+      /* Decorative veil only — let clicks reach the Unlock button beneath it */
+      pointer-events: none;
     }
 
     .lock-icon { font-size: 1.8rem; opacity: 0.5; }
