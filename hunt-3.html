@@ -873,6 +873,119 @@
       .digit-slot { width:2rem; height:2.6rem; font-size:1.2rem; }
     }
     @media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation-duration:0.01ms !important; transition-duration:0.01ms !important; } }
+
+    /* ── Interactive mini-puzzle UI ──────────────────────────── */
+    /* Mirror — wipe canvas */
+    .mirror-stage { display:flex; flex-direction:column; align-items:center; gap:0.6rem; }
+    .mirror-canvas { display:block; touch-action:none; cursor:crosshair; border-radius:50%/60%;
+      background:linear-gradient(160deg,rgba(80,90,110,0.45) 0%,rgba(40,50,60,0.7) 40%,rgba(15,20,30,0.95) 100%);
+      box-shadow:inset 3px 3px 10px rgba(0,0,0,0.7), 0 4px 10px rgba(0,0,0,0.7);
+      border:6px solid;
+      border-image:linear-gradient(135deg,#a07820,#5a3a10 50%,#8a6020) 1;
+    }
+    .mirror-letter { width:3rem; height:3rem; background:rgba(14,11,18,0.8); border:1px solid rgba(212,167,70,0.3); color:var(--gold); font-family:var(--font-display); font-size:1.4rem; cursor:pointer; border-radius:3px; transition:all 0.2s; }
+    .mirror-letter:hover { background:rgba(212,167,70,0.18); border-color:var(--gold); transform:translateY(-2px); }
+    .mirror-letter.used { background:rgba(212,167,70,0.35); opacity:0.45; pointer-events:none; transform:none; }
+
+    /* Fireplace — rake ashes */
+    .fireplace-stage { position:relative; width:100%; max-width:380px; aspect-ratio:1.7/1; margin:0 auto;
+      background:
+        radial-gradient(ellipse 70% 35% at 50% 95%, #6a2810 0%, #2a1208 40%, transparent 70%),
+        radial-gradient(ellipse 80% 60% at 50% 70%, #1a0a04 0%, #0a0402 100%);
+      border:2px solid #0a0402; border-radius:4px; overflow:hidden; cursor:crosshair; touch-action:none;
+      box-shadow:inset 0 0 24px rgba(0,0,0,0.85), inset 0 -8px 16px rgba(255,80,20,0.25);
+    }
+    .ash-particle { position:absolute; background:#5a4a3a; border-radius:50%; pointer-events:none; transition:transform 0.4s ease, opacity 0.4s ease; }
+    .fireplace-scrap { position:absolute; left:50%; top:55%; transform:translate(-50%,-50%) rotate(-4deg); width:72px; height:50px;
+      background:linear-gradient(160deg,#d4c39a 0%,#8a6840 70%, #5a4818 100%);
+      border:1px solid #2a1808; border-radius:2px;
+      opacity:0; transition:opacity 0.7s; box-shadow:0 2px 6px rgba(0,0,0,0.9); cursor:pointer; }
+    .fireplace-scrap.revealed { opacity:1; }
+    .fireplace-scrap::before { content:'A.M.V.'; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      font-family:'EB Garamond',serif; font-style:italic; font-size:0.65rem; color:#3a2410; letter-spacing:0.1em; }
+    .rake-meter { width:80%; height:4px; background:rgba(14,11,18,0.6); border:1px solid rgba(212,167,70,0.2); border-radius:2px; overflow:hidden; margin:0.6rem auto 0; }
+    .rake-fill { height:100%; width:0%; background:linear-gradient(90deg,#c04010,var(--gold)); transition:width 0.15s linear; }
+
+    /* Globe — drag to rotate */
+    .globe-stage { width:280px; max-width:80vw; aspect-ratio:1; margin:0 auto; position:relative; }
+    .globe-sphere-3d { width:100%; height:100%; border-radius:50%; overflow:hidden; cursor:grab; position:relative;
+      box-shadow:inset -12px -14px 32px rgba(0,0,0,0.7), inset 6px 8px 14px rgba(255,255,255,0.12), 0 6px 14px rgba(0,0,0,0.85);
+      touch-action:none; user-select:none; }
+    .globe-sphere-3d.dragging { cursor:grabbing; }
+    .globe-surface { position:absolute; top:0; height:100%; width:400%; left:0;
+      background:
+        radial-gradient(ellipse 4% 14% at 8%  45%, #4a7020, transparent 70%),
+        radial-gradient(ellipse 6% 20% at 18% 35%, #3a5818, transparent 70%),
+        radial-gradient(ellipse 5% 18% at 30% 55%, #4a7020, transparent 70%),
+        radial-gradient(ellipse 7% 22% at 42% 40%, #3a5818, transparent 70%),
+        radial-gradient(ellipse 5% 16% at 55% 60%, #4a7020, transparent 70%),
+        radial-gradient(ellipse 6% 22% at 68% 45%, #2a4a18, transparent 70%),
+        radial-gradient(ellipse 5% 16% at 80% 55%, #3a5818, transparent 70%),
+        radial-gradient(ellipse 6% 20% at 92% 40%, #4a7020, transparent 70%),
+        linear-gradient(180deg, #5a8aae 0%, #2a4e72 50%, #0e2038 100%);
+      pointer-events:none;
+    }
+    .globe-worn { position:absolute; width:28px; height:28px; border-radius:50%;
+      background:radial-gradient(circle, rgba(160,110,50,0.85) 0%, rgba(80,55,20,0.4) 50%, transparent 80%);
+      cursor:pointer; transform:translate(-50%,-50%); display:none;
+      box-shadow:0 0 12px rgba(255,180,80,0.4);
+    }
+    .globe-worn.visible { display:block; animation:wornPulse 2s ease-in-out infinite; }
+    @keyframes wornPulse { 0%,100% { box-shadow:0 0 8px rgba(255,180,80,0.3); } 50% { box-shadow:0 0 16px rgba(255,180,80,0.6); } }
+    .globe-marker { position:absolute; right:-12px; top:50%; transform:translateY(-50%); font-family:var(--font-mono); font-size:0.55rem; color:var(--gold); writing-mode:vertical-rl; opacity:0.6; }
+    .globe-compartment { margin-top:0.8rem; padding:0.8rem 1rem; background:rgba(14,11,18,0.8); border:1px solid rgba(212,167,70,0.3); border-radius:3px; opacity:0; transform:translateY(-6px); transition:all 0.4s; }
+    .globe-compartment.open { opacity:1; transform:translateY(0); }
+
+    /* Chess — clickable 4×4 board */
+    .chess-board-int { display:grid; grid-template-columns:repeat(4, 1fr); width:100%; max-width:260px; aspect-ratio:1; margin:0.6rem auto; border:3px solid #2a1808; box-shadow:0 4px 10px rgba(0,0,0,0.7), inset 0 0 8px rgba(0,0,0,0.4); }
+    .chess-sq { display:flex; align-items:center; justify-content:center; font-size:2rem; cursor:pointer; position:relative; user-select:none; transition:background 0.15s; }
+    .chess-sq.light { background:#ead4a0; color:#1a0e02; }
+    .chess-sq.dark  { background:#5a3a18; color:#f0e0c0; }
+    .chess-sq.light:hover, .chess-sq.dark:hover { filter:brightness(1.18); }
+    .chess-sq.selected { box-shadow:inset 0 0 0 3px var(--gold); }
+    .chess-sq.legal::after { content:''; position:absolute; width:30%; height:30%; background:rgba(212,167,70,0.45); border-radius:50%; }
+    .chess-sq.target { box-shadow:inset 0 0 0 3px rgba(226,87,43,0.8); animation:targetPulse 1.5s ease-in-out infinite; }
+    @keyframes targetPulse { 0%,100% { box-shadow:inset 0 0 0 3px rgba(226,87,43,0.6); } 50% { box-shadow:inset 0 0 0 4px rgba(226,87,43,1); } }
+    .chess-piece { line-height:1; text-shadow:1px 1px 2px rgba(0,0,0,0.5); }
+
+    /* Phonograph — rotate the crank */
+    .phono-stage { width:100%; max-width:340px; margin:0 auto; display:flex; flex-direction:column; align-items:center; gap:1rem; }
+    .phono-crank-wrap { width:140px; height:140px; position:relative; border-radius:50%;
+      background:radial-gradient(circle, rgba(212,167,70,0.04) 0%, transparent 70%);
+      border:1px dashed rgba(212,167,70,0.25);
+      touch-action:none; user-select:none;
+    }
+    .phono-crank { position:absolute; left:50%; top:50%; transform-origin:0 50%; cursor:grab; width:60px; height:14px;
+      transform:translateY(-50%) rotate(0deg);
+      background:linear-gradient(180deg,#c89048 0%, #6a4218 60%, #3a2410 100%);
+      border:1px solid #0a0402; border-radius:3px;
+      box-shadow:0 2px 3px rgba(0,0,0,0.7), inset 0 1px 1px rgba(255,220,160,0.4);
+    }
+    .phono-crank.dragging { cursor:grabbing; }
+    .phono-crank::after { content:''; position:absolute; right:-8px; top:-7px; width:18px; height:28px;
+      background:radial-gradient(circle at 30% 30%, #d4a040, #5a3818 70%);
+      border:1px solid #1a0e02; border-radius:3px;
+      box-shadow:0 1px 2px rgba(0,0,0,0.7);
+    }
+    .phono-axle { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      width:18px; height:18px; border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, #f0c050, #4a2e08);
+      border:1px solid #0a0402;
+      box-shadow:0 1px 2px rgba(0,0,0,0.6);
+      z-index:2;
+    }
+    .phono-meter { width:240px; height:8px; background:rgba(14,11,18,0.8); border:1px solid rgba(212,167,70,0.3); border-radius:4px; overflow:hidden; }
+    .phono-meter-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--ember),var(--gold)); transition:width 0.15s linear; }
+    .phono-cylinder { width:160px; height:42px;
+      background:repeating-linear-gradient(90deg, #2a1408 0 3px, #1a0a04 3px 5px);
+      border:1px solid #0a0402; border-radius:4px;
+      box-shadow:inset 0 0 8px rgba(0,0,0,0.7), 0 2px 4px rgba(0,0,0,0.6);
+      position:relative;
+    }
+    .phono-cylinder.spinning { animation:cylinderSpin 1.4s linear infinite; }
+    @keyframes cylinderSpin { 0%{background-position:0 0;} 100%{background-position:60px 0;} }
+    .phono-needle { width:60px; height:3px; background:linear-gradient(90deg,#8a6428,#3a2410); border:1px solid #0a0402; transform-origin:0 50%; transform:rotate(-30deg); }
+    .phono-transcript { background:rgba(14,11,18,0.9); border:1px solid rgba(212,167,70,0.25); border-radius:3px; padding:0.8rem 1rem; font-family:'EB Garamond',serif; font-style:italic; color:var(--parchment); line-height:1.7; font-size:0.92rem; }
   </style>
 </head>
 <body>
@@ -1287,39 +1400,6 @@
     door:      'You were not meant to guess. You were meant to discover.',
   };
 
-  /* ── Atmospheric lore for new objects (4 steps each) ──────── */
-  const LORE = {
-    mirror: [
-      { desc:'A tall oval mirror in a gilded frame, the glass clouded by dust. Your own reflection is barely visible through the haze.', btn:'Wipe the Glass' },
-      { desc:'The glass clears in patches. Behind your reflection, the room shows another door — narrower, in a wall that does not exist.', btn:'Look Closer' },
-      { desc:'In the corner of the silver backing, a name has been scratched in fine cursive: <em style="color:var(--gold);">A. M. Venturi</em>.', btn:'Take Note of the Name' },
-      { desc:'The mirror returns nothing extraordinary now. It has shown what it was kept here to show.', btn:'Step Back' },
-    ],
-    fireplace: [
-      { desc:'A cold stone fireplace. The hearth is dark; the embers have been dead for years. A faint scent of pine resin lingers in the cold air.', btn:'Examine the Hearth' },
-      { desc:'You stir what is left of the ashes with the brass poker. A small scrap of paper, charred at the edges but legible, lies near the back wall.', btn:'Lift the Scrap' },
-      { desc:'The scrap reads, in a careful hand: <em style="font-family:\'EB Garamond\',serif;color:var(--gold);">"The room remembers. The lock does not. — A.M.V."</em>', btn:'Pocket the Scrap' },
-      { desc:'The hearth is cold. The scrap is committed to memory.', btn:'Stand Up' },
-    ],
-    globe: [
-      { desc:'A tabletop globe on a turned wooden stand. The continents are gilded; the oceans are dusty. A single dark fingerprint marks one location, repeated.', btn:'Examine the Globe' },
-      { desc:'The fingerprint sits over a small port on a southern coast. The previous occupant returned to this point so often the lacquer has worn through.', btn:'Spin the Globe' },
-      { desc:'As the sphere turns on its axis, a soft catch clicks. A small compartment opens beneath the south pole, holding a folded slip.', btn:'Open the Compartment' },
-      { desc:'The slip lists three latitudes in faded ink. None of them are the port that was worn through. <em style="color:var(--parchment-dim);">He was looking elsewhere.</em>', btn:'Close It' },
-    ],
-    chess: [
-      { desc:'A small chess board on top of the cabinet. The pieces stand mid-game — an unfinished match, abandoned years ago, the lacquer dulled by time.', btn:'Study the Board' },
-      { desc:'Black\'s queen is exposed. White\'s next move would be mate in two. Whoever played black surrendered the position — but did not knock the king over.', btn:'Examine the Pieces' },
-      { desc:'Beneath the black king, folded in quarters, a slip of paper: <em style="color:var(--gold);">"The match was never the point."</em>', btn:'Take the Slip' },
-      { desc:'The board is as you left it. The game remains unfinished, and now you understand why.', btn:'Step Away' },
-    ],
-    phonograph: [
-      { desc:'A polished mahogany phonograph rests on the mantel, brass horn flared upward. A wax cylinder is already in place on the spindle.', btn:'Wind the Crank' },
-      { desc:'The cylinder begins to turn. A voice, slightly distorted by age: <em style="color:var(--gold);">"If you are hearing this, then you are inside. Welcome — again."</em>', btn:'Listen Further' },
-      { desc:'<em style="font-family:\'EB Garamond\',serif;color:var(--parchment);">"The chamber is its own answer. The door responds only to attention, not to force. Take your time. You have eleven years to make up."</em>', btn:'Let It Run' },
-      { desc:'The cylinder turns silently now. The voice has said all it intended to say.', btn:'Lift the Needle' },
-    ],
-  };
 
   /* ── Utility ──────────────────────────────────────────────── */
   function fmtTime(s) {
@@ -2279,46 +2359,649 @@
     }
   }
 
-  /* ── Generic lore handler for 4-step atmospheric objects ─── */
-  function loreHandler(objId, title, baseStep) {
-    return function() {
-      const step = G.objStep[objId];
-      const scenes = LORE[objId];
-      if (step >= scenes.length) {
-        openInsp(objId, title,
-          `<p class="insp-desc">${scenes[scenes.length-1].desc}</p>
-           <p class="insp-feedback ok">✓ Examined.</p>
-           ${clueStrip(objId)}`);
-        return;
-      }
-      const s = scenes[step];
+  /* ─────────────────────────────────────────────────────────────
+     MIRROR — drag-to-wipe canvas + ordered letter selection
+     Steps 30-33
+     ───────────────────────────────────────────────────────────── */
+  function handleMirror() {
+    const step = G.objStep.mirror;
+    if (step === 0) {
       const body = `
-        <p class="insp-desc">${s.desc}</p>
-        <div class="insp-action-area">
-          <button class="insp-btn" id="loreBtn">${s.btn}</button>
+        <p class="insp-desc">A tall oval mirror in a gilded frame. The glass is thick with grey dust. Drag your finger across the glass to clean it.</p>
+        <div class="mirror-stage">
+          <canvas id="mirrorCanvas" class="mirror-canvas" width="300" height="360"></canvas>
+          <div class="insp-feedback" id="mirrorFb">Drag across the glass.</div>
         </div>
-        ${clueStrip(objId)}
+        ${clueStrip('mirror')}
       `;
-      openInsp(objId, title, body);
+      openInsp('mirror', 'The Mirror', body);
+      setTimeout(initMirrorWipe, 50);
+    } else if (step === 1) {
+      const body = `
+        <p class="insp-desc">The glass is clear. In your reflection, behind your shoulder, you can see a narrow door — built into a wall that does not exist in this room.</p>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="mirrorNext">Look at the Silver Backing</button>
+        </div>
+        ${clueStrip('mirror')}
+      `;
+      openInsp('mirror', 'The Mirror', body);
       setTimeout(() => {
-        const btn = document.getElementById('loreBtn');
-        if (btn) btn.onclick = () => {
-          G.objStep[objId] = step + 1;
-          completeStep(baseStep + step);
-          if (step === scenes.length - 1) showObjSolved(objId);
-          persist();
-          closeInsp();
-          if (step < scenes.length - 1) setTimeout(() => dispatchObj(objId), 80);
+        document.getElementById('mirrorNext').onclick = () => {
+          G.objStep.mirror = 2; completeStep(31); persist();
+          closeInsp(); setTimeout(handleMirror, 80);
         };
       }, 50);
+    } else if (step === 2) {
+      const body = `
+        <p class="insp-desc">A name has been scratched into the silver backing in cursive. The letters are scrambled across the frame. Click them in the correct order.</p>
+        <div id="mirrorLetters" style="display:flex;gap:0.8rem;justify-content:center;margin:1.4rem 0;flex-wrap:wrap;">
+          <button class="mirror-letter" data-l="V">V</button>
+          <button class="mirror-letter" data-l="A" data-idx="0">A</button>
+          <button class="mirror-letter" data-l="M">M</button>
+          <button class="mirror-letter" data-l="A" data-idx="1">A</button>
+        </div>
+        <div class="insp-feedback" id="mirrorLfb" style="text-align:center;font-family:var(--font-mono);font-size:1.3rem;letter-spacing:0.4em;color:var(--gold);min-height:1.5em;">_ . _ . _</div>
+        <p style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);opacity:0.5;text-align:center;letter-spacing:0.06em;margin-top:0.6rem;">Spell the initials of the former occupant.</p>
+        ${clueStrip('mirror')}
+      `;
+      openInsp('mirror', 'The Mirror', body);
+      setTimeout(initMirrorLetters, 50);
+    } else {
+      const body = `
+        <p class="insp-desc">The mirror is clean. The initials <strong style="color:var(--gold);">A. M. V.</strong> are scratched into the silver backing — A. M. Venturi.</p>
+        <p class="insp-feedback ok">✓ Mirror examined.</p>
+        ${clueStrip('mirror')}
+      `;
+      openInsp('mirror', 'The Mirror', body);
+    }
+  }
+
+  function initMirrorWipe() {
+    const canvas = document.getElementById('mirrorCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    // Paint dust layer
+    ctx.fillStyle = '#857d6a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < 1200; i++) {
+      const r = Math.random();
+      ctx.fillStyle = `rgba(${110+r*60},${100+r*50},${85+r*40},${0.35+Math.random()*0.4})`;
+      ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2+Math.random()*3, 2+Math.random()*3);
+    }
+    ctx.globalCompositeOperation = 'destination-out';
+    let drawing = false;
+    let wiped = 0;
+    const total = canvas.width * canvas.height;
+    const checkPct = () => {
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      let clear = 0;
+      for (let i = 3; i < img.data.length; i += 32) {
+        if (img.data[i] < 60) clear++;
+      }
+      const pct = clear / (img.data.length / 32);
+      const fb = document.getElementById('mirrorFb');
+      if (fb) fb.textContent = `Wiped ${Math.round(pct*100)}%`;
+      if (pct > 0.55) {
+        if (fb) { fb.textContent = 'The glass is clear.'; fb.className = 'insp-feedback ok'; }
+        G.objStep.mirror = 1; completeStep(30); persist();
+        setTimeout(() => { closeInsp(); setTimeout(handleMirror, 80); }, 700);
+        return true;
+      }
+      return false;
+    };
+    const draw = (e) => {
+      if (!drawing) return;
+      const rect = canvas.getBoundingClientRect();
+      const pt = e.touches ? e.touches[0] : e;
+      const x = (pt.clientX - rect.left) * (canvas.width/rect.width);
+      const y = (pt.clientY - rect.top) * (canvas.height/rect.height);
+      ctx.beginPath();
+      ctx.arc(x, y, 26, 0, Math.PI*2);
+      ctx.fill();
+      wiped++;
+      if (wiped % 8 === 0) checkPct();
+    };
+    canvas.addEventListener('mousedown', e => { drawing = true; draw(e); });
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup',  () => { drawing = false; checkPct(); });
+    canvas.addEventListener('mouseleave', () => { drawing = false; });
+    canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; draw(e); }, {passive:false});
+    canvas.addEventListener('touchmove',  e => { e.preventDefault(); draw(e); }, {passive:false});
+    canvas.addEventListener('touchend',   () => { drawing = false; checkPct(); });
+  }
+
+  function initMirrorLetters() {
+    const ORDER = ['A','M','V'];
+    let pressed = [];
+    const fb = document.getElementById('mirrorLfb');
+    const renderDisplay = () => {
+      const slots = ['_','_','_'];
+      pressed.forEach((l, i) => slots[i] = l);
+      fb.textContent = slots.join(' . ');
+    };
+    document.querySelectorAll('.mirror-letter').forEach(btn => {
+      btn.onclick = () => {
+        if (btn.classList.contains('used')) return;
+        const l = btn.getAttribute('data-l');
+        const want = ORDER[pressed.length];
+        if (l === want) {
+          btn.classList.add('used');
+          pressed.push(l);
+          fb.className = 'insp-feedback';
+          renderDisplay();
+          if (pressed.length === 1) { completeStep(32); persist(); }
+          if (pressed.length === ORDER.length) {
+            fb.textContent = 'A . M . V .';
+            fb.className = 'insp-feedback ok';
+            G.objStep.mirror = 3;
+            completeStep(33);
+            showObjSolved('mirror'); persist();
+            setTimeout(() => { closeInsp(); setTimeout(handleMirror, 80); }, 900);
+          }
+        } else {
+          btn.classList.add('shake');
+          setTimeout(() => btn.classList.remove('shake'), 400);
+          pressed = [];
+          document.querySelectorAll('.mirror-letter').forEach(b => b.classList.remove('used'));
+          fb.textContent = '_ . _ . _';
+          fb.className = 'insp-feedback err';
+        }
+      };
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     FIREPLACE — drag-to-rake ashes, reveal scrap
+     Steps 34-37
+     ───────────────────────────────────────────────────────────── */
+  function handleFireplace() {
+    const step = G.objStep.fireplace;
+    if (step === 0) {
+      let particles = '';
+      for (let i = 0; i < 80; i++) {
+        const sz = 4 + Math.random() * 8;
+        const x = 10 + Math.random() * 80;
+        const y = 30 + Math.random() * 65;
+        const o = 0.4 + Math.random() * 0.5;
+        const g = 60 + Math.floor(Math.random()*40);
+        particles += `<div class="ash-particle" data-i="${i}" style="left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;background:rgb(${g},${g-10},${g-20});opacity:${o};"></div>`;
+      }
+      const body = `
+        <p class="insp-desc">A cold stone fireplace. The hearth is heaped with ash. Drag the brass poker across the embers to rake them aside.</p>
+        <div class="fireplace-stage" id="fireplaceStage">
+          ${particles}
+          <div class="fireplace-scrap" id="fpScrap"></div>
+        </div>
+        <div class="rake-meter"><div class="rake-fill" id="rakeFill"></div></div>
+        <div class="insp-feedback" id="fpFb" style="margin-top:0.5rem;">Drag to rake the ashes.</div>
+        ${clueStrip('fireplace')}
+      `;
+      openInsp('fireplace', 'The Fireplace', body);
+      setTimeout(initFireplaceRake, 50);
+    } else if (step === 1) {
+      const body = `
+        <p class="insp-desc">Beneath the displaced ash, a scrap of paper — charred at the edges but legible. Click it to lift it from the hearth.</p>
+        <div class="fireplace-stage" style="cursor:default;">
+          <div class="fireplace-scrap revealed" id="fpScrap2" style="cursor:pointer;"></div>
+        </div>
+        ${clueStrip('fireplace')}
+      `;
+      openInsp('fireplace', 'The Fireplace', body);
+      setTimeout(() => {
+        document.getElementById('fpScrap2').onclick = () => {
+          G.objStep.fireplace = 2; completeStep(36); persist();
+          closeInsp(); setTimeout(handleFireplace, 80);
+        };
+      }, 50);
+    } else if (step === 2) {
+      const body = `
+        <p class="insp-desc">You unfold the scrap carefully. The handwriting is small, careful, and faded.</p>
+        <div style="background:linear-gradient(160deg,#d4c39a,#8a6840);border:1px solid #4a3818;border-radius:3px;padding:1.2rem 1.5rem;margin:1rem auto;max-width:320px;font-family:'EB Garamond',serif;font-style:italic;color:#1a0e02;line-height:1.7;box-shadow:0 4px 10px rgba(0,0,0,0.7);">
+          "The room remembers. The lock does not.<br>Trust what was kept. Discard what was added."<br><br>
+          <span style="text-align:right;display:block;">— A. M. V.</span>
+        </div>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="fpDone">Pocket the Scrap</button>
+        </div>
+        ${clueStrip('fireplace')}
+      `;
+      openInsp('fireplace', 'The Fireplace', body);
+      setTimeout(() => {
+        document.getElementById('fpDone').onclick = () => {
+          G.objStep.fireplace = 3; completeStep(37);
+          showObjSolved('fireplace'); persist();
+          closeInsp();
+        };
+      }, 50);
+    } else {
+      const body = `
+        <p class="insp-desc">The hearth is cold and the ashes are scattered. The scrap is folded in your pocket.</p>
+        <p class="insp-feedback ok">✓ Fireplace examined.</p>
+        ${clueStrip('fireplace')}
+      `;
+      openInsp('fireplace', 'The Fireplace', body);
+    }
+  }
+
+  function initFireplaceRake() {
+    const stage = document.getElementById('fireplaceStage');
+    const fill = document.getElementById('rakeFill');
+    const fb = document.getElementById('fpFb');
+    const scrap = document.getElementById('fpScrap');
+    if (!stage) return;
+    let dragging = false;
+    let rakeProgress = 0;
+    let started = false;
+    const onMove = (e) => {
+      if (!dragging) return;
+      const rect = stage.getBoundingClientRect();
+      const pt = e.touches ? e.touches[0] : e;
+      const x = ((pt.clientX - rect.left) / rect.width) * 100;
+      const y = ((pt.clientY - rect.top)  / rect.height) * 100;
+      stage.querySelectorAll('.ash-particle').forEach(p => {
+        const px = parseFloat(p.style.left);
+        const py = parseFloat(p.style.top);
+        const dx = px - x, dy = py - y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 14 && !p.dataset.moved) {
+          const angle = Math.atan2(dy, dx);
+          const newX = px + Math.cos(angle) * 25;
+          const newY = py + Math.sin(angle) * 15;
+          p.style.left = Math.max(2, Math.min(96, newX)) + '%';
+          p.style.top  = Math.max(20, Math.min(95, newY)) + '%';
+          p.style.opacity = 0.2;
+          p.dataset.moved = '1';
+          rakeProgress++;
+          fill.style.width = Math.min(100, (rakeProgress / 30) * 100) + '%';
+          if (!started) { started = true; completeStep(34); persist(); fb.textContent = 'Keep raking…'; }
+          if (rakeProgress >= 30) {
+            scrap.classList.add('revealed');
+            fb.textContent = 'A scrap of paper appears beneath the ash.';
+            fb.className = 'insp-feedback ok';
+            G.objStep.fireplace = 1; completeStep(35); persist();
+            setTimeout(() => { closeInsp(); setTimeout(handleFireplace, 80); }, 1100);
+          }
+        }
+      });
+    };
+    stage.addEventListener('mousedown', e => { dragging = true; onMove(e); });
+    stage.addEventListener('mousemove', onMove);
+    stage.addEventListener('mouseup',   () => { dragging = false; });
+    stage.addEventListener('mouseleave',() => { dragging = false; });
+    stage.addEventListener('touchstart',e => { e.preventDefault(); dragging = true; onMove(e); }, {passive:false});
+    stage.addEventListener('touchmove', e => { e.preventDefault(); onMove(e); }, {passive:false});
+    stage.addEventListener('touchend',  () => { dragging = false; });
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     GLOBE — drag-to-rotate sphere, find worn spot, open compartment
+     Steps 38-41
+     ───────────────────────────────────────────────────────────── */
+  function handleGlobe() {
+    const step = G.objStep.globe;
+    if (step === 0) {
+      const body = `
+        <p class="insp-desc">A polished tabletop globe on a wooden stand. Drag horizontally to rotate it. A single location has been touched so many times the lacquer is worn through.</p>
+        <div class="globe-stage">
+          <div class="globe-sphere-3d" id="globeSphere">
+            <div class="globe-surface" id="globeSurface"></div>
+            <div class="globe-worn" id="globeWorn"></div>
+          </div>
+        </div>
+        <div class="insp-feedback" id="globeFb" style="text-align:center;margin-top:0.7rem;">Drag the sphere to rotate it.</div>
+        ${clueStrip('globe')}
+      `;
+      openInsp('globe', 'The Globe', body);
+      setTimeout(initGlobeRotate, 50);
+    } else if (step === 1) {
+      const body = `
+        <p class="insp-desc">Beneath the worn fingerprint, the lacquer gives way to a thin seam. A small compartment, hidden in the sphere itself, eases open.</p>
+        <div class="globe-compartment open" id="globeComp" style="cursor:pointer;">
+          <p style="font-family:var(--font-mono);font-size:0.7rem;color:var(--gold);letter-spacing:0.1em;text-align:center;">A folded slip waits inside.</p>
+          <p style="text-align:center;font-size:1.6rem;margin-top:0.3rem;">📜</p>
+        </div>
+        <div class="insp-action-area" style="margin-top:0.6rem;">
+          <button class="insp-btn" id="globeOpen">Open the Slip</button>
+        </div>
+        ${clueStrip('globe')}
+      `;
+      openInsp('globe', 'The Globe', body);
+      setTimeout(() => {
+        document.getElementById('globeOpen').onclick = () => {
+          G.objStep.globe = 2; completeStep(40); persist();
+          closeInsp(); setTimeout(handleGlobe, 80);
+        };
+      }, 50);
+    } else if (step === 2) {
+      const body = `
+        <p class="insp-desc">Three latitudes, written in faded ink. None of them is the worn-through port. The previous occupant was looking elsewhere.</p>
+        <div style="background:rgba(14,11,18,0.85);border:1px solid rgba(212,167,70,0.3);border-radius:3px;padding:1rem 1.4rem;margin:1rem auto;max-width:300px;font-family:'EB Garamond',serif;font-style:italic;color:var(--parchment);line-height:1.9;text-align:center;">
+          47° 31′ N<br>
+          12° 04′ E<br>
+          09° 18′ S
+        </div>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="globeDone">Close the Compartment</button>
+        </div>
+        ${clueStrip('globe')}
+      `;
+      openInsp('globe', 'The Globe', body);
+      setTimeout(() => {
+        document.getElementById('globeDone').onclick = () => {
+          G.objStep.globe = 3; completeStep(41);
+          showObjSolved('globe'); persist();
+          closeInsp();
+        };
+      }, 50);
+    } else {
+      const body = `
+        <p class="insp-desc">The globe rests still. The slip is back in the compartment, the compartment closed.</p>
+        <p class="insp-feedback ok">✓ Globe examined.</p>
+        ${clueStrip('globe')}
+      `;
+      openInsp('globe', 'The Globe', body);
+    }
+  }
+
+  function initGlobeRotate() {
+    const sphere  = document.getElementById('globeSphere');
+    const surface = document.getElementById('globeSurface');
+    const worn    = document.getElementById('globeWorn');
+    const fb      = document.getElementById('globeFb');
+    if (!sphere) return;
+    let dragging = false;
+    let startX   = 0;
+    let offset   = 0;          // 0..300, surface scrolls left by this %
+    let firstDrag = false;
+    const WORN_AT = 200;       // worn spot is centred when offset == 200
+    const update = () => {
+      surface.style.left = (-offset) + '%';
+      const dist = Math.abs(offset - WORN_AT);
+      if (dist < 30) {
+        worn.classList.add('visible');
+        const rel = 50 - (offset - WORN_AT) * 1.2;  // moves with the drag
+        worn.style.left = Math.max(15, Math.min(85, rel)) + '%';
+        worn.style.top  = '50%';
+        if (fb) { fb.textContent = 'A worn spot glows under your finger. Click it.'; fb.className = 'insp-feedback ok'; }
+      } else {
+        worn.classList.remove('visible');
+        if (firstDrag && fb) { fb.textContent = 'Keep rotating…'; fb.className = 'insp-feedback'; }
+      }
+    };
+    const startDrag = (e) => {
+      dragging = true; sphere.classList.add('dragging');
+      const pt = e.touches ? e.touches[0] : e;
+      startX = pt.clientX;
+      if (!firstDrag) { firstDrag = true; completeStep(38); persist(); fb.textContent = 'Rotating…'; }
+    };
+    const onMove = (e) => {
+      if (!dragging) return;
+      const pt = e.touches ? e.touches[0] : e;
+      const dx = pt.clientX - startX;
+      offset = Math.max(0, Math.min(300, offset - dx * 0.6));
+      startX = pt.clientX;
+      update();
+    };
+    const endDrag = () => { dragging = false; sphere.classList.remove('dragging'); };
+    sphere.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup',   endDrag);
+    sphere.addEventListener('touchstart', e => { e.preventDefault(); startDrag(e); }, {passive:false});
+    sphere.addEventListener('touchmove',  e => { e.preventDefault(); onMove(e); }, {passive:false});
+    sphere.addEventListener('touchend',   endDrag);
+    worn.onclick = () => {
+      G.objStep.globe = 1; completeStep(39); persist();
+      closeInsp(); setTimeout(handleGlobe, 80);
     };
   }
 
-  const handleMirror     = loreHandler('mirror',     'The Mirror',      30); // 30-33
-  const handleFireplace  = loreHandler('fireplace',  'The Fireplace',   34); // 34-37
-  const handleGlobe      = loreHandler('globe',      'The Globe',       38); // 38-41
-  const handleChess      = loreHandler('chess',      'The Chess Board', 42); // 42-45
-  const handlePhonograph = loreHandler('phonograph', 'The Phonograph',  46); // 46-49
+  /* ─────────────────────────────────────────────────────────────
+     CHESS — drag the queen onto the target square, click king
+     Steps 42-45
+     ───────────────────────────────────────────────────────────── */
+  function handleChess() {
+    const step = G.objStep.chess;
+    if (step === 0) {
+      const body = `
+        <p class="insp-desc">The board sits mid-game. White to move. There is exactly one move that decides the position. Click the White Queen, then click the highlighted square.</p>
+        <div class="chess-board-int" id="chessBoard"></div>
+        <div class="insp-feedback" id="chessFb" style="margin-top:0.5rem;text-align:center;">Click the Queen, then the target square.</div>
+        ${clueStrip('chess')}
+      `;
+      openInsp('chess', 'The Chess Board', body);
+      setTimeout(initChess, 50);
+    } else if (step === 1) {
+      const body = `
+        <p class="insp-desc">The Black King has fallen. Beneath where he stood, you can see the corner of a folded slip of paper. Click the toppled king to lift it.</p>
+        <div class="chess-board-int" id="chessBoard2"></div>
+        ${clueStrip('chess')}
+      `;
+      openInsp('chess', 'The Chess Board', body);
+      setTimeout(initChessKing, 50);
+    } else if (step === 2) {
+      const body = `
+        <p class="insp-desc">You unfold the slip. The handwriting matches the scrap from the fireplace.</p>
+        <div style="background:linear-gradient(160deg,#d4c39a,#8a6840);border:1px solid #4a3818;border-radius:3px;padding:1.2rem 1.5rem;margin:1rem auto;max-width:320px;font-family:'EB Garamond',serif;font-style:italic;color:#1a0e02;line-height:1.7;box-shadow:0 4px 10px rgba(0,0,0,0.7);text-align:center;">
+          "The match was never the point.<br>The position was."
+        </div>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="chessDone">Step Away</button>
+        </div>
+        ${clueStrip('chess')}
+      `;
+      openInsp('chess', 'The Chess Board', body);
+      setTimeout(() => {
+        document.getElementById('chessDone').onclick = () => {
+          G.objStep.chess = 3; completeStep(45);
+          showObjSolved('chess'); persist();
+          closeInsp();
+        };
+      }, 50);
+    } else {
+      const body = `
+        <p class="insp-desc">The board is in checkmate. The king lies on his side.</p>
+        <p class="insp-feedback ok">✓ Chess board examined.</p>
+        ${clueStrip('chess')}
+      `;
+      openInsp('chess', 'The Chess Board', body);
+    }
+  }
+
+  /* 4×4 board, index 0..15 reading left-to-right top-to-bottom.
+     White Queen at index 13 (row 3 col 1). Black King at 0 (row 0 col 0).
+     Target square (mate): index 12 (row 3 col 0) — Q to a1 boxes king. */
+  function initChess() {
+    const board = document.getElementById('chessBoard');
+    const fb = document.getElementById('chessFb');
+    if (!board) return;
+    const KING = 0, QUEEN = 13, TARGET = 12;
+    let queenPos = QUEEN;
+    let selected = null;
+    const render = () => {
+      board.innerHTML = '';
+      for (let i = 0; i < 16; i++) {
+        const row = Math.floor(i / 4), col = i % 4;
+        const sq = document.createElement('div');
+        const isLight = (row + col) % 2 === 0;
+        sq.className = 'chess-sq ' + (isLight ? 'light' : 'dark');
+        sq.dataset.i = i;
+        if (i === TARGET) sq.classList.add('target');
+        if (i === selected) sq.classList.add('selected');
+        if (i === KING) sq.innerHTML = '<span class="chess-piece">♚</span>';
+        if (i === queenPos) sq.innerHTML = '<span class="chess-piece">♕</span>';
+        sq.onclick = () => onSquare(i, sq);
+        board.appendChild(sq);
+      }
+    };
+    const onSquare = (i, el) => {
+      if (selected === null) {
+        if (i === queenPos) { selected = i; render(); }
+        return;
+      }
+      if (i === TARGET) {
+        // Move queen
+        queenPos = TARGET; selected = null;
+        render();
+        fb.textContent = 'The position resolves.'; fb.className = 'insp-feedback ok';
+        completeStep(42); completeStep(43); persist();
+        G.objStep.chess = 1;
+        setTimeout(() => { closeInsp(); setTimeout(handleChess, 80); }, 900);
+      } else {
+        // Wrong square
+        el.classList.add('shake');
+        setTimeout(() => el.classList.remove('shake'), 400);
+        fb.textContent = 'Not the move. The position holds.'; fb.className = 'insp-feedback err';
+        selected = null; render();
+      }
+    };
+    render();
+  }
+
+  function initChessKing() {
+    const board = document.getElementById('chessBoard2');
+    if (!board) return;
+    const KING = 0, QUEEN = 12;
+    for (let i = 0; i < 16; i++) {
+      const row = Math.floor(i / 4), col = i % 4;
+      const sq = document.createElement('div');
+      const isLight = (row + col) % 2 === 0;
+      sq.className = 'chess-sq ' + (isLight ? 'light' : 'dark');
+      if (i === KING) {
+        sq.innerHTML = '<span class="chess-piece" style="transform:rotate(75deg);display:inline-block;">♚</span>';
+        sq.style.cursor = 'pointer';
+        sq.onclick = () => {
+          completeStep(44); persist();
+          G.objStep.chess = 2;
+          closeInsp(); setTimeout(handleChess, 80);
+        };
+      }
+      if (i === QUEEN) sq.innerHTML = '<span class="chess-piece">♕</span>';
+      board.appendChild(sq);
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+     PHONOGRAPH — rotate the crank in circles to wind, then play
+     Steps 46-49
+     ───────────────────────────────────────────────────────────── */
+  function handlePhonograph() {
+    const step = G.objStep.phonograph;
+    if (step === 0) {
+      const body = `
+        <p class="insp-desc">A polished mahogany phonograph. A wax cylinder is mounted on the spindle. Grasp the brass crank and turn it in circles to wind the mechanism.</p>
+        <div class="phono-stage">
+          <div class="phono-crank-wrap" id="phonoCrankWrap">
+            <div class="phono-crank" id="phonoCrank"></div>
+            <div class="phono-axle"></div>
+          </div>
+          <div class="phono-meter"><div class="phono-meter-fill" id="phonoFill"></div></div>
+          <div class="insp-feedback" id="phonoFb" style="text-align:center;">Drag the crank in circles.</div>
+        </div>
+        ${clueStrip('phonograph')}
+      `;
+      openInsp('phonograph', 'The Phonograph', body);
+      setTimeout(initPhonoCrank, 50);
+    } else if (step === 1) {
+      const body = `
+        <p class="insp-desc">The cylinder begins to turn. The needle drops with a soft hiss. A voice, slightly distorted by age, emerges from the brass horn.</p>
+        <div class="phono-stage">
+          <div class="phono-cylinder spinning"></div>
+          <div style="display:flex;align-items:center;gap:0.6rem;"><div class="phono-needle"></div></div>
+          <div class="phono-transcript" id="phonoTr">"If you are hearing this, then you are inside. Welcome — again."</div>
+          <div class="insp-action-area">
+            <button class="insp-btn" id="phonoMore">Listen Further</button>
+          </div>
+        </div>
+        ${clueStrip('phonograph')}
+      `;
+      openInsp('phonograph', 'The Phonograph', body);
+      setTimeout(() => {
+        document.getElementById('phonoMore').onclick = () => {
+          G.objStep.phonograph = 2; completeStep(48); persist();
+          closeInsp(); setTimeout(handlePhonograph, 80);
+        };
+      }, 50);
+    } else if (step === 2) {
+      const body = `
+        <p class="insp-desc">The voice continues, more slowly this time.</p>
+        <div class="phono-stage">
+          <div class="phono-cylinder spinning"></div>
+          <div style="display:flex;align-items:center;gap:0.6rem;"><div class="phono-needle"></div></div>
+          <div class="phono-transcript">
+            "The chamber is its own answer. The door responds only to attention, not to force. Take your time. You have eleven years to make up. — A. M. V."
+          </div>
+          <div class="insp-action-area">
+            <button class="insp-btn" id="phonoDone">Lift the Needle</button>
+          </div>
+        </div>
+        ${clueStrip('phonograph')}
+      `;
+      openInsp('phonograph', 'The Phonograph', body);
+      setTimeout(() => {
+        document.getElementById('phonoDone').onclick = () => {
+          G.objStep.phonograph = 3; completeStep(49);
+          showObjSolved('phonograph'); persist();
+          closeInsp();
+        };
+      }, 50);
+    } else {
+      const body = `
+        <p class="insp-desc">The cylinder is still. The needle rests. The voice has said all it intended.</p>
+        <p class="insp-feedback ok">✓ Phonograph examined.</p>
+        ${clueStrip('phonograph')}
+      `;
+      openInsp('phonograph', 'The Phonograph', body);
+    }
+  }
+
+  function initPhonoCrank() {
+    const wrap  = document.getElementById('phonoCrankWrap');
+    const crank = document.getElementById('phonoCrank');
+    const fill  = document.getElementById('phonoFill');
+    const fb    = document.getElementById('phonoFb');
+    if (!wrap) return;
+    let dragging = false;
+    let lastAngle = 0;
+    let totalRotation = 0;
+    let firstWind = false;
+    const TARGET_ROT = 720; // two full turns
+    const getAngle = (e) => {
+      const rect = wrap.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top  + rect.height / 2;
+      const pt = e.touches ? e.touches[0] : e;
+      return Math.atan2(pt.clientY - cy, pt.clientX - cx) * 180 / Math.PI;
+    };
+    const onMove = (e) => {
+      if (!dragging) return;
+      const a = getAngle(e);
+      let d = a - lastAngle;
+      if (d > 180)  d -= 360;
+      if (d < -180) d += 360;
+      // Only count forward rotation
+      if (d > 0 && d < 90) {
+        totalRotation += d;
+        if (!firstWind) { firstWind = true; completeStep(46); persist(); fb.textContent = 'Winding…'; }
+        crank.style.transform = `translateY(-50%) rotate(${totalRotation}deg)`;
+        fill.style.width = Math.min(100, (totalRotation / TARGET_ROT) * 100) + '%';
+        if (totalRotation >= TARGET_ROT) {
+          fb.textContent = 'The mechanism is fully wound.';
+          fb.className = 'insp-feedback ok';
+          G.objStep.phonograph = 1; completeStep(47); persist();
+          setTimeout(() => { closeInsp(); setTimeout(handlePhonograph, 80); }, 800);
+        }
+      }
+      lastAngle = a;
+    };
+    const startDrag = (e) => { dragging = true; crank.classList.add('dragging'); lastAngle = getAngle(e); };
+    const endDrag   = () => { dragging = false; crank.classList.remove('dragging'); };
+    crank.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup',   endDrag);
+    crank.addEventListener('touchstart', e => { e.preventDefault(); startDrag(e); }, {passive:false});
+    crank.addEventListener('touchmove',  e => { e.preventDefault(); onMove(e); }, {passive:false});
+    crank.addEventListener('touchend',   endDrag);
+  }
 
   /* Door (step 50) */
   function handleDoor() {
