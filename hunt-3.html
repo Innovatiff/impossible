@@ -28,24 +28,65 @@
     /* ── Room stage ──────────────────────────────────────────── */
     .room-stage-wrap { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:clamp(1rem,3vw,2rem) clamp(1rem,4vw,2.5rem) 8rem; }
     .room-label { font-family:var(--font-mono); font-size:0.58rem; color:var(--mist); opacity:0.5; letter-spacing:0.14em; text-transform:uppercase; margin-bottom:0.8rem; }
-    .room-stage { position:relative; width:100%; max-width:900px; aspect-ratio:16/9; background:#0d0b10; border:1px solid rgba(212,167,70,0.14); border-radius:6px; overflow:hidden; box-shadow:0 0 40px rgba(0,0,0,0.8); }
+    .room-stage { position:relative; width:100%; max-width:1280px; aspect-ratio:16/9; background:#0d0b10; border:1px solid rgba(212,167,70,0.14); border-radius:6px; overflow:hidden; box-shadow:0 0 50px rgba(0,0,0,0.9); }
 
-    /* Victorian room background */
+    /* Victorian room background with wall paneling */
     .room-bg { position:absolute; inset:0; background:
-      radial-gradient(ellipse 60% 40% at 50% 90%, rgba(180,100,30,0.12) 0%, transparent 70%),
-      radial-gradient(ellipse 30% 60% at 15% 50%, rgba(212,167,70,0.05) 0%, transparent 60%),
-      radial-gradient(ellipse 25% 50% at 85% 50%, rgba(212,167,70,0.04) 0%, transparent 60%),
-      linear-gradient(180deg, #1a1008 0%, #110d06 40%, #0e0b07 70%, #0c0a08 100%);
+      radial-gradient(ellipse 60% 40% at 50% 90%, rgba(180,100,30,0.10) 0%, transparent 70%),
+      radial-gradient(ellipse 25% 50% at 18% 45%, rgba(212,167,70,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 22% 45% at 82% 45%, rgba(212,167,70,0.04) 0%, transparent 60%),
+      /* Vertical wood paneling */
+      repeating-linear-gradient(90deg,
+        transparent 0,
+        transparent 9.4%,
+        rgba(0,0,0,0.22) 9.5%,
+        rgba(180,130,60,0.04) 9.6%,
+        transparent 9.7%,
+        transparent 18.5%),
+      linear-gradient(180deg, #1a1208 0%, #120d08 40%, #0e0a07 70%, #0c0907 100%);
     }
-    /* Floor */
-    .room-floor { position:absolute; bottom:0; left:0; right:0; height:28%; background:linear-gradient(180deg,#1a1208 0%,#120e08 100%); border-top:1px solid rgba(212,167,70,0.08); }
-    /* Wainscoting */
-    .room-wain { position:absolute; bottom:28%; left:0; right:0; height:4px; background:rgba(212,167,70,0.12); }
+    /* Floor with floorboards */
+    .room-floor { position:absolute; bottom:0; left:0; right:0; height:22%;
+      background:
+        repeating-linear-gradient(90deg,
+          transparent 0,
+          transparent 8.2%,
+          rgba(0,0,0,0.4) 8.3%,
+          rgba(180,120,50,0.05) 8.4%,
+          transparent 8.5%,
+          transparent 16.6%),
+        linear-gradient(180deg,#1c1208 0%,#100c06 100%);
+      border-top:1px solid rgba(80,50,15,0.6);
+      box-shadow:inset 0 4px 12px rgba(0,0,0,0.5);
+    }
+    /* Picture-rail line */
+    .room-rail { position:absolute; top:30%; left:0; right:0; height:2px;
+      background:linear-gradient(90deg, transparent, rgba(180,130,60,0.25) 20%, rgba(180,130,60,0.25) 80%, transparent);
+    }
+    /* Wainscoting cap */
+    .room-wain { position:absolute; bottom:22%; left:0; right:0; height:3px;
+      background:linear-gradient(180deg, rgba(120,80,30,0.45), rgba(60,40,15,0.3));
+      box-shadow:0 1px 0 rgba(0,0,0,0.4);
+    }
     /* Ceiling */
-    .room-ceiling { position:absolute; top:0; left:0; right:0; height:8%; background:linear-gradient(180deg,#0a0806,#110d06); }
-    /* Wall panels suggestion */
-    .room-panel-l { position:absolute; top:8%; left:0; width:14%; bottom:32%; border-right:1px solid rgba(212,167,70,0.07); }
-    .room-panel-r { position:absolute; top:8%; right:0; width:14%; bottom:32%; border-left:1px solid rgba(212,167,70,0.07); }
+    .room-ceiling { position:absolute; top:0; left:0; right:0; height:5%; background:linear-gradient(180deg,#08050a,#0e0b08); border-bottom:1px solid rgba(0,0,0,0.6); }
+    /* Crown molding */
+    .room-crown { position:absolute; top:5%; left:0; right:0; height:2px; background:rgba(180,130,60,0.18); }
+    /* Vignette overlay for cinematic depth */
+    .room-vignette { position:absolute; inset:0; pointer-events:none;
+      background:radial-gradient(ellipse 110% 80% at 50% 55%, transparent 40%, rgba(0,0,0,0.55) 100%);
+      z-index:50;
+    }
+    /* Wall sconces flicker */
+    .room-sconce { position:absolute; top:14%; width:14px; height:14px; border-radius:50%;
+      background:radial-gradient(circle, rgba(255,160,60,0.6) 0%, rgba(255,120,30,0.25) 40%, transparent 70%);
+      filter:blur(2px);
+      animation:sconceFlicker 3s ease-in-out infinite;
+      z-index:51;
+    }
+    .room-sconce.l { left:7%; }
+    .room-sconce.r { right:7%; animation-delay:1.4s; }
+    @keyframes sconceFlicker { 0%,100%{opacity:0.85} 50%{opacity:1} 73%{opacity:0.7} }
 
     /* ── Room objects ────────────────────────────────────────── */
     .room-obj {
@@ -391,31 +432,258 @@
       border:1px solid #1a0e02;
       opacity:0.7;
     }
+
+    /* ─── New props (door, mirror, fireplace, globe, chess, phonograph) ─── */
+
+    /* Door — tall Victorian door with raised panels and brass plate */
+    .prop-door {
+      background:linear-gradient(180deg,#3a1e0a 0%, #2a1408 50%, #1a0d04 100%);
+      border:2px solid #0a0402;
+      border-radius:3px 3px 1px 1px;
+      box-shadow:inset 0 1px 0 rgba(200,140,60,0.25), inset 0 0 14px rgba(0,0,0,0.6), 4px 6px 14px rgba(0,0,0,0.8);
+      position:relative;
+    }
+    .prop-door::before {
+      /* Door frame outline */
+      content:''; position:absolute; inset:-4%;
+      background:linear-gradient(180deg, #4a2812, #2a1808);
+      border:1px solid #0a0402;
+      z-index:-1;
+      box-shadow:inset 0 1px 1px rgba(200,140,60,0.2);
+    }
+    .prop-door .panel {
+      position:absolute;
+      background:linear-gradient(160deg, rgba(40,22,10,0.6), rgba(10,5,2,0.6));
+      border:1px solid rgba(140,90,40,0.45);
+      box-shadow:inset 0 0 4px rgba(0,0,0,0.7), inset 1px 1px 0 rgba(200,140,60,0.15);
+      border-radius:1px;
+    }
+    .prop-door .panel.p-top { top:5%;  left:14%; right:14%; height:32%; }
+    .prop-door .panel.p-bot { top:60%; left:14%; right:14%; bottom:6%; }
+    .prop-door .lockplate {
+      position:absolute; left:50%; top:48%; transform:translate(-50%,-50%);
+      width:42%; height:14%;
+      background:linear-gradient(180deg, #c89048, #6a4218 60%, #3a2410);
+      border:1px solid #0a0402;
+      border-radius:2px;
+      box-shadow:inset 0 1px 1px rgba(255,220,160,0.4), inset 0 -1px 1px rgba(0,0,0,0.6), 0 1px 2px rgba(0,0,0,0.8);
+    }
+    .prop-door .lockplate::before {
+      /* Keyhole */
+      content:''; position:absolute; left:18%; top:30%;
+      width:14%; height:40%;
+      background:radial-gradient(ellipse at 50% 30%, #0a0402 0%, #0a0402 40%, transparent 41%);
+      box-shadow:0 0 2px rgba(0,0,0,0.8);
+    }
+    .prop-door .knob {
+      position:absolute; right:10%; top:50%; transform:translateY(-50%);
+      width:14%; aspect-ratio:1; border-radius:50%;
+      background:radial-gradient(circle at 30% 30%,#f0c050,#6a4818 70%,#3a2410);
+      box-shadow:0 2px 4px rgba(0,0,0,0.85), inset -1px -2px 3px rgba(0,0,0,0.5), inset 1px 1px 1px rgba(255,230,180,0.4);
+    }
+
+    /* Mirror — oval gilded frame */
+    .prop-mirror {
+      background:linear-gradient(135deg,#a07820,#5a3a10 50%,#8a6020);
+      border:2px solid #1a0e02;
+      border-radius:50% / 60%;
+      box-shadow:inset 0 0 0 1px rgba(255,210,140,0.45), 0 4px 8px rgba(0,0,0,0.75);
+      position:relative;
+    }
+    .prop-mirror::before {
+      content:''; position:absolute; inset:14%;
+      background:
+        linear-gradient(160deg,
+          rgba(180,200,220,0.30) 0%,
+          rgba(80,90,110,0.55) 35%,
+          rgba(30,35,45,0.85) 70%,
+          rgba(15,20,30,0.95) 100%);
+      border:1px solid rgba(40,30,15,0.6);
+      border-radius:50% / 60%;
+      box-shadow:inset 3px 3px 8px rgba(0,0,0,0.6), inset -2px -2px 4px rgba(180,180,200,0.18);
+    }
+    .prop-mirror::after {
+      /* Highlight streak on glass */
+      content:''; position:absolute; left:30%; top:20%;
+      width:14%; height:30%;
+      background:linear-gradient(160deg, rgba(255,255,255,0.35), transparent);
+      border-radius:50%;
+      filter:blur(2px);
+    }
+
+    /* Fireplace — stone surround, mantel, glowing hearth */
+    .prop-fireplace {
+      background:
+        repeating-linear-gradient(0deg,
+          transparent 0,
+          transparent 14%,
+          rgba(0,0,0,0.35) 14.5%,
+          transparent 15%,
+          transparent 30%),
+        repeating-linear-gradient(90deg,
+          transparent 0,
+          transparent 22%,
+          rgba(0,0,0,0.3) 22.5%,
+          transparent 23%,
+          transparent 46%),
+        linear-gradient(180deg, #4a3a28 0%, #322618 50%, #221808 100%);
+      border:1px solid #0a0604;
+      position:relative;
+      box-shadow:inset 0 1px 1px rgba(180,130,60,0.3), 0 4px 8px rgba(0,0,0,0.6);
+    }
+    .prop-fireplace::before {
+      /* Mantel shelf */
+      content:''; position:absolute; top:0; left:-4%; right:-4%; height:9%;
+      background:linear-gradient(180deg,#6a4a22 0%,#3a2a14 60%, #1e1408 100%);
+      border:1px solid #1a0e02;
+      box-shadow:0 2px 3px rgba(0,0,0,0.7);
+    }
+    .prop-fireplace .hearth {
+      position:absolute; left:20%; right:20%; top:25%; bottom:18%;
+      background:
+        radial-gradient(ellipse 70% 35% at 50% 92%, #ff7020 0%, #c03010 25%, transparent 65%),
+        radial-gradient(ellipse 35% 18% at 35% 85%, #f06010 0%, transparent 55%),
+        radial-gradient(ellipse 30% 16% at 65% 88%, #d04010 0%, transparent 55%),
+        linear-gradient(180deg, #060302 0%, #1a0a04 90%, #2a1408 100%);
+      border:1px solid #0a0402;
+      box-shadow:inset 0 -6px 16px rgba(255,80,20,0.45), inset 0 0 20px rgba(0,0,0,0.85);
+    }
+    .prop-fireplace .hearth::after {
+      /* Andiron suggestion */
+      content:''; position:absolute; bottom:6%; left:15%; right:15%; height:10%;
+      background:repeating-linear-gradient(90deg, rgba(40,20,10,0.8) 0 3px, transparent 3px 6px);
+      filter:blur(0.5px);
+    }
+    .prop-fireplace .base {
+      /* Hearth stone */
+      position:absolute; bottom:-4%; left:-6%; right:-6%; height:14%;
+      background:linear-gradient(180deg,#3a2a18,#1a1208);
+      border:1px solid #0a0604;
+    }
+
+    /* Globe — sphere on stand */
+    .prop-globe {
+      display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+      height:100%; width:100%;
+    }
+    .prop-globe .sphere {
+      width:90%; aspect-ratio:1; border-radius:50%;
+      background:
+        radial-gradient(circle at 28% 28%, rgba(255,240,200,0.35) 0%, transparent 22%),
+        radial-gradient(ellipse 25% 30% at 60% 55%, #4a7020 0%, #2a3e10 50%, transparent 70%),
+        radial-gradient(ellipse 20% 20% at 35% 75%, #3a5818 0%, transparent 60%),
+        radial-gradient(ellipse 18% 15% at 70% 30%, #3a5818 0%, transparent 60%),
+        linear-gradient(160deg, #5a8aae 0%, #2a4e72 50%, #0e2038 100%);
+      border:1px solid #0a0604;
+      box-shadow:inset -3px -4px 8px rgba(0,0,0,0.55), inset 2px 2px 4px rgba(255,255,255,0.12), 0 2px 4px rgba(0,0,0,0.8);
+    }
+    .prop-globe .axis {
+      position:relative;
+      width:120%; height:8%;
+      background:linear-gradient(180deg,#8a6420,#3a2410);
+      border:1px solid #0a0402;
+      border-radius:50%;
+      margin-top:-4%;
+      z-index:1;
+    }
+    .prop-globe .stand {
+      width:35%; height:10%;
+      background:linear-gradient(180deg,#5a3818,#2a1808);
+      border:1px solid #0a0402;
+      border-radius:2px 2px 1px 1px;
+      box-shadow:0 1px 2px rgba(0,0,0,0.6);
+    }
+
+    /* Chess board — checkered top */
+    .prop-chess {
+      background:
+        conic-gradient(from 0deg at 12.5% 12.5%, #ead4a0 0deg 90deg, #2a1808 90deg 180deg, #ead4a0 180deg 270deg, #2a1808 270deg);
+      background-size:50% 50%;
+      background-color:#ead4a0;
+      border:1px solid #1a0e02;
+      box-shadow:0 2px 4px rgba(0,0,0,0.7), inset 0 0 6px rgba(0,0,0,0.4);
+      position:relative;
+    }
+    .prop-chess::before {
+      /* Subtle highlight from above */
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(160deg, rgba(255,255,255,0.18), transparent 50%);
+      pointer-events:none;
+    }
+    .prop-chess::after {
+      /* A single piece silhouette */
+      content:''; position:absolute; left:30%; top:20%;
+      width:18%; height:36%;
+      background:radial-gradient(ellipse 60% 100% at 50% 60%, #1a1008, transparent 70%);
+      filter:blur(0.5px);
+    }
+
+    /* Phonograph — wooden base, brass horn */
+    .prop-phonograph {
+      display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+      height:100%; width:100%;
+    }
+    .prop-phonograph .horn {
+      width:90%; height:65%;
+      background:
+        radial-gradient(ellipse at 30% 25%, #ffd060, #b07020 50%, #6a3e10 90%);
+      border:1px solid #1a0e02;
+      clip-path:polygon(15% 100%, 0 35%, 8% 8%, 50% 0, 92% 8%, 100% 35%, 85% 100%);
+      box-shadow:inset -3px -2px 5px rgba(0,0,0,0.5), inset 3px 2px 4px rgba(255,230,160,0.3);
+      position:relative;
+    }
+    .prop-phonograph .horn::after {
+      content:''; position:absolute; inset:25% 30% 0 30%;
+      background:radial-gradient(ellipse at top, #4a2e08 0%, #1a0e02 60%);
+      border-radius:50%;
+    }
+    .prop-phonograph .base {
+      width:100%; height:35%;
+      background:linear-gradient(180deg,#5a2818 0%,#2e1408 100%);
+      border:1px solid #0a0402;
+      border-radius:2px;
+      box-shadow:inset 0 1px 1px rgba(180,130,60,0.3), 0 2px 4px rgba(0,0,0,0.7);
+      position:relative;
+    }
+    .prop-phonograph .base::before {
+      /* Turntable disc */
+      content:''; position:absolute; top:18%; left:25%; width:50%; height:50%;
+      background:radial-gradient(circle, #1a0a04 30%, #0a0402 31%, #0a0402 100%);
+      border-radius:50%;
+      border:1px solid #0a0402;
+    }
     .obj-label { position:absolute; bottom:-1.4em; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:0.5rem; color:var(--gold); opacity:0; white-space:nowrap; letter-spacing:0.1em; transition:opacity 0.2s; pointer-events:none; }
     .room-obj:hover .obj-label { opacity:0.7; }
 
-    /* Object positions — laid out like a real room.
-       Wall (top half): map, portrait, clock hung at picture-rail height.
-       Floor (bottom half): cabinet stands left, bookshelf stands right,
-       desk and rug occupy the centre. Small items sit ON the desk
-       (letter, candle) and ON TOP of the cabinet (music box). */
-    /* WALL — hung on picture rail */
-    #obj-map      { left:20%;  top:14%; width:11%; height:18%; }
-    #obj-portrait { left:40%;  top:11%; width:15%; height:24%; }
-    #obj-clock    { left:63%;  top:14%; width:9%;  height:16%; }
+    /* Object positions — laid out like a real Victorian study.
+       Bigger room (1280px wide), smaller objects placed in zones:
+       Wall (top): map, mirror, portrait, clock hang at picture-rail height.
+       Back wall: door is centred-right between desk and bookshelf.
+       Floor: cabinet (left), fireplace (left-centre), desk (centre),
+       bookshelf (right). Small items sit on the surfaces they belong to. */
+    /* WALL — hung at picture-rail height */
+    #obj-map      { left:5%;   top:7%;  width:5%;  height:9%;  }
+    #obj-mirror   { left:21%;  top:7%;  width:5%;  height:10%; }
+    #obj-portrait { left:44%;  top:7%;  width:7%;  height:13%; }
+    #obj-clock    { left:55%;  top:9%;  width:4%;  height:7%;  }
+    /* DOOR — in the room, back wall, between desk and bookshelf */
+    #obj-door     { left:64%;  top:18%; width:10%; height:62%; z-index:2; }
     /* FLOOR — standing furniture */
-    #obj-cabinet  { left:4%;   top:32%; width:13%; height:52%; }
-    #obj-bookshelf{ left:78%;  top:20%; width:18%; height:64%; }
-    #obj-desk     { left:40%;  top:54%; width:28%; height:26%; }
-    #obj-rug      { left:20%;  top:78%; width:54%; height:14%; }
-    /* ON-DESK items (in front of desk on the table surface) */
-    #obj-letter   { left:46%;  top:50%; width:8%;  height:7%;  z-index:3; }
-    #obj-candle   { left:60%;  top:42%; width:5%;  height:14%; z-index:3; }
-    /* ON-CABINET item */
-    #obj-musicbox { left:5%;   top:23%; width:11%; height:9%;  z-index:3; }
-    /* Floor rug sits beneath standing furniture */
-    #obj-rug      { z-index:1; }
-    #obj-cabinet, #obj-bookshelf, #obj-desk { z-index:2; }
+    #obj-cabinet  { left:3%;   top:32%; width:9%;  height:48%; z-index:2; }
+    #obj-fireplace{ left:14%;  top:30%; width:16%; height:50%; z-index:2; }
+    #obj-desk     { left:44%;  top:56%; width:16%; height:22%; z-index:2; }
+    #obj-bookshelf{ left:80%;  top:22%; width:14%; height:58%; z-index:2; }
+    #obj-rug      { left:38%;  top:79%; width:28%; height:9%;  z-index:1; }
+    /* ON-DESK items */
+    #obj-letter   { left:49%;  top:53%; width:4%;  height:3%;  z-index:3; }
+    #obj-candle   { left:54%;  top:48%; width:2.5%; height:8%; z-index:3; }
+    /* ON-CABINET items */
+    #obj-musicbox { left:3.5%; top:25%; width:7%;  height:6%;  z-index:3; }
+    #obj-chess    { left:10.5%; top:26%; width:3%;  height:5%;  z-index:3; }
+    /* ON-FIREPLACE MANTEL */
+    #obj-phonograph { left:18%; top:21%; width:6%; height:9%;  z-index:3; }
+    /* FLOOR — small standing object in front of bookshelf */
+    #obj-globe    { left:76%;  top:67%; width:3.5%; height:13%; z-index:3; }
 
     /* ── Digit tracker ───────────────────────────────────────── */
     .bottom-hud { position:fixed; bottom:0; left:0; right:0; background:rgba(10,8,12,0.97); border-top:1px solid rgba(212,167,70,0.14); backdrop-filter:blur(12px); z-index:50; padding:0.6rem clamp(1rem,4vw,2.5rem); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; }
@@ -583,18 +851,24 @@
 
     /* ── Responsive ──────────────────────────────────────────── */
     @media (max-width:600px) {
-      .room-stage { aspect-ratio:4/5; }
-      /* Mobile — same room logic, taller frame */
-      #obj-map      { left:18%; top:10%; width:14%; height:14%; }
-      #obj-portrait { left:38%; top:8%;  width:20%; height:20%; }
-      #obj-clock    { left:64%; top:11%; width:13%; height:13%; }
-      #obj-cabinet  { left:3%;  top:30%; width:18%; height:48%; }
-      #obj-bookshelf{ left:76%; top:22%; width:22%; height:56%; }
-      #obj-desk     { left:34%; top:54%; width:34%; height:22%; }
-      #obj-rug      { left:14%; top:76%; width:64%; height:12%; }
-      #obj-letter   { left:42%; top:48%; width:10%; height:7%;  }
-      #obj-candle   { left:56%; top:42%; width:7%;  height:13%; }
-      #obj-musicbox { left:4%;  top:22%; width:16%; height:8%;  }
+      .room-stage { aspect-ratio:3/4; }
+      /* Mobile — same room logic, taller frame, slightly larger objects */
+      #obj-map        { left:5%;   top:6%;  width:8%;  height:7%;  }
+      #obj-mirror     { left:18%;  top:6%;  width:8%;  height:8%;  }
+      #obj-portrait   { left:42%;  top:6%;  width:11%; height:11%; }
+      #obj-clock      { left:56%;  top:8%;  width:6%;  height:6%;  }
+      #obj-door       { left:64%;  top:16%; width:14%; height:50%; }
+      #obj-cabinet    { left:3%;   top:26%; width:13%; height:42%; }
+      #obj-fireplace  { left:18%;  top:25%; width:22%; height:42%; }
+      #obj-desk       { left:43%;  top:48%; width:20%; height:18%; }
+      #obj-bookshelf  { left:80%;  top:18%; width:18%; height:48%; }
+      #obj-rug        { left:34%;  top:66%; width:32%; height:8%;  }
+      #obj-letter     { left:48%;  top:46%; width:5%;  height:3%;  }
+      #obj-candle     { left:54%;  top:42%; width:3.5%; height:7%; }
+      #obj-musicbox   { left:3.5%; top:20%; width:10%; height:5%;  }
+      #obj-chess      { left:11%;  top:21%; width:4%;  height:4%;  }
+      #obj-phonograph { left:23%;  top:18%; width:8%;  height:7%;  }
+      #obj-globe      { left:77%;  top:55%; width:5%;  height:11%; }
       .bottom-hud { flex-direction:column; gap:0.5rem; padding:0.5rem 1rem; }
       .digit-slot { width:2rem; height:2.6rem; font-size:1.2rem; }
     }
@@ -656,10 +930,13 @@
     <div class="room-stage" id="roomStage" role="main" aria-label="Interactive room scene">
       <div class="room-bg"></div>
       <div class="room-ceiling"></div>
-      <div class="room-panel-l"></div>
-      <div class="room-panel-r"></div>
+      <div class="room-crown"></div>
+      <div class="room-rail"></div>
       <div class="room-floor"></div>
       <div class="room-wain"></div>
+      <div class="room-sconce l"></div>
+      <div class="room-sconce r"></div>
+      <div class="room-vignette"></div>
 
       <!-- Letter -->
       <button class="room-obj" id="obj-letter" aria-label="Inspect letter" title="Letter">
@@ -744,16 +1021,62 @@
         <span class="obj-label">Cabinet</span>
       </button>
 
+      <!-- Fireplace -->
+      <button class="room-obj" id="obj-fireplace" aria-label="Inspect fireplace" title="Fireplace">
+        <div class="obj-glow"></div>
+        <div class="prop prop-fireplace"><div class="hearth"></div><div class="base"></div></div>
+        <span class="obj-label">Fireplace</span>
+      </button>
+
+      <!-- Mirror -->
+      <button class="room-obj" id="obj-mirror" aria-label="Inspect mirror" title="Mirror">
+        <div class="obj-glow"></div>
+        <div class="prop prop-mirror"></div>
+        <span class="obj-label">Mirror</span>
+      </button>
+
+      <!-- Globe -->
+      <button class="room-obj" id="obj-globe" aria-label="Inspect globe" title="Globe">
+        <div class="obj-glow"></div>
+        <div class="prop prop-globe">
+          <div class="sphere"></div>
+          <div class="axis"></div>
+          <div class="stand"></div>
+        </div>
+        <span class="obj-label">Globe</span>
+      </button>
+
+      <!-- Chess board -->
+      <button class="room-obj" id="obj-chess" aria-label="Inspect chess board" title="Chess Board">
+        <div class="obj-glow"></div>
+        <div class="prop prop-chess"></div>
+        <span class="obj-label">Chess</span>
+      </button>
+
+      <!-- Phonograph -->
+      <button class="room-obj" id="obj-phonograph" aria-label="Inspect phonograph" title="Phonograph">
+        <div class="obj-glow"></div>
+        <div class="prop prop-phonograph">
+          <div class="horn"></div>
+          <div class="base"></div>
+        </div>
+        <span class="obj-label">Phonograph</span>
+      </button>
+
+      <!-- Door (always in the room, gated by digit count when clicked) -->
+      <button class="room-obj" id="obj-door" aria-label="Approach the door" title="The Door">
+        <div class="obj-glow"></div>
+        <div class="prop prop-door">
+          <div class="panel p-top"></div>
+          <div class="panel p-bot"></div>
+          <div class="lockplate"></div>
+          <div class="knob"></div>
+        </div>
+        <span class="obj-label">The Door</span>
+      </button>
+
     </div><!-- /room-stage -->
   </div><!-- /room-stage-wrap -->
-
-  <!-- Door button — appears when all 4 digits are found -->
-  <div id="doorWrap" style="display:none;text-align:center;margin:-2rem 0 1rem;">
-    <button class="room-obj" id="obj-door" style="position:static;display:inline-flex;flex-direction:column;align-items:center;gap:0.3rem;padding:0.6rem 1.2rem;border:1px solid rgba(212,167,70,0.3);border-radius:6px;cursor:pointer;background:rgba(14,11,18,0.7);" aria-label="Approach the door">
-      <span style="font-size:2.2rem;">🚪</span>
-      <span style="font-family:var(--font-mono);font-size:0.55rem;color:var(--gold);letter-spacing:0.12em;">The Door</span>
-    </button>
-  </div>
 
 </div><!-- /hunt-wrap -->
 
@@ -925,12 +1248,12 @@
   const HUNT_ID  = 'hunt-3';
   const LS_KEY   = 'ih_progress_hunt-3';
   const PASSCODE = [7, 3, 9, 2];
-  const TOTAL_STEPS = 30;
+  const TOTAL_STEPS = 50;
 
   /* ── State ────────────────────────────────────────────────── */
   let G = {
     letterRead:    false,
-    objStep: { portrait:0, clock:0, bookshelf:0, desk:0, musicbox:0, candle:0, rug:0, map:0, cabinet:0, door:0 },
+    objStep: { portrait:0, clock:0, bookshelf:0, desk:0, musicbox:0, candle:0, rug:0, map:0, cabinet:0, mirror:0, fireplace:0, globe:0, chess:0, phonograph:0, door:0 },
     inventory:     new Set(),
     seenScore:     false,
     discoveredIX:  false,
@@ -956,7 +1279,46 @@
     rug:       'The map fragment did not point to the ceiling.',
     map:       'Heat wakes what cold preserved.',
     cabinet:   'Four marks were left in this room — all of them return here.',
+    mirror:    'The glass does not return only what stands in front of it.',
+    fireplace: 'Cold ash is still ash. Look at what was burned, not at what is missing.',
+    globe:     'A traveler marked one place as home. The lacquer there is worn through.',
+    chess:     'The game was abandoned mid-move. The arrangement is the message.',
+    phonograph:'A voice was preserved for one listener. It was never you.',
     door:      'You were not meant to guess. You were meant to discover.',
+  };
+
+  /* ── Atmospheric lore for new objects (4 steps each) ──────── */
+  const LORE = {
+    mirror: [
+      { desc:'A tall oval mirror in a gilded frame, the glass clouded by dust. Your own reflection is barely visible through the haze.', btn:'Wipe the Glass' },
+      { desc:'The glass clears in patches. Behind your reflection, the room shows another door — narrower, in a wall that does not exist.', btn:'Look Closer' },
+      { desc:'In the corner of the silver backing, a name has been scratched in fine cursive: <em style="color:var(--gold);">A. M. Venturi</em>.', btn:'Take Note of the Name' },
+      { desc:'The mirror returns nothing extraordinary now. It has shown what it was kept here to show.', btn:'Step Back' },
+    ],
+    fireplace: [
+      { desc:'A cold stone fireplace. The hearth is dark; the embers have been dead for years. A faint scent of pine resin lingers in the cold air.', btn:'Examine the Hearth' },
+      { desc:'You stir what is left of the ashes with the brass poker. A small scrap of paper, charred at the edges but legible, lies near the back wall.', btn:'Lift the Scrap' },
+      { desc:'The scrap reads, in a careful hand: <em style="font-family:\'EB Garamond\',serif;color:var(--gold);">"The room remembers. The lock does not. — A.M.V."</em>', btn:'Pocket the Scrap' },
+      { desc:'The hearth is cold. The scrap is committed to memory.', btn:'Stand Up' },
+    ],
+    globe: [
+      { desc:'A tabletop globe on a turned wooden stand. The continents are gilded; the oceans are dusty. A single dark fingerprint marks one location, repeated.', btn:'Examine the Globe' },
+      { desc:'The fingerprint sits over a small port on a southern coast. The previous occupant returned to this point so often the lacquer has worn through.', btn:'Spin the Globe' },
+      { desc:'As the sphere turns on its axis, a soft catch clicks. A small compartment opens beneath the south pole, holding a folded slip.', btn:'Open the Compartment' },
+      { desc:'The slip lists three latitudes in faded ink. None of them are the port that was worn through. <em style="color:var(--parchment-dim);">He was looking elsewhere.</em>', btn:'Close It' },
+    ],
+    chess: [
+      { desc:'A small chess board on top of the cabinet. The pieces stand mid-game — an unfinished match, abandoned years ago, the lacquer dulled by time.', btn:'Study the Board' },
+      { desc:'Black\'s queen is exposed. White\'s next move would be mate in two. Whoever played black surrendered the position — but did not knock the king over.', btn:'Examine the Pieces' },
+      { desc:'Beneath the black king, folded in quarters, a slip of paper: <em style="color:var(--gold);">"The match was never the point."</em>', btn:'Take the Slip' },
+      { desc:'The board is as you left it. The game remains unfinished, and now you understand why.', btn:'Step Away' },
+    ],
+    phonograph: [
+      { desc:'A polished mahogany phonograph rests on the mantel, brass horn flared upward. A wax cylinder is already in place on the spindle.', btn:'Wind the Crank' },
+      { desc:'The cylinder begins to turn. A voice, slightly distorted by age: <em style="color:var(--gold);">"If you are hearing this, then you are inside. Welcome — again."</em>', btn:'Listen Further' },
+      { desc:'<em style="font-family:\'EB Garamond\',serif;color:var(--parchment);">"The chamber is its own answer. The door responds only to attention, not to force. Take your time. You have eleven years to make up."</em>', btn:'Let It Run' },
+      { desc:'The cylinder turns silently now. The voice has said all it intended to say.', btn:'Lift the Needle' },
+    ],
   };
 
   /* ── Utility ──────────────────────────────────────────────── */
@@ -1019,9 +1381,6 @@
     slot.setAttribute('data-digit', val);
     slot.classList.add('revealed');
     persist();
-    if (G.digits.every(d => d !== null)) {
-      document.getElementById('doorWrap').style.display = 'block';
-    }
   }
 
   /* ── Inspection panel ─────────────────────────────────────── */
@@ -1920,10 +2279,62 @@
     }
   }
 
-  /* Door (step 30) */
+  /* ── Generic lore handler for 4-step atmospheric objects ─── */
+  function loreHandler(objId, title, baseStep) {
+    return function() {
+      const step = G.objStep[objId];
+      const scenes = LORE[objId];
+      if (step >= scenes.length) {
+        openInsp(objId, title,
+          `<p class="insp-desc">${scenes[scenes.length-1].desc}</p>
+           <p class="insp-feedback ok">✓ Examined.</p>
+           ${clueStrip(objId)}`);
+        return;
+      }
+      const s = scenes[step];
+      const body = `
+        <p class="insp-desc">${s.desc}</p>
+        <div class="insp-action-area">
+          <button class="insp-btn" id="loreBtn">${s.btn}</button>
+        </div>
+        ${clueStrip(objId)}
+      `;
+      openInsp(objId, title, body);
+      setTimeout(() => {
+        const btn = document.getElementById('loreBtn');
+        if (btn) btn.onclick = () => {
+          G.objStep[objId] = step + 1;
+          completeStep(baseStep + step);
+          if (step === scenes.length - 1) showObjSolved(objId);
+          persist();
+          closeInsp();
+          if (step < scenes.length - 1) setTimeout(() => dispatchObj(objId), 80);
+        };
+      }, 50);
+    };
+  }
+
+  const handleMirror     = loreHandler('mirror',     'The Mirror',      30); // 30-33
+  const handleFireplace  = loreHandler('fireplace',  'The Fireplace',   34); // 34-37
+  const handleGlobe      = loreHandler('globe',      'The Globe',       38); // 38-41
+  const handleChess      = loreHandler('chess',      'The Chess Board', 42); // 42-45
+  const handlePhonograph = loreHandler('phonograph', 'The Phonograph',  46); // 46-49
+
+  /* Door (step 50) */
   function handleDoor() {
+    const allDigits = G.digits.every(d => d !== null);
+    if (!allDigits) {
+      const found = G.digits.filter(d => d !== null).length;
+      const body = `
+        <p class="insp-desc">A tall paneled door at the back of the chamber. A brass lockplate is set into its centre, four numbered dials beneath the keyhole. The wood is old; the brass is dull but unmarked.</p>
+        <p class="insp-feedback err" style="margin-top:0.8rem;">${found} of 4 digits known. The dial will not turn.</p>
+        ${clueStrip('door')}
+      `;
+      openInsp('door', 'The Locked Door', body);
+      return;
+    }
     const body = `
-      <p class="insp-desc">The door at the end of the chamber. A brass dial with four slots, each accepting a single digit. The lock has waited eleven years for these four numbers.</p>
+      <p class="insp-desc">The brass lockplate accepts four digits. The dial waits.</p>
       <div class="door-vis">
         <div class="passcode-inputs">
           <input type="number" class="passcode-input" id="pc1" min="0" max="9" maxlength="1" aria-label="Digit 1" placeholder="·">
@@ -1970,7 +2381,7 @@
         const correct = entered.every((d, i) => d === PASSCODE[i]);
         const fb = document.getElementById('doorFeedback');
         if (correct) {
-          completeStep(30);
+          completeStep(50);
           G.objStep.door = 1;
           persist();
           closeInsp();
@@ -2028,8 +2439,7 @@
   }
 
   function guessCurrentObj() {
-    // Find the object with the most recent incomplete step
-    const order = ['letter','portrait','clock','bookshelf','desk','musicbox','candle','rug','map','cabinet','door'];
+    const order = ['letter','portrait','clock','bookshelf','desk','musicbox','candle','rug','map','cabinet','mirror','fireplace','globe','chess','phonograph','door'];
     for (const id of order) {
       if (!G.completedSteps.has(getMaxStepForObj(id))) return id;
     }
@@ -2037,8 +2447,8 @@
   }
 
   function getMaxStepForObj(id) {
-    const map = { letter:1, portrait:4, clock:7, bookshelf:10, desk:13, musicbox:16, candle:18, rug:21, map:24, cabinet:29, door:30 };
-    return map[id] || 1;
+    const m = { letter:1, portrait:4, clock:7, bookshelf:10, desk:13, musicbox:16, candle:18, rug:21, map:24, cabinet:29, mirror:33, fireplace:37, globe:41, chess:45, phonograph:49, door:50 };
+    return m[id] || 1;
   }
 
   document.getElementById('clueBtn').onclick = openClueModal;
@@ -2114,7 +2524,7 @@
   function applyRestore(data) {
     if (!data || data.restarted) return;
     G.letterRead     = data.letterRead ?? false;
-    G.objStep        = Object.assign({ portrait:0,clock:0,bookshelf:0,desk:0,musicbox:0,candle:0,rug:0,map:0,cabinet:0,door:0 }, data.objStep || {});
+    G.objStep        = Object.assign({ portrait:0,clock:0,bookshelf:0,desk:0,musicbox:0,candle:0,rug:0,map:0,cabinet:0,mirror:0,fireplace:0,globe:0,chess:0,phonograph:0,door:0 }, data.objStep || {});
     G.inventory      = new Set(data.inventory || []);
     G.seenScore      = data.seenScore ?? false;
     G.discoveredIX   = data.discoveredIX ?? false;
@@ -2151,13 +2561,8 @@
       }
     });
 
-    // Door wrap
-    if (G.digits.every(d => d !== null)) {
-      document.getElementById('doorWrap').style.display = 'block';
-    }
-
     // Solved objects
-    const objMaxSteps = { portrait:4, clock:7, bookshelf:10, desk:13, musicbox:16, candle:18, rug:21, map:24, cabinet:29, door:30 };
+    const objMaxSteps = { portrait:4, clock:7, bookshelf:10, desk:13, musicbox:16, candle:18, rug:21, map:24, cabinet:29, mirror:33, fireplace:37, globe:41, chess:45, phonograph:49, door:50 };
     Object.entries(objMaxSteps).forEach(([id, maxStep]) => {
       if (G.completedSteps.has(maxStep)) showObjSolved(id);
     });
@@ -2197,25 +2602,24 @@
       case 'rug':       handleRug();       break;
       case 'map':       handleMap();       break;
       case 'cabinet':   handleCabinet();   break;
+      case 'mirror':    handleMirror();    break;
+      case 'fireplace': handleFireplace(); break;
+      case 'globe':     handleGlobe();     break;
+      case 'chess':     handleChess();     break;
+      case 'phonograph':handlePhonograph();break;
       case 'door':      handleDoor();      break;
     }
   }
 
   // Bind room object clicks
-  ['letter','portrait','clock','bookshelf','desk','musicbox','candle','rug','map','cabinet'].forEach(id => {
+  ['letter','portrait','clock','bookshelf','desk','musicbox','candle','rug','map','cabinet',
+   'mirror','fireplace','globe','chess','phonograph','door'].forEach(id => {
     const el = document.getElementById('obj-' + id);
     if (el) {
       el.onclick = () => dispatchObj(id);
       el.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dispatchObj(id); } };
     }
   });
-
-  // Door
-  const doorEl = document.getElementById('obj-door');
-  if (doorEl) {
-    doorEl.onclick = () => handleDoor();
-    doorEl.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDoor(); } };
-  }
 
   // Keyboard close
   document.addEventListener('keydown', (e) => {
