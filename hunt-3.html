@@ -65,6 +65,333 @@
     .obj-glow { position:absolute; inset:-6px; border-radius:4px; box-shadow:0 0 14px rgba(212,167,70,0.35); opacity:0; transition:opacity 0.2s; pointer-events:none; }
     .obj-solved .obj-glow { opacity:0.4; box-shadow:0 0 14px rgba(212,167,70,0.6); }
     .obj-icon { font-size:clamp(1.4rem,2.8vw,2.6rem); line-height:1; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.8)); }
+
+    /* ── Realistic prop renderings ───────────────────────────── */
+    .prop { position:relative; width:100%; height:100%; filter:drop-shadow(0 6px 10px rgba(0,0,0,0.85)); }
+
+    /* Envelope / letter — cream paper with flap and wax seal */
+    .prop-envelope {
+      background:linear-gradient(160deg,#e8dcc0 0%,#c9b78f 60%,#a18c5e 100%);
+      border:1px solid #5e4a28;
+      border-radius:2px;
+      box-shadow:inset 0 0 8px rgba(60,40,15,0.4), inset 2px 2px 4px rgba(255,240,210,0.3);
+      overflow:hidden;
+    }
+    .prop-envelope::before {
+      content:''; position:absolute; inset:0;
+      background:linear-gradient(180deg, transparent 50%, rgba(80,55,25,0.18) 100%);
+    }
+    .prop-envelope::after {
+      content:''; position:absolute; top:0; left:0; right:0; height:55%;
+      background:linear-gradient(180deg,#d4c39a 0%, #b59e6e 100%);
+      clip-path:polygon(0 0, 100% 0, 50% 100%);
+      border-bottom:1px solid rgba(60,40,15,0.3);
+      box-shadow:0 1px 3px rgba(0,0,0,0.3);
+    }
+    .prop-envelope .seal {
+      position:absolute; top:38%; left:50%; transform:translate(-50%,-30%);
+      width:30%; aspect-ratio:1; border-radius:50%;
+      background:radial-gradient(circle at 35% 35%, #c44, #7a1a1a 60%, #4a0e0e 100%);
+      box-shadow:0 1px 3px rgba(0,0,0,0.6), inset -1px -1px 2px rgba(0,0,0,0.4), inset 1px 1px 2px rgba(255,180,180,0.3);
+      z-index:2;
+    }
+
+    /* Portrait — gilded frame, painted oval inside */
+    .prop-portrait {
+      background:
+        linear-gradient(135deg,#8a6620,#4a3210 50%,#7a5818);
+      border:3px solid #1a1208;
+      border-radius:3px;
+      padding:8%;
+      box-shadow:inset 0 0 0 1px rgba(255,210,140,0.4), inset 0 0 6px rgba(0,0,0,0.5);
+    }
+    .prop-portrait::before {
+      content:''; position:absolute; inset:8%;
+      background:
+        radial-gradient(ellipse 50% 40% at 50% 35%, #d4b08a 0%, #8a6840 30%, #3a2818 70%, #1a1008 100%);
+      border:1px solid #1a1208;
+      box-shadow:inset 0 0 12px rgba(0,0,0,0.7);
+    }
+    .prop-portrait::after {
+      /* Figure silhouette */
+      content:''; position:absolute; left:50%; bottom:8%; transform:translateX(-50%);
+      width:48%; height:55%;
+      background:
+        radial-gradient(ellipse 60% 35% at 50% 18%, #2a1d12 0%, #1a1208 100%),
+        linear-gradient(180deg, transparent 25%, #1a1008 25%, #0e0904 100%);
+      clip-path:polygon(20% 100%, 20% 35%, 30% 25%, 35% 15%, 50% 8%, 65% 15%, 70% 25%, 80% 35%, 80% 100%);
+    }
+
+    /* Clock — round mantel clock */
+    .prop-clock {
+      background:radial-gradient(circle at 30% 30%, #d4a040, #8a5a18 40%, #4a2e08 90%);
+      border:2px solid #1a0e02;
+      border-radius:50%;
+      box-shadow:0 0 0 2px rgba(40,25,8,0.8), inset 0 0 8px rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.7);
+    }
+    .prop-clock::before {
+      content:''; position:absolute; inset:14%; border-radius:50%;
+      background:radial-gradient(circle, #f4e8d0 0%, #d4b888 70%, #8a6840 100%);
+      border:1px solid #3a2a10;
+      box-shadow:inset 0 0 8px rgba(80,55,25,0.5);
+    }
+    .prop-clock::after {
+      /* Hands */
+      content:''; position:absolute; top:50%; left:50%;
+      width:2px; height:32%; background:#1a0e02;
+      transform-origin:50% 100%;
+      transform:translate(-50%,-100%) rotate(-150deg);
+      box-shadow:0 0 2px rgba(0,0,0,0.6);
+    }
+    .prop-clock .hour-hand {
+      position:absolute; top:50%; left:50%;
+      width:3px; height:22%; background:#1a0e02;
+      transform-origin:50% 100%;
+      transform:translate(-50%,-100%) rotate(30deg);
+      border-radius:2px;
+    }
+    .prop-clock .pivot {
+      position:absolute; top:50%; left:50%;
+      width:14%; aspect-ratio:1; border-radius:50%;
+      background:radial-gradient(circle, #d4a040, #6a4818);
+      transform:translate(-50%,-50%);
+      box-shadow:0 0 2px rgba(0,0,0,0.6);
+    }
+
+    /* Bookshelf — three rows of stacked book spines */
+    .prop-bookshelf {
+      background:linear-gradient(180deg,#2a1a08,#1a1006 100%);
+      border:2px solid #0a0604;
+      border-radius:2px;
+      padding:6% 4%;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:4%;
+      box-shadow:inset 0 0 10px rgba(0,0,0,0.6);
+    }
+    .prop-bookshelf .shelf-line {
+      display:flex; gap:3%; flex:1; align-items:flex-end;
+      border-bottom:1px solid #0a0604;
+      padding-bottom:2%;
+    }
+    .prop-bookshelf .bk {
+      flex:1; height:90%;
+      border-radius:1px 1px 0 0;
+      box-shadow:inset 1px 0 1px rgba(255,255,255,0.08), inset -1px 0 1px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.5);
+      border-top:1px solid rgba(255,220,160,0.15);
+    }
+    .prop-bookshelf .bk.b1 { background:linear-gradient(180deg,#7a2418,#4a1408); height:85%; }
+    .prop-bookshelf .bk.b2 { background:linear-gradient(180deg,#1a3a4a,#0a1e2a); height:92%; }
+    .prop-bookshelf .bk.b3 { background:linear-gradient(180deg,#2a4a1a,#142a08); height:78%; }
+    .prop-bookshelf .bk.b4 { background:linear-gradient(180deg,#4a3a1a,#2a200a); height:88%; }
+    .prop-bookshelf .bk.b5 { background:linear-gradient(180deg,#3a1a4a,#1e0a2a); height:82%; }
+
+    /* Desk — wooden writing desk seen from front */
+    .prop-desk {
+      background:linear-gradient(180deg,#5a3818 0%, #3a240e 35%, #2a1808 100%);
+      border:1px solid #0a0604;
+      border-radius:3px 3px 1px 1px;
+      box-shadow:inset 0 1px 0 rgba(255,200,140,0.2), inset 0 0 8px rgba(0,0,0,0.4);
+      position:relative;
+    }
+    .prop-desk::before {
+      /* Top edge highlight */
+      content:''; position:absolute; top:0; left:0; right:0; height:18%;
+      background:linear-gradient(180deg,#7a5028, #4a2e10);
+      border-bottom:1px solid #1a0e04;
+    }
+    .prop-desk::after {
+      /* Drawer */
+      content:''; position:absolute; top:32%; left:12%; right:12%; height:32%;
+      background:linear-gradient(180deg,#4a2e10,#2a1808);
+      border:1px solid #0a0604;
+      border-radius:2px;
+      box-shadow:inset 0 1px 1px rgba(255,200,140,0.15);
+    }
+    .prop-desk .knob {
+      position:absolute; top:46%; left:50%; transform:translate(-50%,-50%);
+      width:8%; aspect-ratio:1; border-radius:50%;
+      background:radial-gradient(circle at 30% 30%,#d4a040,#6a4818);
+      box-shadow:0 1px 2px rgba(0,0,0,0.6);
+      z-index:2;
+    }
+    .prop-desk .legs {
+      position:absolute; bottom:0; left:0; right:0; height:32%;
+      display:flex; justify-content:space-between;
+    }
+    .prop-desk .legs::before, .prop-desk .legs::after {
+      content:''; width:14%; height:100%;
+      background:linear-gradient(180deg,#3a240e,#1a0e04);
+      border-left:1px solid rgba(0,0,0,0.5);
+      border-right:1px solid rgba(255,200,140,0.08);
+    }
+
+    /* Music box — lacquered wooden box with brass corners */
+    .prop-musicbox {
+      background:
+        linear-gradient(180deg,#5a1a08 0%, #3a0e04 50%, #2a0a02 100%);
+      border:1px solid #0a0202;
+      border-radius:2px;
+      box-shadow:inset 0 1px 1px rgba(255,140,80,0.2), inset 0 0 8px rgba(0,0,0,0.4);
+      position:relative;
+    }
+    .prop-musicbox::before {
+      /* Lid line */
+      content:''; position:absolute; top:35%; left:0; right:0; height:1px;
+      background:#0a0202;
+      box-shadow:0 -1px 0 rgba(255,140,80,0.2);
+    }
+    .prop-musicbox::after {
+      /* Brass inlay on lid */
+      content:''; position:absolute; top:8%; left:25%; right:25%; height:18%;
+      background:linear-gradient(135deg,#d4a040,#8a5818);
+      border-radius:1px;
+      box-shadow:inset 0 0 2px rgba(0,0,0,0.5);
+    }
+    .prop-musicbox .corner {
+      position:absolute; width:14%; aspect-ratio:1;
+      background:radial-gradient(circle at 30% 30%,#d4a040,#5a3810);
+      border-radius:1px;
+    }
+    .prop-musicbox .corner.tl { top:4%; left:4%; }
+    .prop-musicbox .corner.tr { top:4%; right:4%; }
+    .prop-musicbox .corner.bl { bottom:4%; left:4%; }
+    .prop-musicbox .corner.br { bottom:4%; right:4%; }
+
+    /* Candle — wax candle in brass holder, flame */
+    .prop-candle {
+      display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
+      height:100%; width:100%;
+    }
+    .prop-candle .flame {
+      width:38%; height:22%;
+      background:radial-gradient(ellipse 50% 80% at 50% 100%, #ffd066 0%, #f08020 40%, #c04010 80%, transparent 100%);
+      border-radius:50% 50% 30% 30%;
+      filter:blur(0.5px) drop-shadow(0 -2px 8px rgba(255,160,40,0.6));
+      animation:flameFlicker 1.4s ease-in-out infinite;
+      transform-origin:center bottom;
+    }
+    .prop-candle .flame.unlit { display:none; }
+    .prop-candle .wax {
+      width:32%; height:50%;
+      background:linear-gradient(180deg,#f4e8d0 0%, #d4b888 60%, #8a6840 100%);
+      border:1px solid #4a3818;
+      border-radius:2px 2px 0 0;
+      box-shadow:inset -2px 0 3px rgba(0,0,0,0.3), inset 2px 0 1px rgba(255,255,255,0.3);
+      position:relative;
+    }
+    .prop-candle .wax::before {
+      content:''; position:absolute; top:-6%; left:50%; transform:translateX(-50%);
+      width:8%; height:12%; background:#1a0e02;
+      border-radius:1px;
+    }
+    .prop-candle .holder {
+      width:60%; height:18%;
+      background:radial-gradient(ellipse at 50% 30%,#d4a040,#5a3810);
+      border:1px solid #1a0e02;
+      border-radius:30% 30% 8% 8% / 60% 60% 20% 20%;
+      box-shadow:0 1px 2px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,220,160,0.4);
+    }
+    @keyframes flameFlicker {
+      0%,100% { transform:scaleY(1) scaleX(1) rotate(-1deg); opacity:1; }
+      33%     { transform:scaleY(1.08) scaleX(0.94) rotate(2deg); opacity:0.95; }
+      66%     { transform:scaleY(0.94) scaleX(1.04) rotate(-2deg); opacity:1; }
+    }
+
+    /* Rug — oriental rug with pattern */
+    .prop-rug {
+      background:
+        repeating-linear-gradient(45deg, rgba(180,80,30,0.18) 0 4px, transparent 4px 8px),
+        radial-gradient(ellipse at center, #6a2818 0%, #4a1808 50%, #2a0e04 100%);
+      border:2px solid #1a0a04;
+      border-radius:2px;
+      box-shadow:inset 0 0 12px rgba(0,0,0,0.6);
+      position:relative;
+    }
+    .prop-rug::before {
+      content:''; position:absolute; inset:6%;
+      border:1px solid rgba(212,167,70,0.35);
+      border-radius:1px;
+    }
+    .prop-rug::after {
+      content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:38%; aspect-ratio:1;
+      background:
+        radial-gradient(circle, transparent 30%, rgba(212,167,70,0.35) 32%, transparent 36%),
+        radial-gradient(circle, rgba(212,167,70,0.4) 0%, rgba(212,167,70,0.2) 20%, transparent 50%);
+      border-radius:50%;
+    }
+    .prop-rug .tassel {
+      position:absolute; top:0; bottom:0; width:3%;
+      background:repeating-linear-gradient(180deg, #8a6420 0 3px, #4a3010 3px 6px);
+    }
+    .prop-rug .tassel.l { left:-1%; }
+    .prop-rug .tassel.r { right:-1%; }
+
+    /* Map — folded parchment on the wall */
+    .prop-map {
+      background:linear-gradient(160deg,#e0c890 0%, #b89a5e 60%, #8a6e3a 100%);
+      border:1px solid #4a3210;
+      box-shadow:inset 0 0 10px rgba(80,55,20,0.6), 2px 3px 6px rgba(0,0,0,0.7);
+      position:relative;
+      overflow:hidden;
+    }
+    .prop-map::before {
+      /* Crease lines (folds) */
+      content:''; position:absolute; inset:0;
+      background:
+        linear-gradient(90deg, transparent 32%, rgba(60,40,15,0.35) 33%, transparent 34%),
+        linear-gradient(90deg, transparent 65%, rgba(60,40,15,0.35) 66%, transparent 67%),
+        linear-gradient(180deg, transparent 49%, rgba(60,40,15,0.3) 50%, transparent 51%);
+    }
+    .prop-map::after {
+      /* Coastline / route markings */
+      content:''; position:absolute; top:20%; left:18%; width:50%; height:40%;
+      background:
+        radial-gradient(ellipse 60% 40% at 30% 50%, transparent 40%, rgba(40,20,8,0.5) 42%, transparent 46%),
+        radial-gradient(circle 4% at 70% 20%, #8a1818 0%, transparent 100%),
+        radial-gradient(circle 4% at 20% 80%, #8a1818 0%, transparent 100%);
+    }
+    .prop-map .pin {
+      position:absolute; width:8%; aspect-ratio:1; border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, #ff5040, #8a1818);
+      box-shadow:0 1px 2px rgba(0,0,0,0.7);
+    }
+    .prop-map .pin.p1 { top:25%; left:30%; }
+    .prop-map .pin.p2 { top:60%; left:55%; }
+
+    /* Cabinet — tall iron filing cabinet with three drawers */
+    .prop-cabinet {
+      background:linear-gradient(180deg,#3a3228 0%, #1e1a14 50%, #14110b 100%);
+      border:1px solid #0a0804;
+      border-radius:2px 2px 1px 1px;
+      box-shadow:inset 0 1px 0 rgba(200,180,140,0.18), inset 0 0 8px rgba(0,0,0,0.5), 2px 4px 8px rgba(0,0,0,0.7);
+      display:flex; flex-direction:column; gap:1px; padding:3% 3%;
+    }
+    .prop-cabinet .drw {
+      flex:1; position:relative;
+      background:linear-gradient(180deg,#2a241a 0%, #14110b 100%);
+      border:1px solid #0a0604;
+      border-radius:1px;
+      box-shadow:inset 0 1px 1px rgba(200,180,140,0.12), inset 0 -1px 1px rgba(0,0,0,0.5);
+    }
+    .prop-cabinet .drw::before {
+      /* Drawer pull (horizontal handle) */
+      content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:36%; height:14%;
+      background:linear-gradient(180deg,#a08040, #5a4018);
+      border:1px solid #1a0e02;
+      border-radius:2px;
+      box-shadow:inset 0 1px 1px rgba(255,220,160,0.4), 0 1px 2px rgba(0,0,0,0.6);
+    }
+    .prop-cabinet .drw::after {
+      /* Label slot */
+      content:''; position:absolute; top:20%; left:30%; right:30%; height:14%;
+      background:#f0e0b8;
+      border:1px solid #1a0e02;
+      opacity:0.7;
+    }
     .obj-label { position:absolute; bottom:-1.4em; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:0.5rem; color:var(--gold); opacity:0; white-space:nowrap; letter-spacing:0.1em; transition:opacity 0.2s; pointer-events:none; }
     .room-obj:hover .obj-label { opacity:0.7; }
 
@@ -326,70 +653,83 @@
       <!-- Letter -->
       <button class="room-obj" id="obj-letter" aria-label="Inspect letter" title="Letter">
         <div class="obj-glow"></div>
-        <span class="obj-icon">✉️</span>
+        <div class="prop prop-envelope"><div class="seal"></div></div>
         <span class="obj-label">Letter</span>
       </button>
 
       <!-- Portrait -->
       <button class="room-obj" id="obj-portrait" aria-label="Inspect portrait" title="Portrait">
         <div class="obj-glow"></div>
-        <span class="obj-icon">🖼️</span>
+        <div class="prop prop-portrait"></div>
         <span class="obj-label">Portrait</span>
       </button>
 
       <!-- Clock -->
       <button class="room-obj" id="obj-clock" aria-label="Inspect clock" title="Clock">
         <div class="obj-glow"></div>
-        <span class="obj-icon">🕰️</span>
+        <div class="prop prop-clock"><div class="hour-hand"></div><div class="pivot"></div></div>
         <span class="obj-label">Clock</span>
       </button>
 
       <!-- Bookshelf -->
       <button class="room-obj" id="obj-bookshelf" aria-label="Inspect bookshelf" title="Bookshelf">
         <div class="obj-glow"></div>
-        <span class="obj-icon">📚</span>
+        <div class="prop prop-bookshelf">
+          <div class="shelf-line"><div class="bk b1"></div><div class="bk b2"></div><div class="bk b3"></div><div class="bk b4"></div><div class="bk b5"></div></div>
+          <div class="shelf-line"><div class="bk b3"></div><div class="bk b4"></div><div class="bk b1"></div><div class="bk b5"></div><div class="bk b2"></div></div>
+          <div class="shelf-line"><div class="bk b2"></div><div class="bk b5"></div><div class="bk b3"></div><div class="bk b1"></div><div class="bk b4"></div></div>
+        </div>
         <span class="obj-label">Bookshelf</span>
       </button>
 
       <!-- Desk -->
       <button class="room-obj" id="obj-desk" aria-label="Inspect desk" title="Desk">
         <div class="obj-glow"></div>
-        <span class="obj-icon">🗃️</span>
+        <div class="prop prop-desk"><div class="knob"></div><div class="legs"></div></div>
         <span class="obj-label">Desk</span>
       </button>
 
       <!-- Music box -->
       <button class="room-obj" id="obj-musicbox" aria-label="Inspect music box" title="Music Box">
         <div class="obj-glow"></div>
-        <span class="obj-icon">🎵</span>
+        <div class="prop prop-musicbox">
+          <div class="corner tl"></div><div class="corner tr"></div>
+          <div class="corner bl"></div><div class="corner br"></div>
+        </div>
         <span class="obj-label">Music Box</span>
       </button>
 
       <!-- Candle -->
       <button class="room-obj" id="obj-candle" aria-label="Inspect candle" title="Candle">
         <div class="obj-glow"></div>
-        <span class="obj-icon" id="candleIcon">🕯️</span>
+        <div class="prop prop-candle">
+          <div class="flame unlit" id="candleFlame"></div>
+          <div class="wax"></div>
+          <div class="holder"></div>
+        </div>
         <span class="obj-label">Candle</span>
       </button>
 
       <!-- Rug -->
       <button class="room-obj" id="obj-rug" aria-label="Inspect rug" title="Rug">
         <div class="obj-glow"></div>
-        <span class="obj-icon">🟫</span>
+        <div class="prop prop-rug"><div class="tassel l"></div><div class="tassel r"></div></div>
         <span class="obj-label">Rug</span>
       </button>
 
       <!-- Map -->
       <button class="room-obj" id="obj-map" aria-label="Inspect map" title="Map on wall">
         <div class="obj-glow"></div>
-        <span class="obj-icon">🗺️</span>
+        <div class="prop prop-map"><div class="pin p1"></div><div class="pin p2"></div></div>
         <span class="obj-label">Map</span>
       </button>
 
       <!-- Cabinet -->
       <button class="room-obj" id="obj-cabinet" aria-label="Inspect cabinet" title="Cabinet">
         <div class="obj-glow"></div>
-        <span class="obj-icon">🗄️</span>
+        <div class="prop prop-cabinet">
+          <div class="drw"></div><div class="drw"></div><div class="drw"></div>
+        </div>
         <span class="obj-label">Cabinet</span>
       </button>
 
@@ -1263,7 +1603,7 @@
           gainItem('candle');
           completeStep(18);
           showObjSolved('candle');
-          document.getElementById('candleIcon').textContent = '🔥';
+          document.getElementById('candleFlame').classList.remove('unlit');
           persist();
           closeInsp();
         };
@@ -1788,7 +2128,7 @@
 
     // Candle icon
     if (G.inventory.has('candle')) {
-      document.getElementById('candleIcon').textContent = '🔥';
+      document.getElementById('candleFlame').classList.remove('unlit');
     }
 
     // Digits UI
