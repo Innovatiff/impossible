@@ -134,10 +134,31 @@
         <div class="lb-hunt-tabs">
           <button class="lb-tab active" data-hunt="hunt-1">The Glass &amp; The Flame</button>
           <button class="lb-tab" data-hunt="hunt-2">The Whispering Page</button>
+          <button class="lb-tab" data-hunt="hunt-3">
+            The Locked Chamber
+            <span style="font-size:0.58rem;font-family:var(--font-mono);color:#e2572b;letter-spacing:0.08em;border:1px solid rgba(226,87,43,0.4);padding:0.1rem 0.35rem;border-radius:3px;vertical-align:middle;margin-left:0.3rem;">Escape Room</span>
+          </button>
         </div>
 
         <div class="lb-table-wrap reveal">
           <div class="lb-loading" id="lbLoading">Loading scores…</div>
+
+          <!-- Hunt 3 locked gate — shown only when user lacks access -->
+          <div id="lbLocked" style="display:none;padding:3.5rem 2rem;text-align:center;">
+            <div style="font-size:2rem;margin-bottom:1rem;opacity:0.5;">🔒</div>
+            <div style="font-family:var(--font-display);font-size:1.05rem;color:var(--parchment);margin-bottom:0.6rem;letter-spacing:0.04em;">Exclusive Leaderboard</div>
+            <p style="font-size:0.88rem;font-style:italic;color:var(--parchment-dim);max-width:420px;margin:0 auto 1.5rem;">
+              The rankings for <em>The Locked Chamber</em> are visible only to those who have unlocked the hunt.
+            </p>
+            <div style="display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap;">
+              <a href="account.html" class="btn btn-primary" style="font-size:0.78rem;">Unlock — $4.99 →</a>
+              <a href="pricing.html" class="btn btn-ghost" style="font-size:0.78rem;">Full Dossier Plan</a>
+            </div>
+            <p id="lbLockedSignIn" style="font-size:0.78rem;color:var(--mist);margin-top:1rem;display:none;">
+              Already purchased? <a href="account.html" style="color:var(--gold);">Sign in</a> to see your access.
+            </p>
+          </div>
+
           <table id="lbTable" style="display:none;" aria-label="Leaderboard">
             <thead>
               <tr>
@@ -167,7 +188,7 @@
     <div class="footer-inner">
       <div>
         <div class="footer-brand">IMPOSSIBLE HUNT</div>
-        <div class="footer-tagline">Ten puzzles. No instructions. One leaderboard.</div>
+        <div class="footer-tagline">Three puzzles. No instructions. One leaderboard.</div>
       </div>
       <ul class="footer-nav" role="list">
         <li><a href="index.html">Home</a></li>
@@ -230,11 +251,23 @@
         { name: 'Mei-Lin Chao',    time: 2740, cluesUsed: 2 }, // 45:40
         { name: 'Kofi Asante',     time: 3062, cluesUsed: 0 }, // 51:02
       ].map(e => ({ ...e, score: Math.max(0, 10000 - Math.floor(e.time / 8) - e.cluesUsed * 500), seeded: true })),
+
+      'hunt-3': [
+        { name: 'V. Ashworth',    time: 3841, cluesUsed: 0 }, // 64:01 — first blood, no clues
+        { name: 'T. Lindqvist',   time: 4112, cluesUsed: 0 }, // 68:32
+        { name: 'M. Castellano',  time: 4389, cluesUsed: 1 }, // 73:09
+        { name: 'R. Oyelaran',    time: 4714, cluesUsed: 0 }, // 78:34
+        { name: 'A. Bergstrom',   time: 5023, cluesUsed: 1 }, // 83:43
+        { name: 'S. Nakamura',    time: 5388, cluesUsed: 2 }, // 89:48
+        { name: 'F. Dubois',      time: 5905, cluesUsed: 1 }, // 98:25
+        { name: 'E. Mokoena',     time: 6241, cluesUsed: 3 }, // 104:01
+      ].map(e => ({ ...e, score: Math.max(0, 10000 - Math.floor(e.time / 10) - e.cluesUsed * 600), seeded: true })),
     };
 
     const HUNT_META = {
-      'hunt-1': { label: 'The Glass & The Flame', href: 'hunt-1.html', cta: 'Begin The Glass & The Flame — Free' },
-      'hunt-2': { label: 'The Whispering Page',   href: 'hunt-2.html', cta: 'Begin The Whispering Page'          },
+      'hunt-1': { label: 'The Glass & The Flame', href: 'hunt-1.html',  cta: 'Begin The Glass & The Flame — Free', restricted: false },
+      'hunt-2': { label: 'The Whispering Page',   href: 'hunt-2.html',  cta: 'Begin The Whispering Page',          restricted: false },
+      'hunt-3': { label: 'The Locked Chamber',    href: 'hunt-3.html',  cta: 'Enter The Locked Chamber',           restricted: true  },
     };
 
     function fmt(s) {
@@ -243,6 +276,8 @@
 
     let currentUser = null;
     let currentUserName = null;
+    let userPlan = 'free';
+    let userLibrary = {};
 
     async function seed(huntId) {
       const snap = await getDocs(collection(db, 'leaderboard', huntId, 'entries'));
@@ -254,13 +289,44 @@
       }
     }
 
-    async function loadLeaderboard(huntId) {
-      document.getElementById('lbLoading').style.display = 'block';
-      document.getElementById('lbTable').style.display = 'none';
+    /* Returns true if the current user may view the hunt-3 leaderboard */
+    function hasHunt3Access() {
+      if (userPlan === 'full') return true;           // Full Dossier subscriber
+      if (userLibrary['hunt-3']) return true;         // purchased (or completed and auto-added)
+      return false;
+    }
 
-      try {
-        await seed(huntId);
-      } catch(e) {}
+    function showLocked(huntId) {
+      document.getElementById('lbLoading').style.display = 'none';
+      document.getElementById('lbTable').style.display   = 'none';
+      document.getElementById('lbYourRank').style.display = 'none';
+      const gate = document.getElementById('lbLocked');
+      gate.style.display = 'block';
+      // If user is signed out, hint them to sign in first
+      const signInHint = document.getElementById('lbLockedSignIn');
+      if (signInHint) signInHint.style.display = currentUser ? 'none' : 'block';
+      // Update CTA
+      const cta = document.getElementById('lbCta');
+      if (cta) { cta.href = 'account.html'; cta.textContent = 'Unlock The Locked Chamber — $4.99'; }
+    }
+
+    async function loadLeaderboard(huntId) {
+      const meta = HUNT_META[huntId] || {};
+
+      // Reset UI
+      document.getElementById('lbLoading').style.display = 'block';
+      document.getElementById('lbLoading').textContent   = 'Loading scores…';
+      document.getElementById('lbTable').style.display   = 'none';
+      document.getElementById('lbLocked').style.display  = 'none';
+      document.getElementById('lbYourRank').style.display = 'none';
+
+      // Access gate for restricted hunts
+      if (meta.restricted && !hasHunt3Access()) {
+        showLocked(huntId);
+        return;
+      }
+
+      try { await seed(huntId); } catch(e) {}
 
       let entries = [];
       try {
@@ -288,6 +354,7 @@
       const tbody   = document.getElementById('lbBody');
       const rankEl  = document.getElementById('lbYourRank');
       const rankTxt = document.getElementById('lbYourRankText');
+      const meta    = HUNT_META[huntId];
 
       let yourRank = null;
       tbody.innerHTML = entries.map((e, i) => {
@@ -315,7 +382,10 @@
       }
 
       document.getElementById('lbLoading').style.display = 'none';
-      document.getElementById('lbTable').style.display = 'table';
+      document.getElementById('lbTable').style.display   = 'table';
+
+      const cta = document.getElementById('lbCta');
+      if (cta && meta) { cta.href = meta.href; cta.textContent = meta.cta; }
     }
 
     let activeHunt = 'hunt-1';
@@ -329,23 +399,30 @@
       });
     });
 
-    function updateCta(huntId) {
-      const cta = document.getElementById('lbCta');
-      const meta = HUNT_META[huntId];
-      if (cta && meta) { cta.href = meta.href; cta.textContent = meta.cta; }
-    }
-
-    const _origRender = renderTable;
-    renderTable = (entries, huntId) => { _origRender(entries, huntId); updateCta(huntId); };
-
     onAuthStateChanged(auth, async (user) => {
       currentUser = user;
+      userPlan    = 'free';
+      userLibrary = {};
+
       if (user) {
         try {
           const snap = await getDoc(doc(db, 'users', user.uid));
-          currentUserName = snap.exists() ? snap.data().displayName : (user.displayName || user.email.split('@')[0]);
+          if (snap.exists()) {
+            const data = snap.data();
+            userPlan = data.plan || 'free';
+            currentUserName = data.displayName || user.displayName || user.email?.split('@')[0] || 'You';
+          } else {
+            currentUserName = user.displayName || user.email?.split('@')[0] || 'You';
+          }
         } catch(e) { currentUserName = user.displayName || 'You'; }
+
+        // Load library so we know if they purchased hunt-3
+        try {
+          const libSnap = await getDocs(collection(db, 'users', user.uid, 'library'));
+          libSnap.forEach(d => { userLibrary[d.id] = d.data(); });
+        } catch(e) {}
       }
+
       loadLeaderboard(activeHunt);
     });
   </script>
