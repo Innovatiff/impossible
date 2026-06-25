@@ -32,34 +32,55 @@
     .room-label { font-family:var(--font-mono); font-size:0.58rem; color:var(--mist); opacity:0.5; letter-spacing:0.14em; text-transform:uppercase; margin-bottom:0.8rem; }
     .room-stage { position:relative; width:100%; max-width:1280px; aspect-ratio:16/9; background:#0d0b10; border:1px solid rgba(212,167,70,0.14); border-radius:6px; overflow:hidden; box-shadow:0 0 50px rgba(0,0,0,0.9); }
 
-    /* Victorian room background with wall paneling */
+    /* Victorian room background — wall paneling, depth, ambient lamp pools */
     .room-bg { position:absolute; inset:0; background:
-      radial-gradient(ellipse 60% 40% at 50% 90%, rgba(180,100,30,0.10) 0%, transparent 70%),
-      radial-gradient(ellipse 25% 50% at 18% 45%, rgba(212,167,70,0.05) 0%, transparent 60%),
-      radial-gradient(ellipse 22% 45% at 82% 45%, rgba(212,167,70,0.04) 0%, transparent 60%),
-      /* Vertical wood paneling */
+      /* Ambient lamp pools */
+      radial-gradient(ellipse 60% 40% at 50% 90%, rgba(220,140,50,0.14) 0%, transparent 65%),
+      radial-gradient(ellipse 25% 50% at 18% 45%, rgba(220,160,70,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 22% 45% at 82% 45%, rgba(220,160,70,0.06) 0%, transparent 60%),
+      /* Vertical wood paneling with seam shadow + warm highlight */
       repeating-linear-gradient(90deg,
         transparent 0,
-        transparent 9.4%,
-        rgba(0,0,0,0.22) 9.5%,
-        rgba(180,130,60,0.04) 9.6%,
-        transparent 9.7%,
+        transparent 9.3%,
+        rgba(0,0,0,0.35) 9.4%,
+        rgba(0,0,0,0.35) 9.5%,
+        rgba(220,160,80,0.08) 9.6%,
+        rgba(220,160,80,0.04) 9.8%,
+        transparent 9.9%,
         transparent 18.5%),
-      linear-gradient(180deg, #1a1208 0%, #120d08 40%, #0e0a07 70%, #0c0907 100%);
+      /* Subtle horizontal grain */
+      repeating-linear-gradient(180deg,
+        transparent 0, transparent 70px,
+        rgba(0,0,0,0.06) 71px, transparent 72px,
+        transparent 140px),
+      linear-gradient(180deg, #2a1808 0%, #1a1108 30%, #120d08 60%, #0c0805 100%);
     }
-    /* Floor with floorboards */
+    /* Floor with floorboards + perspective fade */
     .room-floor { position:absolute; bottom:0; left:0; right:0; height:22%;
       background:
+        /* Knot marks */
+        radial-gradient(ellipse 1.2% 0.6% at 23% 30%, rgba(0,0,0,0.45), transparent 70%),
+        radial-gradient(ellipse 1% 0.4% at 67% 55%, rgba(0,0,0,0.4), transparent 70%),
+        radial-gradient(ellipse 1.2% 0.5% at 88% 25%, rgba(0,0,0,0.4), transparent 70%),
+        /* Plank seam highlights */
         repeating-linear-gradient(90deg,
           transparent 0,
           transparent 8.2%,
-          rgba(0,0,0,0.4) 8.3%,
-          rgba(180,120,50,0.05) 8.4%,
+          rgba(0,0,0,0.55) 8.3%,
+          rgba(220,150,70,0.08) 8.4%,
           transparent 8.5%,
           transparent 16.6%),
-        linear-gradient(180deg,#1c1208 0%,#100c06 100%);
-      border-top:1px solid rgba(80,50,15,0.6);
-      box-shadow:inset 0 4px 12px rgba(0,0,0,0.5);
+        /* Cross-grain wood detail */
+        repeating-linear-gradient(0deg,
+          transparent 0,
+          rgba(255,200,140,0.025) 1px,
+          transparent 2px,
+          transparent 8px),
+        linear-gradient(180deg,#2a1808 0%,#1a1006 60%,#0c0805 100%);
+      border-top:2px solid rgba(0,0,0,0.7);
+      box-shadow:
+        inset 0 4px 14px rgba(0,0,0,0.7),
+        inset 0 -8px 16px rgba(255,80,20,0.08);
     }
     /* Picture-rail line */
     .room-rail { position:absolute; top:30%; left:0; right:0; height:2px;
@@ -111,229 +132,413 @@
     /* ── Realistic prop renderings ───────────────────────────── */
     .prop { position:relative; width:100%; height:100%; filter:drop-shadow(0 6px 10px rgba(0,0,0,0.85)); }
 
-    /* Envelope / letter — cream paper with flap and wax seal */
+    /* Envelope / letter — cream paper, aged flap, embossed wax seal */
     .prop-envelope {
-      background:linear-gradient(160deg,#e8dcc0 0%,#c9b78f 60%,#a18c5e 100%);
+      background:
+        /* Paper grain noise */
+        repeating-linear-gradient(67deg, rgba(80,55,25,0.05) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(23deg, rgba(80,55,25,0.04) 0 1px, transparent 1px 4px),
+        linear-gradient(160deg,#f4e8cc 0%,#d4c19a 50%,#a08e62 100%);
       border:1px solid #5e4a28;
       border-radius:2px;
-      box-shadow:inset 0 0 8px rgba(60,40,15,0.4), inset 2px 2px 4px rgba(255,240,210,0.3);
+      box-shadow:
+        inset 0 0 10px rgba(60,40,15,0.45),
+        inset 2px 2px 4px rgba(255,240,210,0.4),
+        inset -1px -1px 2px rgba(60,40,15,0.3),
+        0 2px 4px rgba(0,0,0,0.6);
       overflow:hidden;
     }
     .prop-envelope::before {
+      /* Flap shadow + bottom-half tint */
       content:''; position:absolute; inset:0;
-      background:linear-gradient(180deg, transparent 50%, rgba(80,55,25,0.18) 100%);
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.18) 0%, transparent 30%, transparent 55%, rgba(80,55,25,0.22) 100%);
     }
     .prop-envelope::after {
-      content:''; position:absolute; top:0; left:0; right:0; height:55%;
-      background:linear-gradient(180deg,#d4c39a 0%, #b59e6e 100%);
+      /* Triangular flap, with two seam lines */
+      content:''; position:absolute; top:0; left:0; right:0; height:60%;
+      background:
+        linear-gradient(180deg,#e0cda0 0%,#a8916a 100%);
       clip-path:polygon(0 0, 100% 0, 50% 100%);
-      border-bottom:1px solid rgba(60,40,15,0.3);
-      box-shadow:0 1px 3px rgba(0,0,0,0.3);
+      border-bottom:1px solid rgba(60,40,15,0.4);
+      box-shadow:0 2px 4px rgba(0,0,0,0.5);
     }
     .prop-envelope .seal {
-      position:absolute; top:38%; left:50%; transform:translate(-50%,-30%);
-      width:30%; aspect-ratio:1; border-radius:50%;
-      background:radial-gradient(circle at 35% 35%, #c44, #7a1a1a 60%, #4a0e0e 100%);
-      box-shadow:0 1px 3px rgba(0,0,0,0.6), inset -1px -1px 2px rgba(0,0,0,0.4), inset 1px 1px 2px rgba(255,180,180,0.3);
+      position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      width:36%; aspect-ratio:1; border-radius:50%;
+      background:
+        radial-gradient(circle at 35% 30%, #e85050 0%, #b02020 35%, #7a1010 65%, #3a0a0a 100%);
+      box-shadow:
+        0 2px 5px rgba(0,0,0,0.85),
+        inset -2px -3px 4px rgba(0,0,0,0.55),
+        inset 2px 2px 3px rgba(255,180,180,0.4);
       z-index:2;
     }
+    .prop-envelope .seal::before {
+      /* Embossed monogram */
+      content:'V'; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      font-family:'Cinzel',serif; font-weight:700; font-size:11px; color:#3a0a0a;
+      text-shadow:0 1px 0 rgba(255,150,150,0.5), 0 -1px 0 rgba(0,0,0,0.5);
+    }
+    .prop-envelope .seal::after {
+      /* Wax drip below */
+      content:''; position:absolute; left:50%; bottom:-30%; transform:translateX(-50%);
+      width:30%; height:40%;
+      background:radial-gradient(ellipse at 50% 0%, #a02020 0%, #5a0a0a 80%, transparent 100%);
+      clip-path:polygon(10% 0, 90% 0, 70% 100%, 50% 90%, 30% 100%);
+    }
 
-    /* Portrait — gilded frame, painted oval inside */
+    /* Portrait — carved gilded frame with ornate ridges, oil-painted figure */
     .prop-portrait {
       background:
-        linear-gradient(135deg,#8a6620,#4a3210 50%,#7a5818);
-      border:3px solid #1a1208;
+        /* Frame carving: layered grooves */
+        repeating-linear-gradient(135deg,
+          transparent 0,
+          rgba(0,0,0,0.15) 1px,
+          transparent 2px,
+          transparent 4px,
+          rgba(255,220,140,0.12) 5px,
+          transparent 6px,
+          transparent 9px),
+        linear-gradient(135deg, #d4a040 0%, #8a6018 25%, #5a3a10 50%, #8a6018 75%, #d4a040 100%);
+      border:1px solid #1a0e02;
       border-radius:3px;
-      padding:8%;
-      box-shadow:inset 0 0 0 1px rgba(255,210,140,0.4), inset 0 0 6px rgba(0,0,0,0.5);
+      padding:11%;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,230,160,0.55),
+        inset 0 0 0 3px rgba(60,40,12,0.5),
+        inset 0 0 0 4px rgba(255,220,140,0.4),
+        inset 0 0 10px rgba(0,0,0,0.6),
+        0 4px 10px rgba(0,0,0,0.85);
     }
     .prop-portrait::before {
-      content:''; position:absolute; inset:8%;
+      /* Canvas backdrop — chiaroscuro lighting */
+      content:''; position:absolute; inset:11%;
       background:
-        radial-gradient(ellipse 50% 40% at 50% 35%, #d4b08a 0%, #8a6840 30%, #3a2818 70%, #1a1008 100%);
-      border:1px solid #1a1208;
-      box-shadow:inset 0 0 12px rgba(0,0,0,0.7);
+        radial-gradient(ellipse 55% 40% at 50% 28%, #d4a878 0%, #8a5e38 25%, #3a2412 55%, #1a0e08 80%, #08050a 100%);
+      border:1px solid #0a0604;
+      box-shadow:
+        inset 0 0 18px rgba(0,0,0,0.85),
+        inset 2px 2px 4px rgba(180,130,80,0.18);
     }
     .prop-portrait::after {
-      /* Figure silhouette */
-      content:''; position:absolute; left:50%; bottom:8%; transform:translateX(-50%);
-      width:48%; height:55%;
+      /* Figure silhouette — head + shoulders, painterly */
+      content:''; position:absolute; left:50%; bottom:13%; transform:translateX(-50%);
+      width:55%; height:60%;
       background:
-        radial-gradient(ellipse 60% 35% at 50% 18%, #2a1d12 0%, #1a1208 100%),
-        linear-gradient(180deg, transparent 25%, #1a1008 25%, #0e0904 100%);
-      clip-path:polygon(20% 100%, 20% 35%, 30% 25%, 35% 15%, 50% 8%, 65% 15%, 70% 25%, 80% 35%, 80% 100%);
+        /* face highlight */
+        radial-gradient(ellipse 22% 14% at 50% 22%, #c89878 0%, #6a4828 60%, transparent 100%),
+        /* head + shoulders mass */
+        radial-gradient(ellipse 30% 22% at 50% 24%, #2a1812 0%, #1a0e08 80%),
+        linear-gradient(180deg, transparent 32%, #1a0e04 32%, #0a0604 100%);
+      clip-path:polygon(18% 100%, 18% 42%, 26% 30%, 32% 20%, 42% 12%, 50% 8%, 58% 12%, 68% 20%, 74% 30%, 82% 42%, 82% 100%);
+      filter:drop-shadow(0 -2px 4px rgba(180,130,80,0.18));
     }
 
-    /* Clock — round mantel clock */
+    /* Clock — polished brass mantel clock, ivory dial */
     .prop-clock {
-      background:radial-gradient(circle at 30% 30%, #d4a040, #8a5a18 40%, #4a2e08 90%);
-      border:2px solid #1a0e02;
+      background:
+        /* radial brass burnish */
+        radial-gradient(circle at 32% 28%, #ffe090 0%, #d4a040 18%, #a07820 40%, #6a4818 70%, #2a1808 100%);
+      border:1px solid #0a0604;
       border-radius:50%;
-      box-shadow:0 0 0 2px rgba(40,25,8,0.8), inset 0 0 8px rgba(0,0,0,0.5), 0 4px 8px rgba(0,0,0,0.7);
+      box-shadow:
+        0 0 0 2px rgba(30,20,6,0.85),
+        inset 0 0 0 1px rgba(255,230,160,0.5),
+        inset -3px -4px 8px rgba(0,0,0,0.65),
+        inset 2px 2px 4px rgba(255,240,180,0.4),
+        0 4px 10px rgba(0,0,0,0.85);
     }
     .prop-clock::before {
-      content:''; position:absolute; inset:14%; border-radius:50%;
-      background:radial-gradient(circle, #f4e8d0 0%, #d4b888 70%, #8a6840 100%);
+      /* Ivory dial */
+      content:''; position:absolute; inset:18%; border-radius:50%;
+      background:
+        /* Hour ticks */
+        conic-gradient(from -7.5deg,
+          rgba(40,25,8,0.85) 0deg 1deg, transparent 1deg 30deg,
+          rgba(40,25,8,0.85) 30deg 31deg, transparent 31deg 60deg,
+          rgba(40,25,8,0.85) 60deg 61deg, transparent 61deg 90deg,
+          rgba(40,25,8,0.85) 90deg 91deg, transparent 91deg 120deg,
+          rgba(40,25,8,0.85) 120deg 121deg, transparent 121deg 150deg,
+          rgba(40,25,8,0.85) 150deg 151deg, transparent 151deg 180deg,
+          rgba(40,25,8,0.85) 180deg 181deg, transparent 181deg 210deg,
+          rgba(40,25,8,0.85) 210deg 211deg, transparent 211deg 240deg,
+          rgba(40,25,8,0.85) 240deg 241deg, transparent 241deg 270deg,
+          rgba(40,25,8,0.85) 270deg 271deg, transparent 271deg 300deg,
+          rgba(40,25,8,0.85) 300deg 301deg, transparent 301deg 330deg,
+          rgba(40,25,8,0.85) 330deg 331deg, transparent 331deg 360deg),
+        radial-gradient(circle at 40% 35%, #fcf3dc 0%, #e8d3a4 50%, #b08a55 95%);
       border:1px solid #3a2a10;
-      box-shadow:inset 0 0 8px rgba(80,55,25,0.5);
+      box-shadow:
+        inset 0 0 10px rgba(80,50,18,0.65),
+        inset 2px 2px 4px rgba(255,240,200,0.55);
     }
     .prop-clock::after {
-      /* Hands */
+      /* Minute hand */
       content:''; position:absolute; top:50%; left:50%;
-      width:2px; height:32%; background:#1a0e02;
+      width:2px; height:36%; background:linear-gradient(180deg,#0a0604,#3a2410);
       transform-origin:50% 100%;
       transform:translate(-50%,-100%) rotate(-150deg);
-      box-shadow:0 0 2px rgba(0,0,0,0.6);
+      box-shadow:0 0 3px rgba(0,0,0,0.8);
+      border-radius:1px;
     }
     .prop-clock .hour-hand {
       position:absolute; top:50%; left:50%;
-      width:3px; height:22%; background:#1a0e02;
+      width:3px; height:24%; background:linear-gradient(180deg,#0a0604,#3a2410);
       transform-origin:50% 100%;
       transform:translate(-50%,-100%) rotate(30deg);
       border-radius:2px;
+      box-shadow:0 0 3px rgba(0,0,0,0.8);
     }
     .prop-clock .pivot {
       position:absolute; top:50%; left:50%;
-      width:14%; aspect-ratio:1; border-radius:50%;
-      background:radial-gradient(circle, #d4a040, #6a4818);
+      width:12%; aspect-ratio:1; border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, #ffe090, #8a5818 70%, #2a1808 100%);
       transform:translate(-50%,-50%);
-      box-shadow:0 0 2px rgba(0,0,0,0.6);
+      box-shadow:0 1px 2px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(0,0,0,0.4);
     }
 
-    /* Bookshelf — three rows of stacked book spines */
+    /* Bookshelf — mahogany case with shelf boards, varied book spines */
     .prop-bookshelf {
-      background:linear-gradient(180deg,#2a1a08,#1a1006 100%);
-      border:2px solid #0a0604;
+      background:
+        repeating-linear-gradient(90deg,
+          transparent 0,
+          rgba(255,180,100,0.025) 1px,
+          transparent 3px,
+          rgba(0,0,0,0.1) 4px,
+          transparent 5px,
+          transparent 14px),
+        linear-gradient(180deg,#3a1e0a 0%, #1e0e04 100%);
+      border:1px solid #050201;
       border-radius:2px;
-      padding:6% 4%;
+      padding:5% 4%;
       display:flex;
       flex-direction:column;
       justify-content:space-between;
-      gap:4%;
-      box-shadow:inset 0 0 10px rgba(0,0,0,0.6);
+      gap:3%;
+      box-shadow:
+        inset 0 1px 1px rgba(220,160,80,0.25),
+        inset 0 0 14px rgba(0,0,0,0.7),
+        4px 4px 12px rgba(0,0,0,0.85);
     }
     .prop-bookshelf .shelf-line {
-      display:flex; gap:3%; flex:1; align-items:flex-end;
-      border-bottom:1px solid #0a0604;
+      display:flex; gap:2%; flex:1; align-items:flex-end;
+      border-bottom:3px solid;
+      border-image:linear-gradient(180deg,#5a3416,#1a0d04) 1;
       padding-bottom:2%;
+      box-shadow:0 2px 2px rgba(0,0,0,0.6);
     }
     .prop-bookshelf .bk {
       flex:1; height:90%;
       border-radius:1px 1px 0 0;
-      box-shadow:inset 1px 0 1px rgba(255,255,255,0.08), inset -1px 0 1px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.5);
-      border-top:1px solid rgba(255,220,160,0.15);
+      box-shadow:
+        inset 1px 0 1px rgba(255,255,255,0.15),
+        inset -1px 0 1px rgba(0,0,0,0.55),
+        inset 0 4px 2px rgba(255,220,180,0.18),
+        inset 0 -4px 2px rgba(0,0,0,0.4),
+        1px 0 2px rgba(0,0,0,0.5);
+      border-top:1px solid rgba(255,220,160,0.25);
+      position:relative;
     }
-    .prop-bookshelf .bk.b1 { background:linear-gradient(180deg,#7a2418,#4a1408); height:85%; }
-    .prop-bookshelf .bk.b2 { background:linear-gradient(180deg,#1a3a4a,#0a1e2a); height:92%; }
-    .prop-bookshelf .bk.b3 { background:linear-gradient(180deg,#2a4a1a,#142a08); height:78%; }
-    .prop-bookshelf .bk.b4 { background:linear-gradient(180deg,#4a3a1a,#2a200a); height:88%; }
-    .prop-bookshelf .bk.b5 { background:linear-gradient(180deg,#3a1a4a,#1e0a2a); height:82%; }
+    .prop-bookshelf .bk::before {
+      /* Gilt title band */
+      content:''; position:absolute; left:10%; right:10%; top:30%; height:8%;
+      background:linear-gradient(180deg, rgba(212,167,70,0.65), rgba(120,80,30,0.4));
+      box-shadow:0 1px 0 rgba(0,0,0,0.3);
+    }
+    .prop-bookshelf .bk::after {
+      content:''; position:absolute; left:10%; right:10%; top:70%; height:4%;
+      background:linear-gradient(180deg, rgba(212,167,70,0.45), rgba(80,50,15,0.25));
+    }
+    .prop-bookshelf .bk.b1 { background:linear-gradient(180deg,#8a2818 0%,#5a1408 50%, #3a0a04 100%); height:85%; }
+    .prop-bookshelf .bk.b2 { background:linear-gradient(180deg,#1e4a5a 0%,#0e2838 50%, #061a26 100%); height:92%; }
+    .prop-bookshelf .bk.b3 { background:linear-gradient(180deg,#2a5a1a 0%,#14380a 50%, #0a2206 100%); height:78%; }
+    .prop-bookshelf .bk.b4 { background:linear-gradient(180deg,#5a4218 0%,#322208 50%, #1e1604 100%); height:88%; }
+    .prop-bookshelf .bk.b5 { background:linear-gradient(180deg,#4a1e5a 0%,#280a36 50%, #160620 100%); height:82%; }
 
-    /* Desk — wooden writing desk seen from front */
+    /* Desk — leather-topped writing desk with banded apron and turned legs */
     .prop-desk {
-      background:linear-gradient(180deg,#5a3818 0%, #3a240e 35%, #2a1808 100%);
-      border:1px solid #0a0604;
+      background:
+        repeating-linear-gradient(90deg,
+          transparent 0,
+          rgba(255,200,140,0.04) 1px,
+          transparent 3px,
+          transparent 8px,
+          rgba(0,0,0,0.08) 9px,
+          transparent 10px,
+          transparent 18px),
+        linear-gradient(180deg,#6a4220 0%, #4a2e10 30%, #2a1808 100%);
+      border:1px solid #050201;
       border-radius:3px 3px 1px 1px;
-      box-shadow:inset 0 1px 0 rgba(255,200,140,0.2), inset 0 0 8px rgba(0,0,0,0.4);
+      box-shadow:
+        inset 0 1px 1px rgba(220,160,80,0.35),
+        inset 0 0 10px rgba(0,0,0,0.55),
+        0 4px 10px rgba(0,0,0,0.8);
       position:relative;
     }
     .prop-desk::before {
-      /* Top edge highlight */
-      content:''; position:absolute; top:0; left:0; right:0; height:18%;
-      background:linear-gradient(180deg,#7a5028, #4a2e10);
-      border-bottom:1px solid #1a0e04;
+      /* Leather inlaid top */
+      content:''; position:absolute; top:1%; left:3%; right:3%; height:20%;
+      background:
+        radial-gradient(ellipse at 40% 30%, #6a2418 0%, #3a1408 60%, #1a0804 100%);
+      border:1px solid #1a0e04;
+      border-radius:1px;
+      box-shadow:
+        inset 0 0 0 1px rgba(212,167,70,0.4),
+        inset 0 0 6px rgba(0,0,0,0.7);
     }
     .prop-desk::after {
       /* Drawer */
-      content:''; position:absolute; top:32%; left:12%; right:12%; height:32%;
-      background:linear-gradient(180deg,#4a2e10,#2a1808);
+      content:''; position:absolute; top:26%; left:10%; right:10%; height:30%;
+      background:
+        linear-gradient(180deg,#5a3818 0%, #3a240e 60%, #1e1208 100%);
       border:1px solid #0a0604;
       border-radius:2px;
-      box-shadow:inset 0 1px 1px rgba(255,200,140,0.15);
+      box-shadow:
+        inset 0 1px 1px rgba(220,160,80,0.3),
+        inset 0 -1px 1px rgba(0,0,0,0.5),
+        inset 0 0 6px rgba(0,0,0,0.4);
     }
     .prop-desk .knob {
-      position:absolute; top:46%; left:50%; transform:translate(-50%,-50%);
-      width:8%; aspect-ratio:1; border-radius:50%;
-      background:radial-gradient(circle at 30% 30%,#d4a040,#6a4818);
-      box-shadow:0 1px 2px rgba(0,0,0,0.6);
+      position:absolute; top:41%; left:50%; transform:translate(-50%,-50%);
+      width:9%; aspect-ratio:1; border-radius:50%;
+      background:radial-gradient(circle at 30% 25%, #ffe090 0%, #d4a040 30%, #6a4818 70%, #2a1808 100%);
+      box-shadow:
+        0 2px 3px rgba(0,0,0,0.8),
+        inset -1px -2px 3px rgba(0,0,0,0.55),
+        inset 1px 1px 2px rgba(255,230,160,0.5);
       z-index:2;
     }
     .prop-desk .legs {
-      position:absolute; bottom:0; left:0; right:0; height:32%;
+      position:absolute; bottom:0; left:0; right:0; height:38%;
       display:flex; justify-content:space-between;
     }
     .prop-desk .legs::before, .prop-desk .legs::after {
-      content:''; width:14%; height:100%;
-      background:linear-gradient(180deg,#3a240e,#1a0e04);
-      border-left:1px solid rgba(0,0,0,0.5);
-      border-right:1px solid rgba(255,200,140,0.08);
+      content:''; width:12%; height:100%;
+      background:
+        radial-gradient(ellipse 50% 8% at 50% 12%, rgba(220,160,80,0.4), transparent 70%),
+        radial-gradient(ellipse 50% 6% at 50% 88%, rgba(220,160,80,0.3), transparent 70%),
+        linear-gradient(90deg,#1a0e04 0%, #4a2e12 30%, #5a3818 50%, #3a200a 70%, #1a0e04 100%);
+      border:1px solid rgba(0,0,0,0.6);
+      box-shadow:inset 0 0 4px rgba(0,0,0,0.5);
     }
 
-    /* Music box — lacquered wooden box with brass corners */
+    /* Music box — lacquered rosewood with brass-bound corners and keyhole */
     .prop-musicbox {
       background:
-        linear-gradient(180deg,#5a1a08 0%, #3a0e04 50%, #2a0a02 100%);
-      border:1px solid #0a0202;
+        radial-gradient(ellipse at 30% 20%, rgba(255,160,100,0.18) 0%, transparent 50%),
+        linear-gradient(180deg,#6a1e0a 0%, #3a0e04 55%, #1a0602 100%);
+      border:1px solid #050100;
       border-radius:2px;
-      box-shadow:inset 0 1px 1px rgba(255,140,80,0.2), inset 0 0 8px rgba(0,0,0,0.4);
+      box-shadow:
+        inset 0 1px 2px rgba(255,180,120,0.45),
+        inset 0 -1px 1px rgba(0,0,0,0.7),
+        inset 0 0 8px rgba(0,0,0,0.5),
+        0 2px 5px rgba(0,0,0,0.8);
       position:relative;
     }
     .prop-musicbox::before {
-      /* Lid line */
-      content:''; position:absolute; top:35%; left:0; right:0; height:1px;
-      background:#0a0202;
-      box-shadow:0 -1px 0 rgba(255,140,80,0.2);
+      /* Lid seam */
+      content:''; position:absolute; top:38%; left:0; right:0; height:2px;
+      background:linear-gradient(180deg,rgba(255,160,100,0.4),#050100);
+      box-shadow:0 1px 1px rgba(0,0,0,0.6);
     }
     .prop-musicbox::after {
-      /* Brass inlay on lid */
-      content:''; position:absolute; top:8%; left:25%; right:25%; height:18%;
-      background:linear-gradient(135deg,#d4a040,#8a5818);
-      border-radius:1px;
-      box-shadow:inset 0 0 2px rgba(0,0,0,0.5);
+      /* Brass cartouche on lid */
+      content:''; position:absolute; top:8%; left:22%; right:22%; height:18%;
+      background:
+        radial-gradient(ellipse at 30% 25%, #ffe090, #d4a040 40%, #6a4218 100%);
+      border:1px solid #1a0e02;
+      border-radius:2px;
+      box-shadow:
+        inset 0 1px 1px rgba(255,240,180,0.6),
+        inset 0 -1px 1px rgba(0,0,0,0.6),
+        0 1px 1px rgba(0,0,0,0.5);
     }
     .prop-musicbox .corner {
-      position:absolute; width:14%; aspect-ratio:1;
-      background:radial-gradient(circle at 30% 30%,#d4a040,#5a3810);
+      position:absolute; width:16%; aspect-ratio:1;
+      background:
+        radial-gradient(circle at 30% 30%, #ffe090 0%, #d4a040 30%, #6a4218 70%, #2a1808 100%);
+      border:1px solid #1a0e02;
       border-radius:1px;
+      box-shadow:
+        inset 0 1px 1px rgba(255,230,160,0.5),
+        0 1px 1px rgba(0,0,0,0.6);
     }
-    .prop-musicbox .corner.tl { top:4%; left:4%; }
-    .prop-musicbox .corner.tr { top:4%; right:4%; }
-    .prop-musicbox .corner.bl { bottom:4%; left:4%; }
-    .prop-musicbox .corner.br { bottom:4%; right:4%; }
+    .prop-musicbox .corner.tl { top:3%; left:3%; }
+    .prop-musicbox .corner.tr { top:3%; right:3%; }
+    .prop-musicbox .corner.bl { bottom:3%; left:3%; }
+    .prop-musicbox .corner.br { bottom:3%; right:3%; }
 
-    /* Candle — wax candle in brass holder, flame */
+    /* Candle — ivory wax taper in chamberstick brass holder, with drip pan */
     .prop-candle {
       display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
       height:100%; width:100%;
+      position:relative;
     }
     .prop-candle .flame {
-      width:38%; height:22%;
-      background:radial-gradient(ellipse 50% 80% at 50% 100%, #ffd066 0%, #f08020 40%, #c04010 80%, transparent 100%);
+      width:40%; height:24%;
+      background:
+        radial-gradient(ellipse 80% 30% at 50% 95%, rgba(80,180,255,0.55) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 85% at 50% 100%, #fff0a0 0%, #ffd066 25%, #f08020 50%, #c04010 80%, transparent 100%);
       border-radius:50% 50% 30% 30%;
-      filter:blur(0.5px) drop-shadow(0 -2px 8px rgba(255,160,40,0.6));
+      filter:blur(0.4px) drop-shadow(0 -3px 12px rgba(255,180,60,0.8));
       animation:flameFlicker 1.4s ease-in-out infinite;
       transform-origin:center bottom;
     }
     .prop-candle .flame.unlit { display:none; }
     .prop-candle .wax {
-      width:32%; height:50%;
-      background:linear-gradient(180deg,#f4e8d0 0%, #d4b888 60%, #8a6840 100%);
+      width:30%; height:52%;
+      background:
+        linear-gradient(90deg,
+          rgba(0,0,0,0.25) 0%,
+          transparent 15%,
+          rgba(255,255,255,0.35) 35%,
+          transparent 60%,
+          rgba(0,0,0,0.3) 100%),
+        linear-gradient(180deg,#fcf3dc 0%, #e8d3a4 50%, #b08a55 100%);
       border:1px solid #4a3818;
-      border-radius:2px 2px 0 0;
-      box-shadow:inset -2px 0 3px rgba(0,0,0,0.3), inset 2px 0 1px rgba(255,255,255,0.3);
+      border-radius:50% 50% 5% 5% / 8% 8% 0 0;
+      box-shadow:
+        inset -2px 0 4px rgba(0,0,0,0.35),
+        inset 2px 0 2px rgba(255,255,255,0.4),
+        0 1px 2px rgba(0,0,0,0.5);
       position:relative;
     }
     .prop-candle .wax::before {
-      content:''; position:absolute; top:-6%; left:50%; transform:translateX(-50%);
-      width:8%; height:12%; background:#1a0e02;
+      /* Wick */
+      content:''; position:absolute; top:-8%; left:50%; transform:translateX(-50%);
+      width:6%; height:14%; background:linear-gradient(180deg,#3a2410,#0a0604);
       border-radius:1px;
     }
+    .prop-candle .wax::after {
+      /* Wax drip down the side */
+      content:''; position:absolute; top:30%; right:8%;
+      width:14%; height:60%;
+      background:linear-gradient(180deg, #e8d3a4 0%, #b08a55 100%);
+      border-radius:50% 50% 30% 30% / 30% 30% 80% 80%;
+      box-shadow:inset -1px 0 2px rgba(0,0,0,0.3);
+    }
     .prop-candle .holder {
-      width:60%; height:18%;
-      background:radial-gradient(ellipse at 50% 30%,#d4a040,#5a3810);
-      border:1px solid #1a0e02;
-      border-radius:30% 30% 8% 8% / 60% 60% 20% 20%;
-      box-shadow:0 1px 2px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,220,160,0.4);
+      width:64%; height:20%;
+      background:
+        radial-gradient(ellipse at 50% 25%, #ffe090 0%, #d4a040 25%, #8a5818 60%, #4a2e10 100%);
+      border:1px solid #0a0604;
+      border-radius:50% 50% 12% 12% / 70% 70% 25% 25%;
+      box-shadow:
+        0 2px 3px rgba(0,0,0,0.75),
+        inset 0 2px 1px rgba(255,230,160,0.55),
+        inset 0 -2px 2px rgba(0,0,0,0.5);
+      position:relative;
+    }
+    .prop-candle .holder::after {
+      /* Drip pan rim */
+      content:''; position:absolute; bottom:0; left:-12%; right:-12%; height:30%;
+      background:radial-gradient(ellipse at 50% 0%, #d4a040 0%, #6a4218 70%, #2a1808 100%);
+      border:1px solid #0a0604;
+      border-radius:50%;
+      box-shadow:inset 0 1px 1px rgba(255,230,160,0.4), 0 1px 2px rgba(0,0,0,0.7);
+      z-index:-1;
     }
     @keyframes flameFlicker {
       0%,100% { transform:scaleY(1) scaleX(1) rotate(-1deg); opacity:1; }
@@ -341,98 +546,163 @@
       66%     { transform:scaleY(0.94) scaleX(1.04) rotate(-2deg); opacity:1; }
     }
 
-    /* Rug — oriental rug with pattern */
+    /* Rug — Persian-knot oriental, medallion centre, fringed ends */
     .prop-rug {
       background:
-        repeating-linear-gradient(45deg, rgba(180,80,30,0.18) 0 4px, transparent 4px 8px),
-        radial-gradient(ellipse at center, #6a2818 0%, #4a1808 50%, #2a0e04 100%);
-      border:2px solid #1a0a04;
-      border-radius:2px;
-      box-shadow:inset 0 0 12px rgba(0,0,0,0.6);
+        /* Diagonal weave texture */
+        repeating-linear-gradient(45deg, rgba(255,200,140,0.05) 0 2px, transparent 2px 5px),
+        repeating-linear-gradient(-45deg, rgba(0,0,0,0.06) 0 2px, transparent 2px 5px),
+        /* Border band */
+        radial-gradient(ellipse at center, transparent 60%, rgba(212,167,70,0.18) 65%, transparent 70%),
+        radial-gradient(ellipse at center, #6a2818 0%, #4a1808 45%, #2a0e04 100%);
+      border:1px solid #0a0402;
+      border-radius:1px;
+      box-shadow:
+        inset 0 0 14px rgba(0,0,0,0.7),
+        inset 0 0 0 2px rgba(40,18,8,0.8),
+        inset 0 0 0 3px rgba(212,167,70,0.35),
+        0 3px 6px rgba(0,0,0,0.7);
       position:relative;
     }
     .prop-rug::before {
+      /* Inner guard band */
       content:''; position:absolute; inset:6%;
-      border:1px solid rgba(212,167,70,0.35);
+      border:1px solid rgba(212,167,70,0.45);
       border-radius:1px;
+      box-shadow:inset 0 0 0 1px rgba(80,40,20,0.6);
     }
     .prop-rug::after {
-      content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-      width:38%; aspect-ratio:1;
+      /* Central medallion — diamond with star inside */
+      content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(45deg);
+      width:30%; aspect-ratio:1;
       background:
-        radial-gradient(circle, transparent 30%, rgba(212,167,70,0.35) 32%, transparent 36%),
-        radial-gradient(circle, rgba(212,167,70,0.4) 0%, rgba(212,167,70,0.2) 20%, transparent 50%);
-      border-radius:50%;
+        conic-gradient(from 0deg,
+          rgba(212,167,70,0.55) 0deg 30deg,
+          rgba(80,40,20,0.6) 30deg 60deg,
+          rgba(212,167,70,0.55) 60deg 90deg,
+          rgba(80,40,20,0.6) 90deg 120deg,
+          rgba(212,167,70,0.55) 120deg 150deg,
+          rgba(80,40,20,0.6) 150deg 180deg,
+          rgba(212,167,70,0.55) 180deg 210deg,
+          rgba(80,40,20,0.6) 210deg 240deg,
+          rgba(212,167,70,0.55) 240deg 270deg,
+          rgba(80,40,20,0.6) 270deg 300deg,
+          rgba(212,167,70,0.55) 300deg 330deg,
+          rgba(80,40,20,0.6) 330deg 360deg);
+      border:1px solid rgba(212,167,70,0.6);
     }
     .prop-rug .tassel {
-      position:absolute; top:0; bottom:0; width:3%;
-      background:repeating-linear-gradient(180deg, #8a6420 0 3px, #4a3010 3px 6px);
+      position:absolute; top:-8%; bottom:-8%; width:2.5%;
+      background:repeating-linear-gradient(180deg, #d4b888 0 2px, #8a6420 2px 4px, #4a3010 4px 6px);
+      filter:drop-shadow(0 1px 1px rgba(0,0,0,0.6));
     }
-    .prop-rug .tassel.l { left:-1%; }
-    .prop-rug .tassel.r { right:-1%; }
+    .prop-rug .tassel.l { left:-1.5%; }
+    .prop-rug .tassel.r { right:-1.5%; }
 
-    /* Map — folded parchment on the wall */
+    /* Map — aged parchment chart, folds, coastlines, pinned brass tacks */
     .prop-map {
-      background:linear-gradient(160deg,#e0c890 0%, #b89a5e 60%, #8a6e3a 100%);
-      border:1px solid #4a3210;
-      box-shadow:inset 0 0 10px rgba(80,55,20,0.6), 2px 3px 6px rgba(0,0,0,0.7);
+      background:
+        /* Aged paper grain */
+        repeating-linear-gradient(31deg, rgba(80,55,20,0.05) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(-59deg, rgba(80,55,20,0.04) 0 1px, transparent 1px 4px),
+        radial-gradient(ellipse at 30% 30%, #ead09a 0%, #b89a5e 50%, #8a6e3a 100%);
+      border:1px solid #3a2410;
+      box-shadow:
+        inset 0 0 12px rgba(60,35,12,0.7),
+        inset 0 0 0 1px rgba(255,220,160,0.18),
+        2px 3px 8px rgba(0,0,0,0.7);
       position:relative;
       overflow:hidden;
     }
     .prop-map::before {
-      /* Crease lines (folds) */
+      /* Foxing stains + folds */
       content:''; position:absolute; inset:0;
       background:
-        linear-gradient(90deg, transparent 32%, rgba(60,40,15,0.35) 33%, transparent 34%),
-        linear-gradient(90deg, transparent 65%, rgba(60,40,15,0.35) 66%, transparent 67%),
-        linear-gradient(180deg, transparent 49%, rgba(60,40,15,0.3) 50%, transparent 51%);
+        radial-gradient(ellipse 20% 14% at 78% 22%, rgba(80,40,15,0.25), transparent 60%),
+        radial-gradient(ellipse 14% 10% at 18% 70%, rgba(80,40,15,0.2), transparent 60%),
+        linear-gradient(90deg, transparent 32%, rgba(60,40,15,0.4) 33%, transparent 34%),
+        linear-gradient(90deg, transparent 65%, rgba(60,40,15,0.4) 66%, transparent 67%),
+        linear-gradient(180deg, transparent 49%, rgba(60,40,15,0.35) 50%, transparent 51%);
     }
     .prop-map::after {
-      /* Coastline / route markings */
-      content:''; position:absolute; top:20%; left:18%; width:50%; height:40%;
+      /* Coastline curve + dotted route */
+      content:''; position:absolute; top:15%; left:10%; width:75%; height:55%;
       background:
-        radial-gradient(ellipse 60% 40% at 30% 50%, transparent 40%, rgba(40,20,8,0.5) 42%, transparent 46%),
-        radial-gradient(circle 4% at 70% 20%, #8a1818 0%, transparent 100%),
-        radial-gradient(circle 4% at 20% 80%, #8a1818 0%, transparent 100%);
+        /* Dashed route */
+        repeating-linear-gradient(35deg,
+          rgba(120,40,15,0.55) 0 3px,
+          transparent 3px 7px),
+        /* Coastline shadow */
+        radial-gradient(ellipse 50% 35% at 35% 55%, transparent 55%, rgba(40,20,8,0.55) 56%, transparent 60%);
+      clip-path:polygon(0 30%, 25% 25%, 40% 30%, 55% 45%, 60% 60%, 50% 75%, 30% 80%, 15% 70%, 5% 55%);
+      opacity:0.7;
     }
     .prop-map .pin {
-      position:absolute; width:8%; aspect-ratio:1; border-radius:50%;
-      background:radial-gradient(circle at 30% 30%, #ff5040, #8a1818);
-      box-shadow:0 1px 2px rgba(0,0,0,0.7);
+      position:absolute; width:9%; aspect-ratio:1; border-radius:50%;
+      background:
+        radial-gradient(circle at 30% 25%, #ff8060 0%, #c02020 30%, #6a1010 80%);
+      box-shadow:
+        0 2px 3px rgba(0,0,0,0.85),
+        inset -1px -1px 2px rgba(0,0,0,0.5),
+        inset 1px 1px 1px rgba(255,180,160,0.5);
     }
     .prop-map .pin.p1 { top:25%; left:30%; }
     .prop-map .pin.p2 { top:60%; left:55%; }
 
-    /* Cabinet — tall iron filing cabinet with three drawers */
+    /* Cabinet — patinated iron filing cabinet, three drawers, brass pulls */
     .prop-cabinet {
-      background:linear-gradient(180deg,#3a3228 0%, #1e1a14 50%, #14110b 100%);
-      border:1px solid #0a0804;
+      background:
+        /* Brushed metal grain */
+        repeating-linear-gradient(180deg,
+          transparent 0,
+          rgba(200,180,140,0.04) 1px,
+          transparent 2px,
+          transparent 4px),
+        linear-gradient(180deg,#4a3e30 0%, #2a221a 50%, #14110b 100%);
+      border:1px solid #050201;
       border-radius:2px 2px 1px 1px;
-      box-shadow:inset 0 1px 0 rgba(200,180,140,0.18), inset 0 0 8px rgba(0,0,0,0.5), 2px 4px 8px rgba(0,0,0,0.7);
-      display:flex; flex-direction:column; gap:1px; padding:3% 3%;
+      box-shadow:
+        inset 0 2px 1px rgba(220,200,160,0.3),
+        inset 0 0 10px rgba(0,0,0,0.6),
+        3px 5px 12px rgba(0,0,0,0.85);
+      display:flex; flex-direction:column; gap:2px; padding:4% 4%;
     }
     .prop-cabinet .drw {
       flex:1; position:relative;
-      background:linear-gradient(180deg,#2a241a 0%, #14110b 100%);
-      border:1px solid #0a0604;
+      background:
+        repeating-linear-gradient(180deg,
+          transparent 0, rgba(200,180,140,0.03) 1px, transparent 2px, transparent 5px),
+        linear-gradient(180deg,#322a1f 0%, #1a160e 100%);
+      border:1px solid #050201;
       border-radius:1px;
-      box-shadow:inset 0 1px 1px rgba(200,180,140,0.12), inset 0 -1px 1px rgba(0,0,0,0.5);
+      box-shadow:
+        inset 0 1px 1px rgba(200,180,140,0.18),
+        inset 0 -2px 2px rgba(0,0,0,0.6),
+        0 1px 2px rgba(0,0,0,0.5);
     }
     .prop-cabinet .drw::before {
       /* Drawer pull (horizontal handle) */
-      content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-      width:36%; height:14%;
-      background:linear-gradient(180deg,#a08040, #5a4018);
+      content:''; position:absolute; top:55%; left:50%; transform:translate(-50%,-50%);
+      width:42%; height:16%;
+      background:
+        radial-gradient(ellipse at 30% 25%, #ffe090 0%, #d4a040 30%, #6a4218 80%);
       border:1px solid #1a0e02;
-      border-radius:2px;
-      box-shadow:inset 0 1px 1px rgba(255,220,160,0.4), 0 1px 2px rgba(0,0,0,0.6);
+      border-radius:3px;
+      box-shadow:
+        inset 0 1px 1px rgba(255,230,160,0.55),
+        inset 0 -1px 1px rgba(0,0,0,0.5),
+        0 2px 3px rgba(0,0,0,0.75);
     }
     .prop-cabinet .drw::after {
-      /* Label slot */
-      content:''; position:absolute; top:20%; left:30%; right:30%; height:14%;
-      background:#f0e0b8;
+      /* Brass label cardholder */
+      content:''; position:absolute; top:18%; left:28%; right:28%; height:16%;
+      background:
+        linear-gradient(180deg, #f4e8c8 0%, #d4c08a 100%);
       border:1px solid #1a0e02;
-      opacity:0.7;
+      box-shadow:
+        inset 0 0 0 1px rgba(212,167,70,0.6),
+        0 1px 1px rgba(0,0,0,0.6);
+      opacity:0.85;
     }
 
     /* ─── New props (door, mirror, fireplace, globe, chess, phonograph) ─── */
@@ -610,86 +880,148 @@
       box-shadow:inset 0 1px 1px rgba(220,160,80,0.25), 0 2px 4px rgba(0,0,0,0.7);
     }
 
-    /* Mirror — oval gilded frame */
+    /* Mirror — ornately carved gilded oval frame, mercury-glass surface */
     .prop-mirror {
-      background:linear-gradient(135deg,#a07820,#5a3a10 50%,#8a6020);
-      border:2px solid #1a0e02;
+      background:
+        /* Ornate ridges */
+        repeating-radial-gradient(circle at 50% 50%,
+          rgba(0,0,0,0.15) 0 1px,
+          transparent 1px 3px,
+          rgba(255,220,140,0.18) 3px 4px,
+          transparent 4px 6px),
+        radial-gradient(circle at 35% 30%, #ffe090 0%, #d4a040 25%, #8a6018 55%, #4a3010 100%);
+      border:1px solid #1a0e02;
       border-radius:50% / 60%;
-      box-shadow:inset 0 0 0 1px rgba(255,210,140,0.45), 0 4px 8px rgba(0,0,0,0.75);
+      box-shadow:
+        inset 0 0 0 1px rgba(255,230,160,0.6),
+        inset 0 0 0 4px rgba(60,40,12,0.5),
+        inset 0 0 0 5px rgba(255,220,140,0.45),
+        0 4px 10px rgba(0,0,0,0.85);
       position:relative;
     }
     .prop-mirror::before {
       content:''; position:absolute; inset:14%;
       background:
+        radial-gradient(ellipse 40% 30% at 32% 22%, rgba(220,230,240,0.35) 0%, transparent 70%),
         linear-gradient(160deg,
-          rgba(180,200,220,0.30) 0%,
-          rgba(80,90,110,0.55) 35%,
-          rgba(30,35,45,0.85) 70%,
-          rgba(15,20,30,0.95) 100%);
-      border:1px solid rgba(40,30,15,0.6);
+          rgba(160,180,210,0.4) 0%,
+          rgba(80,90,110,0.6) 35%,
+          rgba(30,35,45,0.9) 70%,
+          rgba(8,12,20,0.97) 100%);
+      border:1px solid rgba(40,30,15,0.7);
       border-radius:50% / 60%;
-      box-shadow:inset 3px 3px 8px rgba(0,0,0,0.6), inset -2px -2px 4px rgba(180,180,200,0.18);
+      box-shadow:
+        inset 4px 4px 10px rgba(0,0,0,0.7),
+        inset -3px -3px 6px rgba(180,180,200,0.22),
+        inset 0 0 0 1px rgba(0,0,0,0.5);
     }
     .prop-mirror::after {
-      /* Highlight streak on glass */
-      content:''; position:absolute; left:30%; top:20%;
-      width:14%; height:30%;
-      background:linear-gradient(160deg, rgba(255,255,255,0.35), transparent);
+      /* Diagonal mercury-glass streak */
+      content:''; position:absolute; left:25%; top:18%;
+      width:18%; height:35%;
+      background:
+        linear-gradient(160deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.18) 40%, transparent 70%);
       border-radius:50%;
       filter:blur(2px);
+      transform:rotate(-15deg);
     }
 
-    /* Fireplace — stone surround, mantel, glowing hearth */
+    /* Fireplace — carved stone surround, mantel shelf, glowing hearth with logs */
     .prop-fireplace {
       background:
+        /* Stone block mortar grid */
         repeating-linear-gradient(0deg,
-          transparent 0,
-          transparent 14%,
-          rgba(0,0,0,0.35) 14.5%,
-          transparent 15%,
-          transparent 30%),
+          transparent 0, transparent 13%,
+          rgba(0,0,0,0.55) 13%, rgba(0,0,0,0.55) 14%,
+          transparent 14%, transparent 27%),
         repeating-linear-gradient(90deg,
-          transparent 0,
-          transparent 22%,
-          rgba(0,0,0,0.3) 22.5%,
-          transparent 23%,
-          transparent 46%),
-        linear-gradient(180deg, #4a3a28 0%, #322618 50%, #221808 100%);
-      border:1px solid #0a0604;
+          transparent 0, transparent 21%,
+          rgba(0,0,0,0.5) 21%, rgba(0,0,0,0.5) 22%,
+          transparent 22%, transparent 43%),
+        /* Stone texture noise */
+        repeating-linear-gradient(67deg, rgba(255,200,140,0.04) 0 2px, transparent 2px 5px),
+        linear-gradient(180deg, #5a4632 0%, #3a2c1a 50%, #221808 100%);
+      border:1px solid #050201;
       position:relative;
-      box-shadow:inset 0 1px 1px rgba(180,130,60,0.3), 0 4px 8px rgba(0,0,0,0.6);
+      box-shadow:
+        inset 0 1px 1px rgba(220,180,120,0.4),
+        inset 0 -2px 4px rgba(0,0,0,0.7),
+        inset 2px 0 3px rgba(0,0,0,0.4),
+        inset -2px 0 3px rgba(0,0,0,0.4),
+        0 4px 10px rgba(0,0,0,0.7);
     }
     .prop-fireplace::before {
-      /* Mantel shelf */
-      content:''; position:absolute; top:0; left:-4%; right:-4%; height:9%;
-      background:linear-gradient(180deg,#6a4a22 0%,#3a2a14 60%, #1e1408 100%);
-      border:1px solid #1a0e02;
-      box-shadow:0 2px 3px rgba(0,0,0,0.7);
+      /* Mantel shelf with edge molding */
+      content:''; position:absolute; top:-2%; left:-6%; right:-6%; height:12%;
+      background:
+        linear-gradient(180deg,
+          #7a5a32 0%, #5a3e22 30%, #3a2814 70%, #1e1408 100%);
+      border:1px solid #050201;
+      box-shadow:
+        inset 0 2px 1px rgba(220,180,120,0.5),
+        inset 0 -1px 1px rgba(0,0,0,0.6),
+        0 3px 5px rgba(0,0,0,0.85);
     }
     .prop-fireplace .hearth {
-      position:absolute; left:20%; right:20%; top:25%; bottom:18%;
+      position:absolute; left:18%; right:18%; top:22%; bottom:16%;
       background:
-        radial-gradient(ellipse 70% 35% at 50% 92%, #ff7020 0%, #c03010 25%, transparent 65%),
-        radial-gradient(ellipse 35% 18% at 35% 85%, #f06010 0%, transparent 55%),
-        radial-gradient(ellipse 30% 16% at 65% 88%, #d04010 0%, transparent 55%),
-        linear-gradient(180deg, #060302 0%, #1a0a04 90%, #2a1408 100%);
+        /* Roaring fire glow */
+        radial-gradient(ellipse 75% 40% at 50% 90%, #ffb030 0%, #ff7020 18%, #c03010 38%, transparent 70%),
+        radial-gradient(ellipse 40% 20% at 35% 82%, #ff8030 0%, transparent 60%),
+        radial-gradient(ellipse 35% 18% at 65% 86%, #ff7020 0%, transparent 60%),
+        radial-gradient(ellipse 25% 12% at 50% 75%, rgba(255,200,80,0.6) 0%, transparent 70%),
+        /* Charred interior */
+        linear-gradient(180deg, #050201 0%, #1a0a04 80%, #2a1408 100%);
+      border:1px solid #050201;
+      border-radius:1px 1px 0 0;
+      box-shadow:
+        inset 0 -8px 22px rgba(255,80,20,0.55),
+        inset 0 0 24px rgba(0,0,0,0.9),
+        inset 0 2px 2px rgba(0,0,0,0.7);
+      animation:hearthFlicker 2.4s ease-in-out infinite;
+    }
+    @keyframes hearthFlicker {
+      0%,100% { filter:brightness(1) saturate(1); }
+      40%     { filter:brightness(1.12) saturate(1.1); }
+      70%     { filter:brightness(0.92) saturate(0.95); }
+    }
+    .prop-fireplace .hearth::before {
+      /* Log */
+      content:''; position:absolute; bottom:14%; left:18%; right:18%; height:14%;
+      background:
+        repeating-linear-gradient(90deg,
+          rgba(0,0,0,0.4) 0 1px,
+          rgba(80,40,15,0.6) 1px 3px,
+          rgba(40,20,8,0.6) 3px 5px),
+        linear-gradient(180deg,#5a2810 0%,#2a1408 100%);
       border:1px solid #0a0402;
-      box-shadow:inset 0 -6px 16px rgba(255,80,20,0.45), inset 0 0 20px rgba(0,0,0,0.85);
+      border-radius:50% / 30%;
+      box-shadow:0 1px 2px rgba(0,0,0,0.8), inset 0 -2px 3px rgba(255,80,20,0.4);
+      filter:blur(0.3px);
     }
     .prop-fireplace .hearth::after {
-      /* Andiron suggestion */
-      content:''; position:absolute; bottom:6%; left:15%; right:15%; height:10%;
-      background:repeating-linear-gradient(90deg, rgba(40,20,10,0.8) 0 3px, transparent 3px 6px);
-      filter:blur(0.5px);
+      /* Andirons */
+      content:''; position:absolute; bottom:4%; left:14%; right:14%; height:8%;
+      background:repeating-linear-gradient(90deg, rgba(20,10,5,0.95) 0 2px, transparent 2px 5px);
+      filter:blur(0.3px);
     }
     .prop-fireplace .base {
-      /* Hearth stone */
-      position:absolute; bottom:-4%; left:-6%; right:-6%; height:14%;
-      background:linear-gradient(180deg,#3a2a18,#1a1208);
-      border:1px solid #0a0604;
+      /* Hearthstone slab */
+      position:absolute; bottom:-5%; left:-7%; right:-7%; height:15%;
+      background:
+        repeating-linear-gradient(90deg,
+          transparent 0, transparent 30%,
+          rgba(0,0,0,0.4) 30%, rgba(0,0,0,0.4) 31%,
+          transparent 31%, transparent 60%),
+        linear-gradient(180deg,#4a3826 0%,#2a1c0e 60%, #1a1208 100%);
+      border:1px solid #050201;
+      box-shadow:
+        inset 0 1px 1px rgba(220,180,120,0.3),
+        inset 0 -1px 1px rgba(0,0,0,0.6),
+        0 2px 4px rgba(0,0,0,0.8);
     }
 
-    /* Globe — sphere on stand */
+    /* Globe — terrestrial sphere on brass meridian and turned-wood stand */
     .prop-globe {
       display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
       height:100%; width:100%;
@@ -697,88 +1029,162 @@
     .prop-globe .sphere {
       width:90%; aspect-ratio:1; border-radius:50%;
       background:
-        radial-gradient(circle at 28% 28%, rgba(255,240,200,0.35) 0%, transparent 22%),
-        radial-gradient(ellipse 25% 30% at 60% 55%, #4a7020 0%, #2a3e10 50%, transparent 70%),
-        radial-gradient(ellipse 20% 20% at 35% 75%, #3a5818 0%, transparent 60%),
-        radial-gradient(ellipse 18% 15% at 70% 30%, #3a5818 0%, transparent 60%),
-        linear-gradient(160deg, #5a8aae 0%, #2a4e72 50%, #0e2038 100%);
-      border:1px solid #0a0604;
-      box-shadow:inset -3px -4px 8px rgba(0,0,0,0.55), inset 2px 2px 4px rgba(255,255,255,0.12), 0 2px 4px rgba(0,0,0,0.8);
+        /* Specular highlight */
+        radial-gradient(circle at 26% 24%, rgba(255,250,220,0.5) 0%, rgba(255,250,220,0.18) 10%, transparent 28%),
+        /* Continents */
+        radial-gradient(ellipse 28% 32% at 60% 55%, #5a8228 0%, #3a5818 50%, transparent 70%),
+        radial-gradient(ellipse 22% 22% at 32% 72%, #4a6818 0%, transparent 60%),
+        radial-gradient(ellipse 18% 14% at 72% 28%, #4a6818 0%, transparent 60%),
+        radial-gradient(ellipse 12% 18% at 18% 40%, #3a5018 0%, transparent 60%),
+        /* Latitude lines */
+        repeating-radial-gradient(circle at 50% 50%,
+          transparent 0 12%,
+          rgba(40,30,15,0.15) 12% 13%,
+          transparent 13% 24%,
+          rgba(40,30,15,0.15) 24% 25%,
+          transparent 25% 36%,
+          rgba(40,30,15,0.15) 36% 37%,
+          transparent 37% 50%),
+        /* Ocean */
+        radial-gradient(circle at 35% 30%, #6aa0c8 0%, #2a5680 50%, #082040 100%);
+      border:1px solid #050201;
+      box-shadow:
+        inset -4px -5px 10px rgba(0,0,0,0.65),
+        inset 3px 3px 5px rgba(255,255,255,0.18),
+        0 3px 5px rgba(0,0,0,0.85);
     }
     .prop-globe .axis {
+      /* Brass meridian ring */
       position:relative;
-      width:120%; height:8%;
-      background:linear-gradient(180deg,#8a6420,#3a2410);
+      width:125%; height:9%;
+      background:
+        radial-gradient(ellipse at 50% 30%, #ffe090 0%, #d4a040 30%, #6a4218 80%, #2a1808 100%);
       border:1px solid #0a0402;
       border-radius:50%;
       margin-top:-4%;
       z-index:1;
+      box-shadow:
+        inset 0 1px 1px rgba(255,230,160,0.5),
+        inset 0 -1px 1px rgba(0,0,0,0.5),
+        0 1px 2px rgba(0,0,0,0.7);
     }
     .prop-globe .stand {
-      width:35%; height:10%;
-      background:linear-gradient(180deg,#5a3818,#2a1808);
-      border:1px solid #0a0402;
-      border-radius:2px 2px 1px 1px;
-      box-shadow:0 1px 2px rgba(0,0,0,0.6);
+      /* Turned wood column + base */
+      width:42%; height:13%;
+      background:
+        radial-gradient(ellipse 80% 20% at 50% 0%, #6a4218 0%, #3a2410 60%, #1a0e02 100%),
+        linear-gradient(180deg, #5a3818 0%, #3a2410 50%, #1a0e02 100%);
+      border:1px solid #050201;
+      border-radius:2px 2px 8px 8% / 2px 2px 50% 50%;
+      box-shadow:
+        inset 0 2px 1px rgba(220,160,80,0.4),
+        inset 0 -2px 2px rgba(0,0,0,0.6),
+        0 2px 3px rgba(0,0,0,0.7);
     }
 
     /* Chess board — checkered top */
     .prop-chess {
       background:
-        conic-gradient(from 0deg at 12.5% 12.5%, #ead4a0 0deg 90deg, #2a1808 90deg 180deg, #ead4a0 180deg 270deg, #2a1808 270deg);
+        conic-gradient(from 0deg at 12.5% 12.5%, #f0d8a8 0deg 90deg, #2a1808 90deg 180deg, #f0d8a8 180deg 270deg, #2a1808 270deg);
       background-size:50% 50%;
       background-color:#ead4a0;
-      border:1px solid #1a0e02;
-      box-shadow:0 2px 4px rgba(0,0,0,0.7), inset 0 0 6px rgba(0,0,0,0.4);
+      border:2px solid #2a1808;
+      box-shadow:
+        inset 0 0 0 1px rgba(212,167,70,0.4),
+        inset 0 0 10px rgba(0,0,0,0.5),
+        0 2px 5px rgba(0,0,0,0.8);
       position:relative;
     }
     .prop-chess::before {
-      /* Subtle highlight from above */
+      /* Top lighting + wood inlay border */
       content:''; position:absolute; inset:0;
-      background:linear-gradient(160deg, rgba(255,255,255,0.18), transparent 50%);
+      background:
+        linear-gradient(160deg, rgba(255,255,255,0.22) 0%, transparent 45%),
+        radial-gradient(ellipse at 30% 25%, rgba(255,240,200,0.18), transparent 60%);
       pointer-events:none;
     }
     .prop-chess::after {
-      /* A single piece silhouette */
-      content:''; position:absolute; left:30%; top:20%;
-      width:18%; height:36%;
-      background:radial-gradient(ellipse 60% 100% at 50% 60%, #1a1008, transparent 70%);
-      filter:blur(0.5px);
+      /* Two piece silhouettes mid-game */
+      content:''; position:absolute; left:25%; top:18%;
+      width:14%; height:38%;
+      background:
+        radial-gradient(ellipse 55% 25% at 50% 90%, #050201 0%, transparent 70%),
+        radial-gradient(ellipse 40% 80% at 50% 50%, #1a0e08 0%, transparent 75%);
+      filter:blur(0.4px);
+      box-shadow:55% 0 0 0 transparent;
     }
 
-    /* Phonograph — wooden base, brass horn */
+    /* Phonograph — flared brass horn, mahogany base, wax cylinder spindle */
     .prop-phonograph {
       display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
       height:100%; width:100%;
     }
     .prop-phonograph .horn {
-      width:90%; height:65%;
+      width:92%; height:68%;
       background:
-        radial-gradient(ellipse at 30% 25%, #ffd060, #b07020 50%, #6a3e10 90%);
-      border:1px solid #1a0e02;
-      clip-path:polygon(15% 100%, 0 35%, 8% 8%, 50% 0, 92% 8%, 100% 35%, 85% 100%);
-      box-shadow:inset -3px -2px 5px rgba(0,0,0,0.5), inset 3px 2px 4px rgba(255,230,160,0.3);
+        /* Concentric ridges in the bell */
+        repeating-radial-gradient(ellipse at 50% 100%,
+          transparent 0 6%,
+          rgba(0,0,0,0.18) 6% 7%,
+          transparent 7% 14%),
+        radial-gradient(ellipse at 30% 22%, #ffe890 0%, #ffc060 25%, #c08020 55%, #6a3a10 85%, #2a1804 100%);
+      border:1px solid #0a0604;
+      clip-path:polygon(14% 100%, 0 38%, 6% 6%, 50% 0, 94% 6%, 100% 38%, 86% 100%);
+      box-shadow:
+        inset -4px -3px 7px rgba(0,0,0,0.55),
+        inset 3px 2px 5px rgba(255,240,180,0.45),
+        inset 0 -2px 2px rgba(0,0,0,0.5);
       position:relative;
+      filter:drop-shadow(0 3px 4px rgba(0,0,0,0.7));
     }
     .prop-phonograph .horn::after {
-      content:''; position:absolute; inset:25% 30% 0 30%;
-      background:radial-gradient(ellipse at top, #4a2e08 0%, #1a0e02 60%);
+      /* Dark opening of the horn */
+      content:''; position:absolute; inset:22% 28% 0 28%;
+      background:
+        radial-gradient(ellipse at 50% 30%, #6a3a10 0%, #2a1404 50%, #050201 90%);
       border-radius:50%;
+      box-shadow:inset 0 0 8px rgba(0,0,0,0.85);
     }
     .prop-phonograph .base {
-      width:100%; height:35%;
-      background:linear-gradient(180deg,#5a2818 0%,#2e1408 100%);
-      border:1px solid #0a0402;
-      border-radius:2px;
-      box-shadow:inset 0 1px 1px rgba(180,130,60,0.3), 0 2px 4px rgba(0,0,0,0.7);
+      width:100%; height:32%;
+      background:
+        repeating-linear-gradient(90deg,
+          transparent 0,
+          rgba(255,200,140,0.04) 1px,
+          transparent 3px,
+          transparent 6px,
+          rgba(0,0,0,0.08) 7px,
+          transparent 8px,
+          transparent 14px),
+        linear-gradient(180deg,#6a2818 0%,#3a1608 50%,#1e0a04 100%);
+      border:1px solid #050201;
+      border-radius:3px;
+      box-shadow:
+        inset 0 1px 1px rgba(220,160,80,0.35),
+        inset 0 -1px 1px rgba(0,0,0,0.6),
+        0 2px 5px rgba(0,0,0,0.85);
       position:relative;
     }
     .prop-phonograph .base::before {
-      /* Turntable disc */
-      content:''; position:absolute; top:18%; left:25%; width:50%; height:50%;
-      background:radial-gradient(circle, #1a0a04 30%, #0a0402 31%, #0a0402 100%);
-      border-radius:50%;
+      /* Turntable platter with wax cylinder mounted */
+      content:''; position:absolute; top:15%; left:22%; width:56%; height:55%;
+      background:
+        repeating-linear-gradient(90deg, rgba(40,20,10,0.7) 0 1px, transparent 1px 2px),
+        radial-gradient(ellipse at 50% 30%, #5a3a18 0%, #2a1404 70%, #0a0402 100%);
+      border-radius:50% / 30%;
+      border:1px solid #050201;
+      box-shadow:
+        inset 0 1px 1px rgba(220,160,80,0.3),
+        0 1px 2px rgba(0,0,0,0.7);
+    }
+    .prop-phonograph .base::after {
+      /* Brass crank handle on the side */
+      content:''; position:absolute; right:0; top:50%; transform:translate(40%,-50%);
+      width:18%; height:30%;
+      background:radial-gradient(ellipse at 30% 30%, #d4a040, #6a4218 70%);
       border:1px solid #0a0402;
+      border-radius:3px;
+      box-shadow:inset 0 1px 1px rgba(255,230,160,0.4), 0 1px 2px rgba(0,0,0,0.7);
     }
     .obj-label { position:absolute; bottom:-1.4em; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:0.5rem; color:var(--gold); opacity:0; white-space:nowrap; letter-spacing:0.1em; transition:opacity 0.2s; pointer-events:none; }
     .room-obj:hover .obj-label { opacity:0.7; }
