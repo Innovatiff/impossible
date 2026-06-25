@@ -688,7 +688,7 @@
     #obj-globe    { left:76%;  top:67%; width:3.5%; height:13%; z-index:3; }
 
     /* ── Digit tracker ───────────────────────────────────────── */
-    .bottom-hud { position:fixed; bottom:0; left:0; right:0; background:rgba(10,8,12,0.97); border-top:1px solid rgba(212,167,70,0.14); backdrop-filter:blur(12px); z-index:50; padding:0.6rem clamp(1rem,4vw,2.5rem); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; }
+    .bottom-hud { position:fixed; bottom:0; left:0; right:0; background:rgba(10,8,12,0.97); border-top:1px solid rgba(212,167,70,0.14); backdrop-filter:blur(12px); z-index:50; padding:0.6rem clamp(1rem,4vw,2.5rem); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; overflow:hidden; }
     .digit-tracker { display:flex; align-items:center; gap:0.5rem; }
     .digit-label { font-family:var(--font-mono); font-size:0.55rem; color:var(--parchment-faint); opacity:0.5; letter-spacing:0.12em; text-transform:uppercase; margin-right:0.3rem; }
     .digit-slot { width:2.4rem; height:3rem; border:1px solid rgba(212,167,70,0.2); border-radius:4px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:1.4rem; color:rgba(212,167,70,0.15); background:rgba(14,11,18,0.8); transition:all 0.4s ease; position:relative; }
@@ -850,6 +850,134 @@
     .letter-body p { margin-bottom:1em; }
     .letter-sign { text-align:right; font-family:'EB Garamond', serif; font-style:italic; color:var(--parchment-dim); margin-top:1.5rem; font-size:0.95rem; }
     .letter-enter { margin-top:1.8rem; text-align:center; }
+
+    /* ── Ambient room effects ────────────────────────────────── */
+    /* Fireplace wall glow — warm pulse projected on the left wall */
+    .room-fire-aura {
+      position:absolute; left:5%; top:18%; width:26%; height:72%;
+      background:radial-gradient(ellipse 65% 80% at 60% 75%,
+        rgba(255,100,20,0.11) 0%, rgba(200,60,10,0.06) 40%, transparent 70%);
+      pointer-events:none; z-index:1;
+      animation:fireAura 2.8s ease-in-out infinite;
+    }
+    @keyframes fireAura {
+      0%,100% { opacity:0.85; transform:scaleX(1);   }
+      40%     { opacity:1;    transform:scaleX(1.04); }
+      70%     { opacity:0.72; transform:scaleX(0.97); }
+    }
+    /* Dust motes floating in the air */
+    .dust { position:absolute; border-radius:50%;
+      background:rgba(212,190,140,0.55); pointer-events:none; z-index:52; }
+    @keyframes drift0 { 0%{transform:translateY(0) translateX(0)} 100%{transform:translateY(-180px) translateX(24px) } }
+    @keyframes drift1 { 0%{transform:translateY(0) translateX(0)} 100%{transform:translateY(-140px) translateX(-18px)} }
+    @keyframes drift2 { 0%{transform:translateY(0) translateX(0)} 100%{transform:translateY(-220px) translateX(12px) } }
+    @keyframes drift3 { 0%{transform:translateY(0) translateX(0)} 100%{transform:translateY(-160px) translateX(-8px)} }
+    @keyframes drift4 { 0%{transform:translateY(0) translateX(0)} 100%{transform:translateY(-200px) translateX(20px) } }
+
+    /* ── HUD enhancements ─────────────────────────────────────── */
+    .bottom-hud { border-top:1px solid rgba(212,167,70,0.22) !important; }
+    .bottom-hud::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:1px;
+      background:linear-gradient(90deg, transparent, rgba(212,167,70,0.5) 25%, rgba(212,167,70,0.5) 75%, transparent);
+    }
+    .digit-slot.revealed {
+      color:var(--gold) !important;
+      border-color:rgba(212,167,70,0.7) !important;
+      box-shadow:0 0 14px rgba(212,167,70,0.3), inset 0 0 8px rgba(212,167,70,0.08) !important;
+      background:rgba(212,167,70,0.04) !important;
+    }
+    /* Inspection panel gold accent bar */
+    .insp-header {
+      border-bottom:1px solid rgba(212,167,70,0.15) !important;
+      background:linear-gradient(90deg, rgba(212,167,70,0.03), transparent) !important;
+    }
+    .insp-panel {
+      border:1px solid rgba(212,167,70,0.28) !important;
+      box-shadow:0 0 40px rgba(0,0,0,0.9), 0 0 0 1px rgba(212,167,70,0.04) !important;
+    }
+    .insp-panel::before {
+      content:''; display:block; height:2px;
+      background:linear-gradient(90deg, transparent 0%, rgba(212,167,70,0.5) 30%, rgba(212,167,70,0.5) 70%, transparent 100%);
+      flex-shrink:0;
+    }
+    /* Portrait tilt interaction */
+    .portrait-tilt-stage {
+      width:100%; max-width:340px; margin:0 auto; aspect-ratio:3/4;
+      position:relative; cursor:grab; touch-action:none; user-select:none;
+    }
+    .portrait-tilt-stage.dragging { cursor:grabbing; }
+    .portrait-tilt-frame {
+      width:100%; height:100%; position:relative;
+      transform-origin:50% 50%;
+      transition:transform 0.06s linear;
+    }
+    .portrait-inner {
+      position:absolute; inset:0;
+      background:linear-gradient(135deg,#8a6620,#4a3210 50%,#7a5818);
+      border:3px solid #1a1208; border-radius:3px;
+      padding:8%;
+      box-shadow:inset 0 0 0 1px rgba(255,210,140,0.4), inset 0 0 10px rgba(0,0,0,0.6), 0 10px 30px rgba(0,0,0,0.8);
+    }
+    .portrait-inner::before {
+      content:''; position:absolute; inset:8%;
+      background:radial-gradient(ellipse 50% 40% at 50% 35%, #d4b08a 0%, #8a6840 30%, #3a2818 70%, #1a1008 100%);
+      border:1px solid #1a1208; box-shadow:inset 0 0 16px rgba(0,0,0,0.8);
+    }
+    .portrait-inner::after {
+      content:''; position:absolute; left:50%; bottom:8%; transform:translateX(-50%);
+      width:48%; height:55%;
+      background:radial-gradient(ellipse 60% 35% at 50% 18%, #2a1d12, #1a1208), linear-gradient(180deg, transparent 25%, #0e0904 100%);
+      clip-path:polygon(20% 100%, 20% 35%, 30% 25%, 35% 15%, 50% 8%, 65% 15%, 70% 25%, 80% 35%, 80% 100%);
+    }
+    .portrait-tilt-numeral {
+      position:absolute; bottom:10%; right:10%;
+      font-family:var(--font-display); font-size:0.85rem; color:rgba(212,167,70,0.45); letter-spacing:0.1em;
+    }
+    .portrait-tilt-crescent {
+      position:absolute; top:10%; right:-8%; transform:translateX(0) rotate(-15deg);
+      width:22%; aspect-ratio:1; border-radius:50%;
+      background:radial-gradient(circle at 35% 35%, #c8a840, #6a4818 70%);
+      box-shadow:0 2px 8px rgba(0,0,0,0.8), inset -2px -2px 4px rgba(0,0,0,0.4), inset 2px 2px 3px rgba(255,230,160,0.4);
+      opacity:0; transition:opacity 0.3s ease; cursor:pointer; z-index:5;
+    }
+    .portrait-tilt-crescent.peeking { opacity:1; }
+    .portrait-tilt-hint {
+      font-family:var(--font-mono); font-size:0.6rem; color:var(--parchment-faint);
+      opacity:0.5; text-align:center; margin-top:0.6rem; letter-spacing:0.08em;
+    }
+    /* Bookshelf magnifying glass */
+    .mag-stage { position:relative; width:100%; max-width:380px; margin:0.8rem auto;
+      background:linear-gradient(160deg,#e8dcc0,#c9b78f); border:1px solid #4a3210;
+      border-radius:4px; overflow:hidden; height:140px; cursor:none; touch-action:none; }
+    .mag-staff { position:absolute; inset:20% 10% 20% 10%; }
+    .mag-staff-line { position:absolute; left:0; right:0; height:1px; background:rgba(60,40,15,0.5); }
+    .mag-note { position:absolute; width:14px; height:10px; border-radius:50%;
+      background:rgba(20,10,5,0.1); border:1px solid rgba(20,10,5,0.1);
+      transform:translateX(-50%); transition:none; }
+    .mag-note.revealed { background:rgba(20,10,5,0.9); border-color:rgba(20,10,5,0.9); }
+    .mag-lens { position:absolute; width:80px; height:80px; border-radius:50%; pointer-events:none;
+      border:3px solid rgba(180,140,60,0.7);
+      background:radial-gradient(circle, rgba(220,240,255,0.25) 0%, rgba(180,200,220,0.12) 60%, transparent 80%);
+      box-shadow:0 0 12px rgba(180,140,60,0.4), inset 0 0 8px rgba(180,200,220,0.2);
+      transform:translate(-50%,-50%); display:none; z-index:5; }
+    .mag-label { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      font-family:var(--font-display); font-size:1.4rem; color:rgba(20,10,5,0.08);
+      letter-spacing:0.6em; white-space:nowrap; user-select:none; }
+    /* Phonograph transcript selection */
+    .phono-choice { padding:0.7rem 1rem; background:rgba(14,11,18,0.7); border:1px solid rgba(212,167,70,0.18);
+      border-radius:3px; cursor:pointer; font-family:'EB Garamond',serif; font-style:italic;
+      color:var(--parchment); line-height:1.65; font-size:0.88rem;
+      transition:all 0.2s; margin-bottom:0.4rem; }
+    .phono-choice:hover { border-color:rgba(212,167,70,0.45); background:rgba(212,167,70,0.06); }
+    .phono-choice.wrong  { border-color:rgba(226,87,43,0.5); background:rgba(226,87,43,0.06); animation:shake 0.35s ease; }
+    .phono-choice.right  { border-color:rgba(212,167,70,0.7); background:rgba(212,167,70,0.12); }
+    /* Clock Arabic confirm */
+    .clock-confirm-input { width:3.5rem; height:3.5rem; background:rgba(14,11,18,0.9);
+      border:1px solid rgba(212,167,70,0.35); border-radius:4px; text-align:center;
+      font-family:var(--font-mono); font-size:1.6rem; color:var(--gold); letter-spacing:0.05em;
+      -moz-appearance:textfield; }
+    .clock-confirm-input:focus { outline:none; border-color:var(--gold); box-shadow:0 0 10px rgba(212,167,70,0.3); }
+    .clock-confirm-input::-webkit-outer-spin-button, .clock-confirm-input::-webkit-inner-spin-button { -webkit-appearance:none; }
 
     /* ── Responsive ──────────────────────────────────────────── */
     @media (max-width:600px) {
@@ -1052,6 +1180,15 @@
       <div class="room-wain"></div>
       <div class="room-sconce l"></div>
       <div class="room-sconce r"></div>
+      <div class="room-fire-aura"></div>
+      <!-- Floating dust motes -->
+      <div class="dust" style="width:2px;height:2px;left:22%;top:55%;animation:drift0 14s ease-in-out infinite;opacity:0.4;"></div>
+      <div class="dust" style="width:1px;height:1px;left:38%;top:65%;animation:drift1 18s ease-in-out infinite 2s;opacity:0.3;"></div>
+      <div class="dust" style="width:2px;height:2px;left:55%;top:48%;animation:drift2 12s ease-in-out infinite 5s;opacity:0.45;"></div>
+      <div class="dust" style="width:1px;height:1px;left:67%;top:60%;animation:drift3 16s ease-in-out infinite 1s;opacity:0.35;"></div>
+      <div class="dust" style="width:2px;height:2px;left:44%;top:70%;animation:drift4 20s ease-in-out infinite 8s;opacity:0.4;"></div>
+      <div class="dust" style="width:1px;height:1px;left:30%;top:45%;animation:drift0 22s ease-in-out infinite 3s;opacity:0.3;"></div>
+      <div class="dust" style="width:2px;height:2px;left:75%;top:40%;animation:drift1 15s ease-in-out infinite 6s;opacity:0.35;"></div>
       <div class="room-vignette"></div>
 
       <!-- Letter -->
@@ -1553,26 +1690,21 @@
 
     if (step === 0) {
       body = `
-        <div class="portrait-art">
-          <div class="portrait-figure">🧑‍🎨</div>
-          <div class="portrait-roman">VII</div>
+        <p class="insp-desc">A painted man in formal dress. The gilt frame is thick — heavy enough to conceal something. Drag the portrait left or right to examine behind it.</p>
+        <div class="portrait-tilt-stage" id="portraitTiltStage">
+          <div class="portrait-tilt-frame" id="portraitTiltFrame">
+            <div class="portrait-inner">
+              <div class="portrait-tilt-numeral">VII</div>
+            </div>
+            <div class="portrait-tilt-crescent" id="portraitCrescent" title="Something glints…"></div>
+          </div>
         </div>
-        <p class="insp-desc" style="margin-top:0.8rem;">A painted man in formal dress. His left hand rests at his side; his right is raised slightly, the ring finger extended toward the lower-right corner of the canvas — where a Roman numeral is faintly painted.</p>
-        <div class="insp-action-area">
-          <button class="insp-btn" id="btnPortrait1">Study the Pose</button>
-        </div>
+        <div class="portrait-tilt-hint" id="portraitTiltHint">Drag the frame to look behind it.</div>
+        <div class="insp-feedback" id="portraitFb" style="text-align:center;margin-top:0.4rem;"></div>
         ${clueStrip('portrait')}
       `;
       openInsp('portrait', 'The Portrait', body);
-      setTimeout(() => {
-        const btn = document.getElementById('btnPortrait1');
-        if (btn) btn.onclick = () => {
-          G.objStep.portrait = 1;
-          completeStep(2);
-          closeInsp();
-          setTimeout(() => handlePortrait(), 80);
-        };
-      }, 50);
+      setTimeout(initPortraitTilt, 50);
 
     } else if (step === 1) {
       body = `
@@ -1631,6 +1763,63 @@
       `;
       openInsp('portrait', 'The Portrait', body);
     }
+  }
+
+  function initPortraitTilt() {
+    const stage = document.getElementById('portraitTiltStage');
+    const frame = document.getElementById('portraitTiltFrame');
+    const crescent = document.getElementById('portraitCrescent');
+    const hint = document.getElementById('portraitTiltHint');
+    const fb = document.getElementById('portraitFb');
+    if (!stage || !frame) return;
+    let dragging = false, startX = 0, tiltDeg = 0;
+    const update = (deg) => {
+      tiltDeg = Math.max(-40, Math.min(40, deg));
+      frame.style.transform = `perspective(600px) rotateY(${tiltDeg}deg)`;
+      if (Math.abs(tiltDeg) > 18) {
+        crescent.classList.add('peeking');
+        if (hint) hint.textContent = 'Something glints behind the frame — click it!';
+      } else {
+        crescent.classList.remove('peeking');
+        if (hint) hint.textContent = 'Drag the frame to look behind it.';
+      }
+    };
+    const startDrag = (e) => {
+      dragging = true; stage.classList.add('dragging');
+      const pt = e.touches ? e.touches[0] : e;
+      startX = pt.clientX;
+    };
+    const onMove = (e) => {
+      if (!dragging) return;
+      const pt = e.touches ? e.touches[0] : e;
+      const dx = pt.clientX - startX;
+      update(tiltDeg + dx * 0.5);
+      startX = pt.clientX;
+    };
+    const endDrag = () => { dragging = false; stage.classList.remove('dragging'); };
+    const cleanup = () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', endDrag); };
+    stage.addEventListener('mousedown', startDrag);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', endDrag);
+    stage.addEventListener('touchstart', e => { e.preventDefault(); startDrag(e); }, {passive:false});
+    stage.addEventListener('touchmove',  e => { e.preventDefault(); onMove(e); }, {passive:false});
+    stage.addEventListener('touchend',   endDrag);
+    // Cleanup when panel closes
+    const origClose = closeInsp;
+    crescent.onclick = (e) => {
+      e.stopPropagation();
+      if (crescent.classList.contains('peeking')) {
+        G.objStep.portrait = 1;
+        completeStep(2);
+        cleanup();
+        if (fb) { fb.textContent = '✓ The numeral VII is visible in the lower corner.'; fb.className = 'insp-feedback ok'; }
+        closeInsp();
+        setTimeout(() => handlePortrait(), 80);
+      }
+    };
+    // Cleanup listeners when backdrop clicked (panel close)
+    document.getElementById('inspBackdrop').addEventListener('click', cleanup, {once:true});
+    document.getElementById('inspClose').addEventListener('click', cleanup, {once:true});
   }
 
   /* Clock (steps 5-7) */
@@ -1730,14 +1919,37 @@
     document.querySelectorAll('.clock-numeral').forEach(n => n.classList.remove('selected'));
     el.classList.add('selected');
     if (numeral === 'VII') {
-      if (!G.completedSteps.has(6)) completeStep(6);
-      G.objStep.clock = 1;
-      persist();
-      if (fb) { fb.textContent = 'The clock hands lock at VII.'; fb.className = 'insp-feedback ok'; }
+      if (fb) { fb.textContent = 'VII selected. The mechanism hums. What is VII in Arabic numerals?'; fb.className = 'insp-feedback ok'; }
+      // Inject an inline Arabic numeral confirm field below the feedback
       setTimeout(() => {
-        closeInsp();
-        setTimeout(() => handleClock(), 80);
-      }, 800);
+        const existing = document.getElementById('clockArabicWrap');
+        if (existing) return;
+        const wrap = document.createElement('div');
+        wrap.id = 'clockArabicWrap';
+        wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:0.5rem;margin-top:0.7rem;';
+        wrap.innerHTML = `<input type="number" class="clock-confirm-input" id="clockArabic" min="1" max="12" placeholder="?" aria-label="Enter the hour as a number">
+          <button class="insp-btn" id="clockArabicConfirm" style="font-size:0.68rem;padding:0.4rem 1rem;">Confirm Hour</button>`;
+        fb.after(wrap);
+        const inp = document.getElementById('clockArabic');
+        const btn = document.getElementById('clockArabicConfirm');
+        const confirm = () => {
+          const val = parseInt(inp.value, 10);
+          if (val === 7) {
+            if (!G.completedSteps.has(6)) completeStep(6);
+            G.objStep.clock = 1; persist();
+            fb.textContent = 'The clock hands lock at VII — the seventh hour.'; fb.className = 'insp-feedback ok';
+            wrap.remove();
+            setTimeout(() => { closeInsp(); setTimeout(() => handleClock(), 80); }, 800);
+          } else {
+            fb.textContent = 'That hour does not correspond to VII.'; fb.className = 'insp-feedback err';
+            inp.classList.add('shake'); setTimeout(() => inp.classList.remove('shake'), 400);
+            inp.value = '';
+          }
+        };
+        btn.onclick = confirm;
+        inp.addEventListener('keydown', e => { if (e.key === 'Enter') confirm(); });
+        inp.focus();
+      }, 600);
     } else {
       if (fb) { fb.textContent = 'The mechanism resists. Try again.'; fb.className = 'insp-feedback err'; }
       el.classList.add('shake');
@@ -1770,11 +1982,31 @@
     booksHtml += '</div>';
 
     let noteHtml = '';
-    if (step >= 1) {
+    if (step >= 1 && step < 2) {
+      noteHtml = `<div style="margin:0.8rem 0;">
+        <p style="font-family:'EB Garamond',serif;font-style:italic;font-size:0.9rem;color:var(--parchment);line-height:1.7;margin-bottom:0.5rem;text-align:center;">Inside the book: a musical score. The circled notes are too faint to read. Move the magnifying glass across the staff to reveal them.</p>
+        <div class="mag-stage" id="magStage">
+          <div class="mag-label">♩ ♩ ♩ ♩ ♩</div>
+          <div class="mag-staff" id="magStaff">
+            <div class="mag-staff-line" style="top:10%;"></div>
+            <div class="mag-staff-line" style="top:30%;"></div>
+            <div class="mag-staff-line" style="top:50%;"></div>
+            <div class="mag-staff-line" style="top:70%;"></div>
+            <div class="mag-staff-line" style="top:90%;"></div>
+            <!-- Notes: G=below line4, E=on line3, D=below line3 — positioned left to right -->
+            <div class="mag-note" id="mn0" style="left:25%;top:75%;" data-note="G"></div>
+            <div class="mag-note" id="mn1" style="left:52%;top:50%;" data-note="E"></div>
+            <div class="mag-note" id="mn2" style="left:75%;top:63%;" data-note="D"></div>
+          </div>
+          <div class="mag-lens" id="magLens"></div>
+        </div>
+        <div class="insp-feedback" id="magFb" style="text-align:center;margin-top:0.5rem;">Drag the lens across the score.</div>
+      </div>`;
+    } else if (step >= 2) {
       noteHtml = `<div style="background:rgba(14,11,18,0.8);border:1px solid rgba(212,167,70,0.2);border-radius:4px;padding:1rem;margin:0.8rem 0;max-width:320px;margin-left:auto;margin-right:auto;">
-        <p style="font-family:'EB Garamond',serif;font-style:italic;font-size:0.9rem;color:var(--parchment);line-height:1.7;margin-bottom:0.5rem;">Inside the book: a musical score. Three notes are circled in sequence:</p>
+        <p style="font-family:'EB Garamond',serif;font-style:italic;font-size:0.9rem;color:var(--parchment);line-height:1.7;margin-bottom:0.5rem;">The score reveals three circled notes in sequence:</p>
         <p style="text-align:center;font-family:var(--font-display);font-size:1.8rem;color:var(--gold);letter-spacing:0.3em;">G · E · D</p>
-        <p style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);opacity:0.6;text-align:center;margin-top:0.4rem;">Set three pins in this order.</p>
+        <p style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);opacity:0.6;text-align:center;margin-top:0.4rem;">Set three pins in this order on the music box.</p>
       </div>`;
     }
     let starKeyHtml = '';
@@ -1788,7 +2020,7 @@
       ${noteHtml}
       ${starKeyHtml}
       <div class="insp-action-area" id="bookshelfActions" style="margin-top:0.5rem;">
-        ${step === 1 ? '<button class="insp-btn" id="btnBookshelfKey">Take the Star Key (hidden in back pages)</button>' : ''}
+        ${step >= 2 ? '<button class="insp-btn" id="btnBookshelfKey">Take the Star Key (hidden in back pages)</button>' : ''}
       </div>
       ${clueStrip('bookshelf')}
     `;
@@ -1812,16 +2044,60 @@
         closeInsp();
         setTimeout(() => handleBookshelf(), 80);
       };
+      // Init magnifying glass if visible
+      if (step === 1) initMagGlass();
     }, 50);
+  }
+
+  function initMagGlass() {
+    const stage = document.getElementById('magStage');
+    const lens  = document.getElementById('magLens');
+    const fb    = document.getElementById('magFb');
+    if (!stage || !lens) return;
+    lens.style.display = 'block';
+    let noteCount = 0;
+    const REVEAL_R = 46; // px radius from lens center that reveals notes
+    const onMove = (e) => {
+      const rect = stage.getBoundingClientRect();
+      const pt = e.touches ? e.touches[0] : e;
+      const x = pt.clientX - rect.left;
+      const y = pt.clientY - rect.top;
+      lens.style.left = x + 'px';
+      lens.style.top  = y + 'px';
+      // Check each note div
+      document.querySelectorAll('.mag-note').forEach(mn => {
+        if (mn.classList.contains('revealed')) return;
+        const mnRect = mn.getBoundingClientRect();
+        const mx = mnRect.left + mnRect.width/2 - rect.left;
+        const my = mnRect.top  + mnRect.height/2 - rect.top;
+        const dist = Math.sqrt((x-mx)**2 + (y-my)**2);
+        if (dist < REVEAL_R) {
+          mn.classList.add('revealed');
+          noteCount++;
+          const noteName = mn.dataset.note;
+          if (fb) fb.textContent = `Note revealed: ${noteName}`;
+          if (noteCount >= 3) {
+            // All revealed — advance step
+            if (fb) { fb.textContent = 'G · E · D — the sequence is clear.'; fb.className = 'insp-feedback ok'; }
+            G.seenScore = true;
+            completeStep(9);
+            G.objStep.bookshelf = 2;
+            persist();
+            setTimeout(() => { closeInsp(); setTimeout(() => handleBookshelf(), 80); }, 900);
+          }
+        }
+      });
+    };
+    stage.addEventListener('mousemove', onMove);
+    stage.addEventListener('touchmove', e => { e.preventDefault(); onMove(e); }, {passive:false});
   }
 
   function onBookClick(idx, special) {
     if (idx !== special) return;
     if (G.objStep.bookshelf >= 1) return;
     G.objStep.bookshelf = 1;
-    G.seenScore = true;
     completeStep(8);
-    completeStep(9);
+    // step 9 (seenScore/G·E·D reveal) happens through the magnifying glass
     persist();
     closeInsp();
     setTimeout(() => handleBookshelf(), 80);
@@ -2105,23 +2381,21 @@
     const step = G.objStep.rug;
     if (step === 0) {
       const body = `
-        <p class="insp-desc">You hold the map fragment over the rug and bring the candle close. The heat reveals a hidden numeral in the weave — something treated with a heat-reactive ink.</p>
-        <div class="insp-action-area">
-          <button class="insp-btn" id="btnHeatRug">Pass the Candle Over the Rug</button>
+        <p class="insp-desc">You bring the lit candle close to the rug. The map fragment confirms there is something hidden here, revealed by heat. Slowly drag the flame across the rug's centre to wake the ink.</p>
+        <div id="rugHeatStage" style="position:relative;width:100%;max-width:380px;aspect-ratio:2.5/1;margin:0.8rem auto;
+          background:radial-gradient(ellipse at center,#5a1a08 0%,#3a0c04 60%,#1a0804 100%);
+          border:2px solid rgba(212,167,70,0.2);border-radius:4px;overflow:hidden;cursor:crosshair;touch-action:none;">
+          <div id="rugHeatReveal" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+            font-family:var(--font-mono);font-size:2rem;font-weight:700;color:var(--gold);
+            text-shadow:0 0 16px rgba(212,167,70,0.7);opacity:0;transition:opacity 0.5s;letter-spacing:0.15em;">9</div>
+          <div id="rugFlame" style="position:absolute;pointer-events:none;font-size:1.6rem;transform:translate(-50%,-50%);display:none;">🕯️</div>
         </div>
+        <div class="rake-meter" style="margin-top:0.5rem;"><div class="rake-fill" id="rugHeatFill"></div></div>
+        <div class="insp-feedback" id="rugFb" style="text-align:center;margin-top:0.4rem;">Drag the candle across the rug to reveal the hidden numeral.</div>
         ${clueStrip('rug')}
       `;
       openInsp('rug', 'The Rug', body);
-      setTimeout(() => {
-        const btn = document.getElementById('btnHeatRug');
-        if (btn) btn.onclick = () => {
-          G.objStep.rug = 1;
-          completeStep(19);
-          persist();
-          closeInsp();
-          setTimeout(() => handleRug(), 80);
-        };
-      }, 50);
+      setTimeout(initRugHeat, 50);
 
     } else if (step === 1) {
       const body = `
@@ -2130,35 +2404,15 @@
           <div class="rug-burn show"></div>
           <div class="rug-reveal show">9</div>
         </div>
-        <p class="insp-desc" style="margin-top:0.8rem;">The heat-sensitive ink blooms. The numeral <strong style="color:var(--gold);">9</strong> appears clearly at the center of the rug.</p>
+        <p class="insp-desc" style="margin-top:0.8rem;">The numeral <strong style="color:var(--gold);">9</strong> is visible in the rug's heat-reactive weave. The third digit of the passcode.</p>
         <div class="insp-action-area">
-          <button class="insp-btn" id="btnRecordRug">Record the Digit</button>
+          <button class="insp-btn" id="btnRecordRug">Confirm Digit 3 = 9</button>
         </div>
         ${clueStrip('rug')}
       `;
       openInsp('rug', 'The Rug', body);
       setTimeout(() => {
         const btn = document.getElementById('btnRecordRug');
-        if (btn) btn.onclick = () => {
-          G.objStep.rug = 2;
-          completeStep(20);
-          persist();
-          closeInsp();
-          setTimeout(() => handleRug(), 80);
-        };
-      }, 50);
-
-    } else if (step === 2) {
-      const body = `
-        <p class="insp-desc">The numeral 9 is still visible in the rug weave.</p>
-        <div class="insp-action-area">
-          <button class="insp-btn" id="btnConfirmRug">Confirm Digit 3 = 9</button>
-        </div>
-        ${clueStrip('rug')}
-      `;
-      openInsp('rug', 'The Rug', body);
-      setTimeout(() => {
-        const btn = document.getElementById('btnConfirmRug');
         if (btn) btn.onclick = () => {
           G.objStep.rug = 3;
           revealDigit(2, 9);
@@ -2180,6 +2434,48 @@
     }
   }
 
+  function initRugHeat() {
+    const stage = document.getElementById('rugHeatStage');
+    const fill  = document.getElementById('rugHeatFill');
+    const fb    = document.getElementById('rugFb');
+    const reveal= document.getElementById('rugHeatReveal');
+    const flame = document.getElementById('rugFlame');
+    if (!stage) return;
+    let progress = 0;
+    let started = false;
+    const rect0 = stage.getBoundingClientRect();
+    const onMove = (e) => {
+      const rect = stage.getBoundingClientRect();
+      const pt = e.touches ? e.touches[0] : e;
+      const x = pt.clientX - rect.left;
+      const y = pt.clientY - rect.top;
+      if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
+        if (flame) flame.style.display = 'none';
+        return;
+      }
+      if (flame) { flame.style.display = 'block'; flame.style.left = x + 'px'; flame.style.top = y + 'px'; }
+      // Only count heat near centre
+      const cx = rect.width / 2, cy = rect.height / 2;
+      const dist = Math.sqrt((x - cx)**2 + (y - cy)**2);
+      if (dist < rect.width * 0.35) {
+        progress = Math.min(100, progress + 3.5);
+        fill.style.width = progress + '%';
+        if (!started) { started = true; completeStep(19); persist(); if (fb) fb.textContent = 'The ink is stirring…'; }
+        const opacity = Math.min(1, (progress - 40) / 40);
+        reveal.style.opacity = opacity > 0 ? opacity : 0;
+        if (progress >= 100) {
+          reveal.style.opacity = 1;
+          if (fb) { fb.textContent = 'The numeral 9 blooms through the weave.'; fb.className = 'insp-feedback ok'; }
+          G.objStep.rug = 1; completeStep(20); persist();
+          if (flame) flame.style.display = 'none';
+          setTimeout(() => { closeInsp(); setTimeout(() => handleRug(), 80); }, 1000);
+        }
+      }
+    };
+    stage.addEventListener('mousemove', onMove);
+    stage.addEventListener('touchmove', e => { e.preventDefault(); onMove(e); }, {passive:false});
+  }
+
   /* Map (steps 22-24) */
   function handleMap() {
     if (!G.inventory.has('candle')) {
@@ -2198,14 +2494,13 @@
         <p class="insp-desc">By candlelight, the map reveals hidden annotations. Four symbols are marked at intervals: 🌙 · ⭐ · ♩ · IX — each corresponding to a location in the room. They converge on a single point: the cabinet.</p>
         <div class="map-vis">
           <div class="map-marking">
-            Route A: <span class="map-highlight">🌙</span> — northern alcove<br>
-            Route B: <span class="map-highlight">⭐</span> — eastern shelf<br>
-            Route C: <span class="map-highlight">♩</span> — western mantel<br>
-            Route D: <span class="map-highlight">IX</span> — woven into the floor<br>
+            Route A: <span class="map-highlight">night wanes</span> — northern alcove<br>
+            Route B: <span class="map-highlight">a guide by starlight</span> — eastern shelf<br>
+            Route C: <span class="map-highlight">a musical memory</span> — western mantel<br>
+            Route D: <span class="map-highlight">nine in an old tongue</span> — the floor<br>
             <br>
-            All routes lead: <span class="map-highlight" style="font-size:0.8rem;">the cabinet</span>
+            All routes converge: <span class="map-highlight" style="font-size:0.8rem;">the cabinet</span>
           </div>
-          <div class="map-symbols map-revealed show">🌙 &nbsp; ⭐ &nbsp; ♩ &nbsp; IX</div>
         </div>
         <div class="insp-action-area" style="margin-top:0.8rem;">
           <button class="insp-btn" id="btnMapStudy">Study the Symbols</button>
@@ -2226,11 +2521,14 @@
 
     } else if (step === 1) {
       const body = `
-        <p class="insp-desc">The four symbols are clear. Each was placed in this room by the previous occupant as a sequence to be pressed on the cabinet.</p>
+        <p class="insp-desc">Four annotations, four destinations, one convergence. Decipher which symbol in the cabinet corresponds to each written clue — then press them in the order they are listed here.</p>
         <div class="map-vis">
           <div class="map-marking">
-            🌙 → ⭐ → ♩ → IX<br><br>
-            <span style="color:rgba(212,167,70,0.5);font-size:0.78rem;">Press them at the cabinet in this order.</span>
+            I. night wanes<br>
+            II. a guide by starlight<br>
+            III. a musical memory<br>
+            IV. nine in an old tongue<br><br>
+            <span style="color:rgba(212,167,70,0.35);font-size:0.75rem;">The cabinet holds four symbols. Match and press in order.</span>
           </div>
         </div>
         <div class="insp-action-area" style="margin-top:0.8rem;">
@@ -2416,12 +2714,18 @@
       }, 50);
     } else if (step === 2) {
       const body = `
-        <p class="insp-desc">A name has been scratched into the silver backing in cursive. The letters are scrambled across the frame. Click them in the correct order.</p>
-        <div id="mirrorLetters" style="display:flex;gap:0.8rem;justify-content:center;margin:1.4rem 0;flex-wrap:wrap;">
-          <button class="mirror-letter" data-l="V">V</button>
+        <p class="insp-desc">Ten letters are scratched into the silver backing, scattered across the frame. Three of them are initials — the rest are debris. Click them in the correct order to spell the former occupant's initials.</p>
+        <div id="mirrorLetters" style="display:flex;gap:0.6rem;justify-content:center;margin:1.4rem 0;flex-wrap:wrap;max-width:360px;margin-left:auto;margin-right:auto;">
+          <button class="mirror-letter" data-l="E">E</button>
           <button class="mirror-letter" data-l="A" data-idx="0">A</button>
+          <button class="mirror-letter" data-l="T">T</button>
           <button class="mirror-letter" data-l="M">M</button>
+          <button class="mirror-letter" data-l="R">R</button>
+          <button class="mirror-letter" data-l="V">V</button>
+          <button class="mirror-letter" data-l="N">N</button>
           <button class="mirror-letter" data-l="A" data-idx="1">A</button>
+          <button class="mirror-letter" data-l="I">I</button>
+          <button class="mirror-letter" data-l="L">L</button>
         </div>
         <div class="insp-feedback" id="mirrorLfb" style="text-align:center;font-family:var(--font-mono);font-size:1.3rem;letter-spacing:0.4em;color:var(--gold);min-height:1.5em;">_ . _ . _</div>
         <p style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);opacity:0.5;text-align:center;letter-spacing:0.06em;margin-top:0.6rem;">Spell the initials of the former occupant.</p>
@@ -2946,30 +3250,42 @@
       }, 50);
     } else if (step === 2) {
       const body = `
-        <p class="insp-desc">The voice continues, more slowly this time.</p>
+        <p class="insp-desc">The cylinder plays a second track. The voice recites three passages. One of them contains a warning intended for whoever opens this room. Click the passage you believe is the actual message.</p>
         <div class="phono-stage">
           <div class="phono-cylinder spinning"></div>
-          <div style="display:flex;align-items:center;gap:0.6rem;"><div class="phono-needle"></div></div>
-          <div class="phono-transcript">
-            "The chamber is its own answer. The door responds only to attention, not to force. Take your time. You have eleven years to make up. — A. M. V."
+          <div id="phonoChoices" style="margin-top:0.5rem;width:100%;">
+            <div class="phono-choice" id="pc-a">"I have enjoyed many rooms. This one is the finest. The light in the morning falls across the desk at precisely the right angle."</div>
+            <div class="phono-choice" id="pc-b">"Do not trust the obvious. The room is designed to show you the wrong thing first. The answer was always in what you overlooked."</div>
+            <div class="phono-choice" id="pc-c">"The phonograph was a gift. I wound it on the first Tuesday of every month. The cylinder has never skipped."</div>
           </div>
-          <div class="insp-action-area">
-            <button class="insp-btn" id="phonoDone">Lift the Needle</button>
-          </div>
+          <div class="insp-feedback" id="phonoFb2" style="text-align:center;margin-top:0.5rem;"></div>
         </div>
         ${clueStrip('phonograph')}
       `;
       openInsp('phonograph', 'The Phonograph', body);
       setTimeout(() => {
-        document.getElementById('phonoDone').onclick = () => {
+        const fb = document.getElementById('phonoFb2');
+        document.getElementById('pc-a').onclick = () => {
+          document.getElementById('pc-a').classList.add('wrong');
+          if (fb) { fb.textContent = 'Atmosphere only. Try again.'; fb.className = 'insp-feedback err'; }
+          setTimeout(() => { document.getElementById('pc-a') && document.getElementById('pc-a').classList.remove('wrong'); if (fb) fb.textContent=''; }, 900);
+        };
+        document.getElementById('pc-c').onclick = () => {
+          document.getElementById('pc-c').classList.add('wrong');
+          if (fb) { fb.textContent = 'An observation, nothing more. Try again.'; fb.className = 'insp-feedback err'; }
+          setTimeout(() => { document.getElementById('pc-c') && document.getElementById('pc-c').classList.remove('wrong'); if (fb) fb.textContent=''; }, 900);
+        };
+        document.getElementById('pc-b').onclick = () => {
+          document.getElementById('pc-b').classList.add('right');
+          if (fb) { fb.textContent = '✓ That was the warning.'; fb.className = 'insp-feedback ok'; }
           G.objStep.phonograph = 3; completeStep(49);
           showObjSolved('phonograph'); persist();
-          closeInsp();
+          setTimeout(() => { closeInsp(); setTimeout(handlePhonograph, 80); }, 900);
         };
       }, 50);
     } else {
       const body = `
-        <p class="insp-desc">The cylinder is still. The needle rests. The voice has said all it intended.</p>
+        <p class="insp-desc">The cylinder is still. The needle rests. The message has been heard.</p>
         <p class="insp-feedback ok">✓ Phonograph examined.</p>
         ${clueStrip('phonograph')}
       `;
