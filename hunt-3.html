@@ -23,6 +23,8 @@
     .timer-display { font-family:var(--font-mono); font-size:1rem; color:var(--gold); letter-spacing:0.1em; background:rgba(14,11,18,0.8); padding:0.28rem 0.7rem; border:1px solid rgba(212,167,70,0.2); border-radius:3px; min-width:72px; text-align:center; }
     .clue-btn { font-family:var(--font-mono); font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.38rem 0.9rem; border:1px solid rgba(226,87,43,0.4); border-radius:var(--radius-seal); background:transparent; color:var(--ember); cursor:pointer; transition:all var(--transition); }
     .clue-btn:hover { background:rgba(226,87,43,0.1); border-color:var(--ember); }
+    .restart-btn { font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.38rem 0.9rem; border:1px solid rgba(120,80,30,0.4); border-radius:var(--radius-seal); background:transparent; color:var(--parchment-faint); cursor:pointer; transition:all var(--transition); opacity:0.65; }
+    .restart-btn:hover { opacity:1; color:var(--ember); border-color:var(--ember); background:rgba(226,87,43,0.06); }
     .step-counter { font-family:var(--font-mono); font-size:0.62rem; color:var(--parchment-faint); opacity:0.55; letter-spacing:0.12em; white-space:nowrap; }
 
     /* ── Room stage ──────────────────────────────────────────── */
@@ -1033,7 +1035,8 @@
     <div class="hunt-controls">
       <div class="timer-display" id="timerDisplay">00:00</div>
       <button class="clue-btn" id="clueBtn" aria-label="Request a clue">Clue</button>
-      <span class="step-counter" id="stepCounter">0 / 30</span>
+      <button class="restart-btn" id="restartBtn" aria-label="Restart hunt">Restart</button>
+      <span class="step-counter" id="stepCounter">0 / 50</span>
     </div>
   </div>
 
@@ -1235,6 +1238,19 @@
   </div>
 </div>
 
+<!-- ── Restart confirmation modal ─────────────────────────── -->
+<div class="modal-back" id="restartModal" role="dialog" aria-modal="true" aria-labelledby="restartModalTitle">
+  <div class="modal-card">
+    <button class="modal-close" id="restartModalClose" aria-label="Close">✕</button>
+    <div class="modal-title" id="restartModalTitle">Restart the Chamber?</div>
+    <div class="modal-body">All progress in this hunt will be cleared and you will begin again from the opening letter. Your best score and clue credits are preserved.</div>
+    <div class="modal-actions">
+      <button class="modal-btn" id="restartModalCancel">Cancel</button>
+      <button class="modal-btn primary" id="restartModalConfirm">Restart</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Credits modal (no credits) ─────────────────────────── -->
 <div class="modal-back" id="noCreditsModal" role="dialog" aria-modal="true">
   <div class="modal-card">
@@ -1260,10 +1276,12 @@
     <div class="completion-stats">
       <div class="stat-block"><span class="stat-val" id="statTime">—</span><span class="stat-key">Time</span></div>
       <div class="stat-block"><span class="stat-val" id="statClues">—</span><span class="stat-key">Clues Used</span></div>
-      <div class="stat-block"><span class="stat-val" id="statScore">—</span><span class="stat-key">Score</span></div>
+      <div class="stat-block"><span class="stat-val" id="statScore">—</span><span class="stat-key">This Run</span></div>
+      <div class="stat-block"><span class="stat-val" id="statBest">—</span><span class="stat-key">Best Score</span></div>
     </div>
     <div class="completion-actions">
       <a href="account.html" class="completion-btn primary" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">View Dossier</a>
+      <button class="completion-btn" id="playAgainBtn">Play Again</button>
       <a href="index.html" class="completion-btn" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">All Hunts</a>
     </div>
   </div>
@@ -1349,7 +1367,11 @@
 
   window._ihClearProgress = async () => {
     if (!window._ihUser) return;
-    await setDoc(doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID), { restarted: true }, { merge: false });
+    const ref = doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID);
+    // Preserve best score across restart so the account page keeps it.
+    const snap = await getDoc(ref);
+    const best = snap.exists() ? (snap.data().bestScore ?? null) : null;
+    await setDoc(ref, { restarted: true, bestScore: best }, { merge: false });
   };
 </script>
 
@@ -1380,6 +1402,7 @@
     timerRunning:  false,
     startTs:       null,
     completed:     false,
+    bestScoreSaved:null,
   };
 
   const CLUES = {
@@ -3083,12 +3106,21 @@
     if (G.completed) return;
     G.completed = true;
     stopTimer();
-    const score = Math.max(0, 10000 - Math.floor(G.timerSecs / 8) - G.clueCount * 500);
+    const runScore = Math.max(0, 10000 - Math.floor(G.timerSecs / 8) - G.clueCount * 500);
+    const prevBest = G.bestScoreSaved || 0;
+    const isNewBest = runScore > prevBest;
+    G.bestScoreSaved = Math.max(runScore, prevBest);
     document.getElementById('statTime').textContent  = fmtTime(G.timerSecs);
     document.getElementById('statClues').textContent = G.clueCount;
-    document.getElementById('statScore').textContent = score.toLocaleString();
+    document.getElementById('statScore').textContent = runScore.toLocaleString();
+    const bestEl = document.getElementById('statBest');
+    if (bestEl) bestEl.textContent = G.bestScoreSaved.toLocaleString();
     document.getElementById('completionPanel').classList.add('open');
-    window._ihSubmitLeaderboard && window._ihSubmitLeaderboard(score, G.timerSecs, G.clueCount);
+    // Always save the run; submit to the leaderboard only when it's a new best
+    // so the entry's secs/clues stay consistent with the score it represents.
+    if (isNewBest && window._ihSubmitLeaderboard) {
+      window._ihSubmitLeaderboard(runScore, G.timerSecs, G.clueCount);
+    }
     persist();
   }
 
@@ -3148,26 +3180,32 @@
 
   document.getElementById('clueModalConfirm').onclick = async () => {
     const objId = document.getElementById('clueModal').getAttribute('data-obj') || guessCurrentObj() || 'letter';
-    const ok = await (window._ihUseClue ? window._ihUseClue() : Promise.resolve(false));
-    if (ok || true) { // allow even without auth (offline play)
-      if (window._ihUseClue) {
-        const spent = await window._ihUseClue().catch(() => false);
-        if (!spent && G.clueCredits <= 0) {
-          document.getElementById('clueModal').classList.remove('open');
-          document.getElementById('noCreditsModal').classList.add('open');
-          return;
-        }
-      }
-      G.clueCount++;
-      G.clueCredits = Math.max(0, G.clueCredits - 1);
-      G.unlockedClues.add(objId);
+    if (G.clueCredits <= 0) {
       document.getElementById('clueModal').classList.remove('open');
-      persist();
-      // Re-open inspection with clue now visible
-      if (currentObjId === objId) {
-        closeInsp();
-        setTimeout(() => dispatchObj(objId), 80);
+      document.getElementById('noCreditsModal').classList.add('open');
+      return;
+    }
+    if (window._ihUseClue) {
+      // _ihUseClue spends one credit in Firestore AND updates G.clueCredits
+      // via _ihSetClueCredits. We don't decrement here.
+      const ok = await window._ihUseClue().catch(() => false);
+      if (!ok) {
+        document.getElementById('clueModal').classList.remove('open');
+        document.getElementById('noCreditsModal').classList.add('open');
+        return;
       }
+    } else {
+      // Offline play — decrement locally
+      G.clueCredits = Math.max(0, G.clueCredits - 1);
+      document.getElementById('clueCreditCount').textContent = G.clueCredits;
+    }
+    G.clueCount++;
+    G.unlockedClues.add(objId);
+    document.getElementById('clueModal').classList.remove('open');
+    persist();
+    if (currentObjId === objId) {
+      closeInsp();
+      setTimeout(() => dispatchObj(objId), 80);
     }
   };
 
@@ -3194,7 +3232,10 @@
       slideSolved:    [...G.completedSteps],
       elapsedSeconds: G.timerSecs,
       cluesUsed:      G.clueCount,
-      bestScore:      G.completed ? Math.max(0, 10000 - Math.floor(G.timerSecs/8) - G.clueCount*500) : null,
+      bestScore:      G.bestScoreSaved ?? (G.completed ? Math.max(0, 10000 - Math.floor(G.timerSecs/8) - G.clueCount*500) : null),
+      // Explicitly clear the restart marker on every save — once the player
+      // starts playing again, the restarted state is no longer current.
+      restarted:      false,
     };
   }
 
@@ -3205,7 +3246,10 @@
   }
 
   function applyRestore(data) {
-    if (!data || data.restarted) return;
+    if (!data) return;
+    // Even after a restart, keep the best score so the account page retains it.
+    if (data.bestScore != null) G.bestScoreSaved = data.bestScore;
+    if (data.restarted) return;
     G.letterRead     = data.letterRead ?? false;
     G.objStep        = Object.assign({ portrait:0,clock:0,bookshelf:0,desk:0,musicbox:0,candle:0,rug:0,map:0,cabinet:0,mirror:0,fireplace:0,globe:0,chess:0,phonograph:0,door:0 }, data.objStep || {});
     G.inventory      = new Set(data.inventory || []);
@@ -3310,8 +3354,66 @@
       closeInsp();
       document.getElementById('clueModal').classList.remove('open');
       document.getElementById('noCreditsModal').classList.remove('open');
+      document.getElementById('restartModal').classList.remove('open');
     }
   });
+
+  /* ── Restart flow ─────────────────────────────────────────── */
+  function doRestart() {
+    stopTimer();
+    const keepBest    = G.bestScoreSaved;
+    const keepCredits = G.clueCredits;
+    G = {
+      letterRead:    false,
+      objStep: { portrait:0, clock:0, bookshelf:0, desk:0, musicbox:0, candle:0, rug:0, map:0, cabinet:0, mirror:0, fireplace:0, globe:0, chess:0, phonograph:0, door:0 },
+      inventory:     new Set(),
+      seenScore:     false,
+      discoveredIX:  false,
+      cabinetPressed:[],
+      digits:        [null, null, null, null],
+      completedSteps:new Set(),
+      clueCount:     0,
+      clueCredits:   keepCredits,
+      unlockedClues: new Set(),
+      _musicPins:    null,
+      timerSecs:     0,
+      timerRunning:  false,
+      startTs:       null,
+      completed:     false,
+      bestScoreSaved:keepBest,
+    };
+    // Reset UI
+    document.getElementById('timerDisplay').textContent = '00:00';
+    updateProgress();
+    document.querySelectorAll('.room-obj.obj-solved').forEach(el => el.classList.remove('obj-solved'));
+    document.querySelectorAll('.inv-item.held').forEach(el => el.classList.remove('held'));
+    document.querySelectorAll('.digit-slot.revealed').forEach(el => {
+      el.classList.remove('revealed');
+      el.setAttribute('data-digit', '?');
+    });
+    const flame = document.getElementById('candleFlame');
+    if (flame) flame.classList.add('unlit');
+    document.getElementById('completionPanel').classList.remove('open');
+    document.getElementById('letterOverlay').classList.remove('hidden');
+    document.getElementById('huntWrap').style.display = 'none';
+    document.getElementById('bottomHud').style.display = 'none';
+    // Clear local + Firestore progress (Firestore call preserves bestScore)
+    localStorage.removeItem(LS_KEY);
+    if (window._ihClearProgress) window._ihClearProgress();
+  }
+
+  document.getElementById('restartBtn').onclick = () => {
+    document.getElementById('restartModal').classList.add('open');
+  };
+  document.getElementById('restartModalClose').onclick =
+  document.getElementById('restartModalCancel').onclick = () => {
+    document.getElementById('restartModal').classList.remove('open');
+  };
+  document.getElementById('restartModalConfirm').onclick = () => {
+    document.getElementById('restartModal').classList.remove('open');
+    doRestart();
+  };
+  document.getElementById('playAgainBtn').onclick = doRestart;
 
   /* ── Boot ─────────────────────────────────────────────────── */
   (function boot() {
