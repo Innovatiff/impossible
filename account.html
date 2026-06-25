@@ -2054,7 +2054,7 @@
         if (activeFilter === 'in-library') return !!userLibrary[h.id];
         if (activeFilter === 'free')       return h.isFree;
         if (activeFilter === 'completed')  return allProg[h.id]?.completed;
-        if (activeFilter === 'locked')     return !h.isFree && plan === 'free';
+        if (activeFilter === 'locked')     return !h.isFree && plan === 'free' && !userLibrary[h.id];
         return true;
       });
 
@@ -2067,7 +2067,8 @@
         const inLib    = !!userLibrary[h.id];
         const progress = allProg[h.id];
         const completed = progress?.completed;
-        const isLocked  = !h.isFree && plan === 'free';
+        // Unlocked if: free hunt, Full Dossier plan, OR permanently purchased (in library)
+        const isLocked  = !h.isFree && plan === 'free' && !inLib;
         const total     = progress?.totalSlides || h.scenes || 10;
         const solved    = completed ? total : (Array.isArray(progress?.slideSolved) ? progress.slideSolved.length : Math.max(0, (progress?.currentSlide || 1) - 1));
         const pct       = progress ? Math.min(100, Math.round((solved / total) * 100)) : 0;
