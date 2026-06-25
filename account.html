@@ -859,32 +859,6 @@
       text-align: right;
     }
 
-    .progress-chips {
-      display: flex;
-      gap: 0.3rem;
-      flex-wrap: wrap;
-      margin-top: 0.4rem;
-    }
-
-    .p-chip {
-      width: 24px; height: 24px;
-      border: 1px solid rgba(212,167,70,0.18);
-      border-radius: 2px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: rgba(212,167,70,0.18);
-      background: rgba(14,11,18,0.5);
-    }
-
-    .p-chip.found {
-      color: var(--gold);
-      border-color: rgba(212,167,70,0.45);
-    }
-
     .progress-meta-row {
       display: flex;
       gap: 1.2rem;
@@ -1742,12 +1716,12 @@
 
     /* ── Hunt catalog (static for now) ───────────────────── */
     const HUNT_CATALOG = [
-      { id: 'hunt-1', number: '01', name: 'The Glass & The Flame',       difficulty: 'Initiate',   isFree: true,  url: 'hunt-1.html', scenes: 20, description: 'A sealed envelope. A dark mirror. A lantern in the void.',                  fragmentLetters: ['S','H','A','D','O','W'] },
-      { id: 'hunt-2', number: '02', name: 'The Whispering Page',          difficulty: 'Inspector',  isFree: true,  url: 'hunt-2.html', scenes: 30, description: 'A Victorian parlour. A secret cipher. A man named Venturi.',                 fragmentLetters: ['C','I','P','H','E','R'] },
-      { id: 'hunt-3', number: '03', name: 'The Phosphor Letters',        difficulty: 'Inspector',  isFree: false, url: '#',           scenes: 10, description: 'Written in a light only visible to those who know where to look.',           fragmentLetters: [] },
-      { id: 'hunt-4', number: '04', name: 'The Cartographer\'s Lie',     difficulty: 'Senior',     isFree: false, url: '#',           scenes: 10, description: 'Every map has one place it refuses to show.',                                fragmentLetters: [] },
-      { id: 'hunt-5', number: '05', name: 'The Widow\'s Frequency',      difficulty: 'Senior',     isFree: false, url: '#',           scenes: 10, description: 'The signal broadcasts at an hour no one is listening.',                      fragmentLetters: [] },
-      { id: 'hunt-6', number: '06', name: 'The Second Autopsy',          difficulty: 'Chief',      isFree: false, url: '#',           scenes: 10, description: 'The first report was wrong. Deliberately.',                                  fragmentLetters: [] },
+      { id: 'hunt-1', number: '01', name: 'The Glass & The Flame',       difficulty: 'Initiate',   isFree: true,  url: 'hunt-1.html', scenes: 20, description: 'A sealed envelope. A dark mirror. A lantern in the void.' },
+      { id: 'hunt-2', number: '02', name: 'The Whispering Page',          difficulty: 'Inspector',  isFree: true,  url: 'hunt-2.html', scenes: 30, description: 'A Victorian parlour. A secret cipher. A man named Venturi.' },
+      { id: 'hunt-3', number: '03', name: 'The Phosphor Letters',        difficulty: 'Inspector',  isFree: false, url: '#',           scenes: 10, description: 'Written in a light only visible to those who know where to look.' },
+      { id: 'hunt-4', number: '04', name: 'The Cartographer\'s Lie',     difficulty: 'Senior',     isFree: false, url: '#',           scenes: 10, description: 'Every map has one place it refuses to show.' },
+      { id: 'hunt-5', number: '05', name: 'The Widow\'s Frequency',      difficulty: 'Senior',     isFree: false, url: '#',           scenes: 10, description: 'The signal broadcasts at an hour no one is listening.' },
+      { id: 'hunt-6', number: '06', name: 'The Second Autopsy',          difficulty: 'Chief',      isFree: false, url: '#',           scenes: 10, description: 'The first report was wrong. Deliberately.' },
     ];
 
     const DETECTIVE_RANKS = [
