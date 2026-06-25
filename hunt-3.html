@@ -2422,7 +2422,7 @@
 
     if (step === 0) {
       body = `
-        <p class="insp-desc">A painted man in formal dress. The gilt frame is thick — heavy enough to conceal something. Drag the portrait left or right to examine behind it.</p>
+        <p class="insp-desc">A painted man in formal dress. The gilt frame is thick — heavy enough to conceal something.</p>
         <div class="portrait-tilt-stage" id="portraitTiltStage">
           <div class="portrait-tilt-frame" id="portraitTiltFrame">
             <div class="portrait-inner">
@@ -2630,13 +2630,13 @@
     } else if (!G.completedSteps.has(54)) {
       // Sub-step 54 — Drag the winding key in circles to wind the mainspring
       const body = `
-        <p class="insp-desc">The mainspring is slack. Drag the winding key in circles to wind it before the mechanism stops.</p>
+        <p class="insp-desc">The mainspring is slack. The winding key sits in its post, waiting.</p>
         <div class="mini-stage">
           <div class="mini-dial" id="clockWinder">
             <div class="mini-dial-axle"></div>
           </div>
           <div class="mini-meter"><div class="mini-meter-fill" id="clockWindFill"></div></div>
-          <div class="insp-feedback" id="clockWindFb">Drag the key in circles.</div>
+          <div class="insp-feedback" id="clockWindFb"></div>
         </div>
         ${clueStrip('clock')}
       `;
@@ -2645,7 +2645,7 @@
     } else if (!G.completedSteps.has(55)) {
       // Sub-step 55 — Tap the rhythm: click each cell when it lights up
       const body = `
-        <p class="insp-desc">The clock now ticks. Tap each cell as it pulses — match the pendulum's rhythm three times.</p>
+        <p class="insp-desc">The clock now ticks. Something about its rhythm seems deliberate.</p>
         <div class="mini-stage">
           <div class="rhythm-bar" id="clockRhythm">
             <div class="rhythm-cell" data-i="0"></div>
@@ -2676,7 +2676,7 @@
           <div class="clock-face" id="clockFace">
             <div class="clock-center"></div>
           </div>
-          <p style="font-family:var(--font-mono);font-size:0.65rem;color:var(--parchment-faint);opacity:0.6;letter-spacing:0.08em;">Click the correct numeral.</p>
+          <p style="font-family:var(--font-mono);font-size:0.65rem;color:var(--parchment-faint);opacity:0.6;letter-spacing:0.08em;"></p>
         </div>
         <div class="insp-feedback" id="clockFeedback"></div>
         ${clueStrip('clock')}
@@ -2756,7 +2756,7 @@
       if (d < -180) d += 360;
       if (d > 0 && d < 90) {
         total += d;
-        if (!firstWind && fb) { firstWind = true; fb.textContent = 'Winding…'; }
+        if (!firstWind && fb) { firstWind = true; }
         dial.style.transform = `rotate(${total}deg)`;
         if (fill) fill.style.width = Math.min(100, total / TARGET * 100) + '%';
         if (total >= TARGET) {
@@ -2790,7 +2790,7 @@
         if (i === lit) {
           c.classList.add('hit'); setTimeout(() => c.classList.remove('hit'), 250);
           hits++;
-          if (fb) fb.textContent = `Hits: ${hits} / 3`;
+          if (fb) fb.textContent = '';
           if (hits >= 3) {
             if (fb) { fb.textContent = '✓ In rhythm.'; fb.className = 'insp-feedback ok'; }
             completeStep(55); persist();
@@ -2903,7 +2903,7 @@
       noteHtml = `<div style="background:rgba(14,11,18,0.8);border:1px solid rgba(212,167,70,0.2);border-radius:4px;padding:1rem;margin:0.8rem 0;max-width:320px;margin-left:auto;margin-right:auto;">
         <p style="font-family:'EB Garamond',serif;font-style:italic;font-size:0.9rem;color:var(--parchment);line-height:1.7;margin-bottom:0.5rem;">The score reveals three circled notes in sequence:</p>
         <p style="text-align:center;font-family:var(--font-display);font-size:1.8rem;color:var(--gold);letter-spacing:0.3em;">G · E · D</p>
-        <p style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);opacity:0.6;text-align:center;margin-top:0.4rem;">Set three pins in this order on the music box.</p>
+        <p style="font-family:var(--font-mono);font-size:0.6rem;color:var(--parchment-faint);opacity:0.6;text-align:center;margin-top:0.4rem;"></p>
       </div>`;
     }
     let starKeyHtml = '';
@@ -2994,7 +2994,7 @@
     const TARGET = ['1611','1687','1859'];
     let order = ['1859','1611','1687'];
     const body = `
-      <p class="insp-desc">Three dated volumes have been knocked loose from the second shelf. Click them in order — oldest to newest — to re-shelve them.</p>
+      <p class="insp-desc">Three dated volumes have been knocked loose from the second shelf. Their spines bear years worn nearly smooth.</p>
       <div class="mini-stage">
         <div class="mini-row" id="bsSort"></div>
         <div class="insp-feedback" id="bsSortFb">Click in chronological order.</div>
@@ -3026,7 +3026,7 @@
             } else {
               b.classList.add('wrong'); setTimeout(() => b.classList.remove('wrong'), 400);
               picked = [];
-              if (fb) { fb.textContent = 'Wrong order. Start again.'; fb.className = 'insp-feedback err'; }
+              if (fb) { fb.textContent = 'The volumes resist.'; fb.className = 'insp-feedback err'; }
               setTimeout(render, 500);
             }
           };
@@ -3041,7 +3041,7 @@
   function handleBookshelfLoose() {
     const LOOSE = 7; // index in a 12-book row
     const body = `
-      <p class="insp-desc">One book on the lower shelf is leaning slightly outward — it doesn't quite belong with the rest. Click the one that's out of place.</p>
+      <p class="insp-desc">The lower shelf is not quite right. One resident stands apart from all the others.</p>
       <div class="mini-stage">
         <div class="mini-row" id="bsLoose" style="gap:2px;flex-wrap:nowrap;"></div>
         <div class="insp-feedback" id="bsLooseFb"></div>
@@ -3081,7 +3081,7 @@
           <div class="mini-flap-under">"The number on the door is not on the door."</div>
           <div class="mini-flap-face" id="bsBookmarkFace" style="background:linear-gradient(160deg,#3a5a18,#1a3a08);"></div>
         </div>
-        <div class="insp-feedback" id="bsBookmarkFb">Drag the leaf upward.</div>
+        <div class="insp-feedback" id="bsBookmarkFb"></div>
       </div>
       ${clueStrip('bookshelf')}
     `;
@@ -3207,7 +3207,7 @@
         <div class="mini-stage">
           <canvas id="deskInk" width="320" height="140" style="background:linear-gradient(160deg,#e8dcc0,#c9b78f);border:1px solid #4a3210;border-radius:3px;cursor:crosshair;touch-action:none;box-shadow:inset 0 0 10px rgba(60,40,15,0.5);"></canvas>
           <div class="mini-meter"><div class="mini-meter-fill" id="deskInkFill"></div></div>
-          <div class="insp-feedback" id="deskInkFb">Drag your pen across the paper.</div>
+          <div class="insp-feedback" id="deskInkFb"></div>
         </div>
         ${clueStrip('desk')}
       `;
@@ -3216,10 +3216,10 @@
     } else if (!G.completedSteps.has(60)) {
       // Sub-step 60 — press the wax stamp by holding the seal down
       const body = `
-        <p class="insp-desc">A small wax stick has been melted onto a blank sheet. Press and hold the seal to leave a clean impression.</p>
+        <p class="insp-desc">A small wax stick has been melted onto a blank sheet. The brass seal rests beside it, unused.</p>
         <div class="mini-stage">
           <button class="hold-btn" id="deskStamp">SEAL<div class="ring" id="deskStampRing"></div></button>
-          <div class="insp-feedback" id="deskStampFb">Press and hold the seal.</div>
+          <div class="insp-feedback" id="deskStampFb"></div>
         </div>
         ${clueStrip('desk')}
       `;
@@ -3454,7 +3454,7 @@
         <p class="insp-desc">A blank parchment from the desk drawer lies beside the candle. Hold the candle over it to drip wax and seal it.</p>
         <div class="mini-stage">
           <button class="hold-btn" id="candleDrip">DRIP<div class="ring" id="candleDripRing"></div></button>
-          <div class="insp-feedback" id="candleDripFb">Press and hold the candle.</div>
+          <div class="insp-feedback" id="candleDripFb"></div>
         </div>
         ${clueStrip('candle')}
       `;
@@ -3775,7 +3775,7 @@
     } else if (!G.completedSteps.has(64)) {
       // Sub-step 64 — rotate a compass rose to true north
       const body = `
-        <p class="insp-desc">A small compass rose has been drawn in the map's lower corner — it has been spun out of alignment. Rotate it until N points up.</p>
+        <p class="insp-desc">A small compass rose has been drawn in the map's lower corner — it has been spun out of alignment.</p>
         <div class="mini-stage">
           <div class="mini-dial" id="mapCompass">
             <div class="mini-dial-axle"></div>
@@ -3784,7 +3784,7 @@
             <div style="position:absolute;left:4%;top:50%;transform:translateY(-50%);font-family:'Cinzel',serif;font-size:0.7rem;color:#1a0e02;">W</div>
             <div style="position:absolute;right:4%;top:50%;transform:translateY(-50%);font-family:'Cinzel',serif;font-size:0.7rem;color:#1a0e02;">E</div>
           </div>
-          <div class="insp-feedback" id="mapCompassFb">Rotate until N points straight up.</div>
+          <div class="insp-feedback" id="mapCompassFb"></div>
         </div>
         ${clueStrip('map')}
       `;
@@ -3848,7 +3848,7 @@
     if (step >= 5 && !G.completedSteps.has(65)) {
       // Sub-step 65 — secondary tumbler combination on the cabinet's bottom drawer
       const body = `
-        <p class="insp-desc">A second compartment hides in the cabinet's base. Three brass tumblers must each be set to the correct number to release it. The combination is the passcode minus its first digit: <strong style="color:var(--gold);">3 · 9 · 2</strong>.</p>
+        <p class="insp-desc">A second compartment hides in the cabinet's base. Three brass tumblers. Each wants a number this room has already shown you.</p>
         <div class="mini-stage">
           <div class="combo-wrap" id="cabCombo">
             <div><div class="combo-dial" data-i="0" data-val="0"></div><div class="combo-dial-num" id="cd0">0</div></div>
@@ -3937,7 +3937,6 @@
         // All pressed correctly
         G.objStep.cabinet = 5;
         completeStep(29);
-        revealDigit(3, 2);
         showObjSolved('cabinet');
         persist();
         closeInsp();
@@ -3951,7 +3950,7 @@
       G.cabinetPressed = [];
       persist();
       const fb = document.getElementById('cabFeedback');
-      if (fb) { fb.textContent = 'Wrong sequence. The cabinet resets.'; fb.className = 'insp-feedback err'; }
+      if (fb) { fb.textContent = 'The mechanism resists.'; fb.className = 'insp-feedback err'; }
       closeInsp();
       setTimeout(() => handleCabinet(), 80);
     }
@@ -4014,7 +4013,7 @@
     const step = G.objStep.mirror;
     if (step === 0) {
       const body = `
-        <p class="insp-desc">A tall oval mirror in a gilded frame. The glass is thick with grey dust. Drag your finger across the glass to clean it.</p>
+        <p class="insp-desc">A tall oval mirror in a gilded frame. The glass is thick with grey dust. Something beneath the surface waits to be seen.</p>
         <div class="mirror-stage">
           <canvas id="mirrorCanvas" class="mirror-canvas" width="300" height="360"></canvas>
           <div class="insp-feedback" id="mirrorFb">Drag across the glass.</div>
@@ -4062,7 +4061,7 @@
     } else if (!G.completedSteps.has(66)) {
       // Sub-step 66 — tilt the mirror to catch firelight at the correct angle
       const body = `
-        <p class="insp-desc">Angle the mirror so that the firelight bounces onto the opposite wall. The correct tilt is between 45° and 55°.</p>
+        <p class="insp-desc">Angle the mirror so that the firelight finds its mark on the opposite wall.</p>
         <div class="mini-stage">
           <div class="mini-slider-wrap">
             <div class="mini-slider-bar">
@@ -4377,14 +4376,14 @@
     const step = G.objStep.globe;
     if (step === 0) {
       const body = `
-        <p class="insp-desc">A polished tabletop globe on a wooden stand. Drag horizontally to rotate it. A single location has been touched so many times the lacquer is worn through.</p>
+        <p class="insp-desc">A polished tabletop globe on a wooden stand. The lacquer is worn through in one place — someone returned there again and again.</p>
         <div class="globe-stage">
           <div class="globe-sphere-3d" id="globeSphere">
             <div class="globe-surface" id="globeSurface"></div>
             <div class="globe-worn" id="globeWorn"></div>
           </div>
         </div>
-        <div class="insp-feedback" id="globeFb" style="text-align:center;margin-top:0.7rem;">Drag the sphere to rotate it.</div>
+        <div class="insp-feedback" id="globeFb" style="text-align:center;margin-top:0.7rem;"></div>
         ${clueStrip('globe')}
       `;
       openInsp('globe', 'The Globe', body);
@@ -4461,7 +4460,7 @@
     } else if (!G.completedSteps.has(69)) {
       // Sub-step 69 — set the axis tilt to 23° (Earth's true axial tilt)
       const body = `
-        <p class="insp-desc">The globe's axis has been knocked off true. Set it to its astronomical tilt — between 22° and 24°.</p>
+        <p class="insp-desc">The globe's axis sits wrong. Something about the tilt is off — not random, but precise.</p>
         <div class="mini-stage">
           <div class="mini-slider-wrap">
             <div class="mini-slider-bar">
@@ -4546,9 +4545,9 @@
     const step = G.objStep.chess;
     if (step === 0) {
       const body = `
-        <p class="insp-desc">The board sits mid-game. White to move. There is exactly one move that decides the position. Click the White Queen, then click the highlighted square.</p>
+        <p class="insp-desc">The board sits mid-game. White to move. There is exactly one move that decides the position.</p>
         <div class="chess-board-int" id="chessBoard"></div>
-        <div class="insp-feedback" id="chessFb" style="margin-top:0.5rem;text-align:center;">Click the Queen, then the target square.</div>
+        <div class="insp-feedback" id="chessFb" style="margin-top:0.5rem;text-align:center;"></div>
         ${clueStrip('chess')}
       `;
       openInsp('chess', 'The Chess Board', body);
@@ -4585,7 +4584,7 @@
       const body = `
         <p class="insp-desc">A second board has been set up nearby — a different problem. White to move, mate in one. Move the rook to deliver mate.</p>
         <div class="chess-board-int" id="chessBoard3"></div>
-        <div class="insp-feedback" id="chess3Fb" style="margin-top:0.5rem;text-align:center;">Click the Rook, then the target square.</div>
+        <div class="insp-feedback" id="chess3Fb" style="margin-top:0.5rem;text-align:center;"></div>
         ${clueStrip('chess')}
       `;
       openInsp('chess', 'The Chess Board', body);
@@ -4630,11 +4629,11 @@
       if (i === TARGET) {
         rookPos = TARGET; selected = null; render();
         if (fb) { fb.textContent = '✓ Mate.'; fb.className = 'insp-feedback ok'; }
-        completeStep(70); persist();
+        completeStep(70); revealDigit(3, 2); persist();
         setTimeout(() => { closeInsp(); setTimeout(handleChess, 80); }, 900);
       } else {
         el.classList.add('shake'); setTimeout(() => el.classList.remove('shake'), 400);
-        if (fb) { fb.textContent = 'Not mate. The king escapes.'; fb.className = 'insp-feedback err'; }
+        if (fb) { fb.textContent = 'The king walks free.'; fb.className = 'insp-feedback err'; }
         selected = null; render();
       }
     };
@@ -4729,7 +4728,7 @@
             <div class="phono-axle"></div>
           </div>
           <div class="phono-meter"><div class="phono-meter-fill" id="phonoFill"></div></div>
-          <div class="insp-feedback" id="phonoFb" style="text-align:center;">Drag the crank in circles.</div>
+          <div class="insp-feedback" id="phonoFb" style="text-align:center;"></div>
         </div>
         ${clueStrip('phonograph')}
       `;
@@ -4827,7 +4826,7 @@
       // Only count forward rotation
       if (d > 0 && d < 90) {
         totalRotation += d;
-        if (!firstWind) { firstWind = true; completeStep(46); persist(); fb.textContent = 'Winding…'; }
+        if (!firstWind) { firstWind = true; completeStep(46); persist(); }
         crank.style.transform = `translateY(-50%) rotate(${totalRotation}deg)`;
         fill.style.width = Math.min(100, (totalRotation / TARGET_ROT) * 100) + '%';
         if (totalRotation >= TARGET_ROT) {
