@@ -244,20 +244,32 @@
     .lr-ceiling {
       position:absolute; top:0; left:0; right:0; height:8%; z-index:2;
       background:
+        /* central fresco panel: warm painted sky/figure suggestion */
+        radial-gradient(ellipse 38% 80% at 50% 50%, rgba(210,188,148,0.28) 0%, rgba(176,144,96,0.14) 50%, transparent 74%),
+        radial-gradient(ellipse 18% 60% at 34% 50%, rgba(200,164,120,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 18% 60% at 66% 50%, rgba(200,164,120,0.18) 0%, transparent 60%),
+        /* coffered grid */
         repeating-linear-gradient(90deg,
-          rgba(40,28,6,0.0) 0 7%, rgba(120,90,28,0.5) 7.4% 8%, rgba(247,226,150,0.35) 8.2% 8.6%, rgba(40,28,6,0.0) 9% 16%),
+          rgba(40,28,6,0.0) 0 7%, rgba(80,58,16,0.6) 7.4% 7.8%, rgba(247,226,150,0.4) 7.9% 8.4%, rgba(80,58,16,0.5) 8.5% 8.9%, rgba(40,28,6,0.0) 9% 16%),
         repeating-linear-gradient(0deg,
-          rgba(40,28,6,0.0) 0 30%, rgba(120,90,28,0.4) 33% 36%, rgba(40,28,6,0.0) 39% 60%),
-        linear-gradient(180deg, #6a5018 0%, #8a6c24 55%, #a6842e 100%);
-      box-shadow:inset 0 7px 16px rgba(0,0,0,0.42);
+          rgba(40,28,6,0.0) 0 28%, rgba(80,58,16,0.5) 31% 34%, rgba(247,226,150,0.3) 35% 38%, rgba(40,28,6,0.0) 39% 60%),
+        linear-gradient(180deg, #5a4012 0%, #7a6020 40%, #9a7c2c 70%, #a6862e 100%);
+      box-shadow:inset 0 8px 20px rgba(0,0,0,0.55), inset 0 -2px 8px rgba(180,140,60,0.2);
     }
-    .lr-ceiling::after {     /* gilt ceiling-rose the chandelier hangs from */
-      content:''; position:absolute; left:50%; top:30%; width:70px; height:34px;
+    .lr-ceiling::before {    /* painted fresco border medallions suggestion */
+      content:''; position:absolute; inset:0;
+      background:
+        radial-gradient(ellipse 6% 80% at 8% 50%, rgba(180,148,100,0.14) 0%, transparent 70%),
+        radial-gradient(ellipse 6% 80% at 92% 50%, rgba(180,148,100,0.14) 0%, transparent 70%),
+        radial-gradient(ellipse 14% 80% at 50% 50%, rgba(220,196,150,0.22) 0%, rgba(180,148,100,0.1) 45%, transparent 70%);
+    }
+    .lr-ceiling::after {     /* gilt ceiling-rose + warm radiance from chandelier above */
+      content:''; position:absolute; left:50%; top:20%; width:90px; height:44px;
       transform:translateX(-50%);
       background:
-        radial-gradient(ellipse at 50% 50%, #f4dd8e 0%, #caa64e 30%, #8a6a1e 60%, transparent 74%);
+        radial-gradient(ellipse at 50% 50%, #fff8d8 0%, #f4dd8e 18%, #caa64e 40%, #8a6a1e 66%, transparent 80%);
       border-radius:50%;
-      box-shadow:0 2px 8px rgba(0,0,0,0.4);
+      box-shadow:0 3px 12px rgba(0,0,0,0.5), 0 0 28px rgba(255,230,140,0.4), inset 0 1px 0 rgba(255,254,230,0.8);
     }
 
     /* — Ornate gilded crown cornice — */
@@ -410,12 +422,20 @@
     .lr-chandelier svg { width:100%; height:100%; display:block; overflow:visible;
       filter:drop-shadow(0 12px 24px rgba(0,0,0,0.55)); }
     .lr-chandelier-glow {
-      position:absolute; left:50%; top:5%; width:58%; height:70%; z-index:5;
+      position:absolute; left:50%; top:3%; width:76%; height:80%; z-index:5;
       transform:translateX(-50%); pointer-events:none; mix-blend-mode:screen;
-      background:radial-gradient(ellipse 50% 50% at 50% 26%, rgba(255,240,184,0.62) 0%, rgba(255,228,150,0.22) 38%, transparent 72%);
+      background:
+        radial-gradient(ellipse 46% 42% at 50% 22%, rgba(255,244,196,0.72) 0%, rgba(255,232,150,0.28) 36%, transparent 66%),
+        radial-gradient(ellipse 70% 56% at 50% 30%, rgba(255,218,120,0.18) 0%, transparent 70%);
       animation:chandBreathe 6s ease-in-out infinite;
     }
-    @keyframes chandBreathe { 0%,100%{opacity:0.88} 50%{opacity:1} }
+    /* warm amber pool from chandelier onto the floor */
+    .lr-floor-glow {
+      position:absolute; left:50%; bottom:0; width:54%; height:26%; z-index:6;
+      transform:translateX(-50%); pointer-events:none; mix-blend-mode:screen;
+      background:radial-gradient(ellipse 60% 50% at 50% 20%, rgba(255,218,120,0.28) 0%, rgba(255,194,80,0.10) 50%, transparent 78%);
+    }
+    @keyframes chandBreathe { 0%,100%{opacity:0.88} 50%{opacity:1.0} }
 
     /* ───────────────────────────────────────────────────────────────────
        05 · STUDY — ARCHITECTURE
@@ -623,28 +643,34 @@
     .lr-sconce { position:absolute; z-index:6; width:2.8%; height:9%; pointer-events:none; }
     .lr-sconce.left  { left:30%; top:22%; }
     .lr-sconce.right { left:70%; top:22%; }
-    .lr-sconce::before {       /* gilt back-plate + twin arms + candles */
-      content:''; position:absolute; left:50%; top:32%; width:54%; height:64%;
+    .lr-sconce::before {       /* gilt back-plate — ornate urn shape */
+      content:''; position:absolute; left:50%; top:32%; width:60%; height:68%;
       transform:translateX(-50%);
       background:
-        radial-gradient(circle at 50% 0%, #f4dd8e 0%, #caa64e 40%, #6a4a14 100%);
-      border-radius:50% 50% 18% 18%;
-      box-shadow:0 2px 5px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,250,210,0.6);
+        radial-gradient(ellipse at 50% 20%, #fff6cf 0%, #f4dd8e 18%, #caa64e 46%, #7a5818 80%, #4a3610 100%);
+      border-radius:50% 50% 24% 24% / 30% 30% 18% 18%;
+      box-shadow:0 3px 7px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,252,216,0.7), inset 0 -2px 4px rgba(0,0,0,0.3);
     }
-    .lr-sconce::after {        /* candle-flame bloom */
-      content:''; position:absolute; left:50%; top:-26%; width:150%; height:90%;
+    .lr-sconce::after {        /* candle-flame + wall-wash halo */
+      content:''; position:absolute; left:50%; top:-60%; width:320%; height:200%;
       transform:translateX(-50%);
-      background:radial-gradient(circle at 50% 60%, rgba(255,214,130,0.6), rgba(255,178,70,0.2) 44%, transparent 72%);
+      background:
+        radial-gradient(ellipse 40% 50% at 50% 30%, rgba(255,224,140,0.55), rgba(255,186,70,0.22) 44%, transparent 70%),
+        radial-gradient(ellipse 80% 80% at 50% 26%, rgba(255,196,100,0.12) 0%, transparent 68%);
       animation:sconceFlicker 3.4s ease-in-out infinite;
     }
-    @keyframes sconceFlicker { 0%,100%{opacity:0.72; transform:translateX(-50%) scale(1)} 45%{opacity:1; transform:translateX(-50%) scale(1.07)} 70%{opacity:0.84} }
+    @keyframes sconceFlicker { 0%,100%{opacity:0.74; transform:translateX(-50%) scale(1)} 45%{opacity:1; transform:translateX(-50%) scale(1.09)} 70%{opacity:0.86} }
 
     /* corner ambient occlusion + warm centre key-light */
     .room-vignette {
       position:absolute; inset:0; pointer-events:none; z-index:55;
       background:
-        radial-gradient(ellipse 120% 86% at 50% 46%, transparent 36%, rgba(0,0,0,0.46) 86%, rgba(0,0,0,0.66) 100%),
-        radial-gradient(ellipse 50% 40% at 44% 64%, rgba(255,238,196,0.10), transparent 70%);
+        radial-gradient(ellipse 108% 78% at 50% 44%, transparent 30%, rgba(0,0,0,0.38) 68%, rgba(0,0,0,0.72) 100%),
+        /* top-corner shadow deepening */
+        radial-gradient(ellipse 40% 30% at 0% 0%, rgba(0,0,0,0.52), transparent 70%),
+        radial-gradient(ellipse 40% 30% at 100% 0%, rgba(0,0,0,0.52), transparent 70%),
+        /* warm chandelier key on the scene */
+        radial-gradient(ellipse 44% 38% at 50% 56%, rgba(255,232,164,0.09), transparent 68%);
     }
 
     /* green banker's-lamp pool for the study */
@@ -1048,6 +1074,7 @@
 
       <!-- Grand crystal chandelier (light source) -->
       <div class="lr-chandelier-glow"></div>
+      <div class="lr-floor-glow"></div>
       <div class="lr-chandelier"><svg viewBox="0 0 220 360" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
         <defs>
           <linearGradient id="chBrass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7e7a8"/><stop offset="0.5" stop-color="#caa64e"/><stop offset="1" stop-color="#7a5a16"/></linearGradient>
@@ -1110,8 +1137,26 @@
         <ellipse cx="110" cy="206" rx="18" ry="8" fill="url(#chBrass)"/>
         <g stroke="#fff7d8" stroke-width="1.4" opacity="0.6" fill="none"><path d="M94 208 Q110 240 126 208"/></g>
         <path d="M104 230 l12 0 l-6 22 Z" fill="url(#chCryst)"/>
-        <circle cx="110" cy="258" r="6" fill="url(#chCryst)"/>
-        <circle cx="110" cy="270" r="3.5" fill="url(#chCryst)"/>
+        <circle cx="110" cy="258" r="7" fill="url(#chCryst)"/>
+        <path d="M106 264 l8 0 l-4 16 Z" fill="url(#chCryst)"/>
+        <circle cx="110" cy="282" r="4.5" fill="url(#chCryst)"/>
+        <!-- extra pendant prisms dangling from both tiers -->
+        <g fill="url(#chCryst)" opacity="0.9">
+          <path d="M55 156 l5 0 l-2.5 12 Z"/><path d="M163 156 l5 0 l-2.5 12 Z"/>
+          <path d="M75 160 l5 0 l-2.5 11 Z"/><path d="M140 160 l5 0 l-2.5 11 Z"/>
+          <path d="M33 236 l6 0 l-3 18 Z"/><path d="M51 240 l6 0 l-3 16 Z"/>
+          <path d="M169 240 l6 0 l-3 16 Z"/><path d="M185 236 l6 0 l-3 18 Z"/>
+          <path d="M87 242 l5 0 l-2.5 13 Z"/><path d="M128 242 l5 0 l-2.5 13 Z"/>
+        </g>
+        <!-- upper-tier bead-chain swag -->
+        <g stroke="#fff7d8" stroke-width="1.2" opacity="0.5" fill="none">
+          <path d="M56 150 Q90 168 110 152 Q130 168 164 150"/>
+        </g>
+        <g fill="url(#chCryst)" opacity="0.85">
+          <circle cx="56" cy="152" r="3"/><circle cx="73" cy="160" r="2.5"/>
+          <circle cx="90" cy="165" r="2.5"/><circle cx="110" cy="162" r="3.5"/>
+          <circle cx="130" cy="165" r="2.5"/><circle cx="147" cy="160" r="2.5"/><circle cx="164" cy="152" r="3"/>
+        </g>
       </svg></div>
 
       <div class="lr-dust"><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -1435,8 +1480,8 @@
       </button>
 
       <!-- LETTER OPENER — bloodied/inked blade -->
-      <button class="room-obj" id="obj-letter_opener" style="left:51%;top:77%;z-index:18" aria-label="Inspect the letter opener">
-        <div class="prop prop-opener"><svg viewBox="0 0 48 108" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
+      <button class="room-obj" id="obj-letter_opener" style="left:51%;top:82%;z-index:18" aria-label="Inspect the letter opener">
+        <div class="prop prop-opener"><svg viewBox="0 16 48 92" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
           <defs>
             <linearGradient id="loBlade" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0" stop-color="#fbf6e2"/><stop offset="0.45" stop-color="#d4cba6"/><stop offset="0.55" stop-color="#cfc6a0"/><stop offset="1" stop-color="#8a8060"/>
@@ -1467,11 +1512,15 @@
             <path d="M19 60 L29 60 L26 86 L22 86 Z" fill="#7a0e0e" opacity="0.9"/>
             <path d="M21 64 q-1 8 1 14" stroke="#5a0808" stroke-width="1.4" fill="none" stroke-linecap="round"/>
           </g>
-          <!-- blood-soaked entry mound where it enters the chest -->
-          <ellipse cx="26" cy="86" rx="15" ry="6" fill="#6a0c0c"/>
-          <ellipse cx="26" cy="85" rx="9" ry="3.5" fill="#3a0606"/>
-          <path d="M14 88 q-4 7 -2 13" stroke="#6a0c0c" stroke-width="2.4" fill="none" stroke-linecap="round" opacity="0.85"/>
-          <path d="M38 88 q3 6 1 11" stroke="#6a0c0c" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.8"/>
+          <!-- blood-soaked entry mound where it enters the chest — enlarged for deeper burial -->
+          <ellipse cx="26" cy="86" rx="20" ry="9" fill="#6a0c0c"/>
+          <ellipse cx="26" cy="85" rx="12" ry="5" fill="#4a0808"/>
+          <ellipse cx="26" cy="84" rx="7" ry="3" fill="#2a0404"/>
+          <!-- torn fabric ring around entry -->
+          <path d="M10 84 C6 80 10 76 16 80 C18 76 22 74 26 78 C30 74 34 76 36 80 C42 76 46 80 42 84" stroke="#2c1808" stroke-width="1.5" fill="none" opacity="0.7"/>
+          <path d="M10 88 q-5 8 -3 15" stroke="#6a0c0c" stroke-width="2.8" fill="none" stroke-linecap="round" opacity="0.9"/>
+          <path d="M42 88 q4 7 2 14" stroke="#6a0c0c" stroke-width="2.4" fill="none" stroke-linecap="round" opacity="0.85"/>
+          <path d="M26 95 q1 5 0 10" stroke="#5a0a0a" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.7"/>
         </svg></div><span class="obj-label">Letter Opener</span>
       </button>
 
