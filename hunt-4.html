@@ -464,6 +464,59 @@
     }
     @keyframes chandBreathe { 0%,100%{opacity:0.88} 50%{opacity:1.0} }
 
+    /* ── One-point perspective: angled side-wall returns turn the room
+         into a box the viewer looks INTO, with bright gilt corner seams
+         and a receding marble floor. ── */
+    .lr-wall-left, .lr-wall-right {
+      position:absolute; top:0; bottom:0; width:10%; z-index:5; pointer-events:none;
+    }
+    .lr-wall-left {
+      left:0; clip-path:polygon(0 0, 100% 8%, 100% 75%, 0 100%);
+      background:
+        /* sheared gilt panel divisions converging to the vanishing point */
+        repeating-linear-gradient(82deg,
+          rgba(60,42,10,0) 0 18%, rgba(36,24,4,0.45) 18.4% 19.4%,
+          rgba(247,226,150,0.2) 19.6% 20.6%, rgba(60,42,10,0) 21% 40%),
+        /* tarnish gathering toward the near edge */
+        linear-gradient(90deg, rgba(30,20,4,0.55) 0%, transparent 60%),
+        /* raking-light gold field, dark at the near edge → bright at the seam */
+        linear-gradient(90deg, #4e3a10 0%, #6e561a 50%, #9c7a28 100%);
+      box-shadow:inset 0 0 50px rgba(30,20,4,0.4);
+    }
+    .lr-wall-right {
+      right:0; clip-path:polygon(0 8%, 100% 0, 100% 100%, 0 75%);
+      background:
+        repeating-linear-gradient(98deg,
+          rgba(60,42,10,0) 0 18%, rgba(36,24,4,0.45) 18.4% 19.4%,
+          rgba(247,226,150,0.2) 19.6% 20.6%, rgba(60,42,10,0) 21% 40%),
+        linear-gradient(90deg, transparent 40%, rgba(30,20,4,0.55) 100%),
+        linear-gradient(90deg, #9c7a28 0%, #6e561a 50%, #4e3a10 100%);
+      box-shadow:inset 0 0 50px rgba(30,20,4,0.4);
+    }
+    /* bright gilt corner seams where side walls meet the back wall */
+    .lr-wall-left::after  { content:''; position:absolute; top:8%; bottom:25%; right:0; width:2px;
+      background:linear-gradient(180deg, #f7e7a8, #b89028 70%, #7a5a14);
+      box-shadow:0 0 7px rgba(255,240,180,0.55); }
+    .lr-wall-right::after { content:''; position:absolute; top:8%; bottom:25%; left:0;  width:2px;
+      background:linear-gradient(180deg, #f7e7a8, #b89028 70%, #7a5a14);
+      box-shadow:0 0 7px rgba(255,240,180,0.55); }
+    /* receding polished-marble floor plane */
+    .lr-floor-tiles {
+      position:absolute; bottom:0; left:-14%; right:-14%; height:33%; z-index:2; pointer-events:none;
+      transform:perspective(var(--persp)) rotateX(62deg); transform-origin:50% 100%;
+      background:
+        /* tile seams running away from the viewer (compress toward the back) */
+        repeating-linear-gradient(0deg,
+          transparent 0 10%, rgba(120,96,32,0.34) 10.4% 11%, rgba(255,246,206,0.16) 11.2% 11.7%, transparent 11.9% 22%),
+        /* cross seams */
+        repeating-linear-gradient(90deg,
+          transparent 0 8.5%, rgba(150,120,40,0.3) 8.9% 9.5%, rgba(255,246,206,0.14) 9.7% 10.2%, transparent 10.4% 18%),
+        /* marble veining + warm body */
+        radial-gradient(ellipse 46% 38% at 50% 64%, rgba(255,252,236,0.42), transparent 64%),
+        radial-gradient(ellipse 60% 40% at 26% 40%, rgba(214,196,150,0.32), transparent 62%),
+        linear-gradient(180deg, #ddcca2 0%, #c6b184 48%, #8e7a4e 100%);
+    }
+
     /* ───────────────────────────────────────────────────────────────────
        05 · STUDY — ARCHITECTURE
        The victim's locked private study at night. Mahogany panelling,
@@ -545,6 +598,46 @@
       box-shadow:0 -2px 16px rgba(0,0,0,0.55);
     }
     .st-rug::before { content:''; position:absolute; inset:9%; border:2px solid rgba(150,60,40,0.4); border-radius:2px; }
+
+    /* ── One-point perspective for the study: angled mahogany returns
+         + receding floorboards, lit faintly by the green lamp. ── */
+    .st-wall-left, .st-wall-right {
+      position:absolute; top:0; bottom:0; width:10%; z-index:5; pointer-events:none;
+      box-shadow:inset 0 0 50px rgba(0,0,0,0.6);
+    }
+    .st-wall-left {
+      left:0; clip-path:polygon(0 0, 100% 9%, 100% 77%, 0 100%);
+      background:
+        repeating-linear-gradient(82deg,
+          rgba(120,78,36,0) 0 18%, rgba(0,0,0,0.55) 18.4% 19.4%,
+          rgba(120,78,36,0.16) 19.6% 20.6%, rgba(120,78,36,0) 21% 40%),
+        linear-gradient(90deg, #0c0703 0%, #1a1006 55%, #2a1a0c 100%);
+    }
+    .st-wall-right {
+      right:0; clip-path:polygon(0 9%, 100% 0, 100% 100%, 0 77%);
+      background:
+        repeating-linear-gradient(98deg,
+          rgba(120,78,36,0) 0 18%, rgba(0,0,0,0.55) 18.4% 19.4%,
+          rgba(120,78,36,0.16) 19.6% 20.6%, rgba(120,78,36,0) 21% 40%),
+        linear-gradient(90deg, #2a1a0c 0%, #1a1006 45%, #0c0703 100%);
+    }
+    .st-wall-left::after  { content:''; position:absolute; top:9%; bottom:23%; right:0; width:2px;
+      background:linear-gradient(180deg, rgba(150,100,46,0.55), rgba(30,18,8,0.4)); }
+    .st-wall-right::after { content:''; position:absolute; top:9%; bottom:23%; left:0;  width:2px;
+      background:linear-gradient(180deg, rgba(150,100,46,0.55), rgba(30,18,8,0.4)); }
+    .st-floor-tiles {
+      position:absolute; bottom:0; left:-14%; right:-14%; height:31%; z-index:2; pointer-events:none;
+      transform:perspective(var(--persp)) rotateX(62deg); transform-origin:50% 100%;
+      background:
+        /* board ends compressing toward the back wall */
+        repeating-linear-gradient(0deg,
+          transparent 0 12%, rgba(0,0,0,0.55) 12.4% 13.2%, rgba(110,72,34,0.18) 13.4% 14%, transparent 14.2% 26%),
+        /* long board seams */
+        repeating-linear-gradient(90deg,
+          transparent 0 15%, rgba(0,0,0,0.42) 15.4% 16%, rgba(110,72,34,0.12) 16.2% 16.6%, transparent 16.8% 31%),
+        radial-gradient(ellipse 38% 34% at 50% 58%, rgba(120,220,150,0.12), transparent 60%),
+        linear-gradient(180deg, #30200e 0%, #20140a 55%, #0c0704 100%);
+    }
 
     /* small leaded window, high on the back wall */
     .st-window-frame {
@@ -1090,6 +1183,9 @@
       <div class="lr-wainscot"></div>
       <div class="lr-skirting"></div>
       <div class="room-floor-living"></div>
+      <div class="lr-floor-tiles"></div>
+      <div class="lr-wall-left"></div>
+      <div class="lr-wall-right"></div>
       <div class="lr-rug"></div>
 
       <!-- Gilt pier mirror over the fireplace -->
@@ -1719,6 +1815,9 @@
       <div class="st-wall-panels"></div>
       <div class="st-skirting"></div>
       <div class="room-floor-study"></div>
+      <div class="st-floor-tiles"></div>
+      <div class="st-wall-left"></div>
+      <div class="st-wall-right"></div>
       <div class="st-rug"></div>
       <div class="st-window-frame"></div>
       <div class="study-lamp-glow"></div>
