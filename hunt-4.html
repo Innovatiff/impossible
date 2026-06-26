@@ -1371,6 +1371,12 @@
           <path d="M124 60 L138 64 L128 100 C120 86 120 70 124 60 Z" fill="#23232c"/>
           <path d="M156 62 L150 66 L156 104 C166 90 162 72 156 62 Z" fill="#23232c"/>
 
+          <!-- stab wound + blood soaking through the shirt -->
+          <path d="M128 92 C120 100 122 116 134 122 C146 118 150 104 144 92 C138 86 132 86 128 92 Z" fill="#6a0c0c" opacity="0.92"/>
+          <path d="M124 96 C120 102 122 110 128 112 C126 104 128 98 132 94 Z" fill="#4a0808" opacity="0.85"/>
+          <path d="M132 96 L138 110" stroke="#240404" stroke-width="3" stroke-linecap="round"/>
+          <path d="M138 100 q4 8 1 16" fill="none" stroke="#6a0c0c" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+
           <!-- FAR arm, flung out past the head -->
           <path d="M112 80 C92 68 70 58 52 56 C44 55 42 64 50 67 C70 74 92 86 108 96 Z" fill="url(#bdSleeve)"/>
           <path d="M64 60 C80 66 96 76 106 86" fill="none" stroke="#15151c" stroke-width="2" opacity="0.4"/>
@@ -1405,7 +1411,7 @@
       </button>
 
       <!-- LETTER OPENER — bloodied/inked blade -->
-      <button class="room-obj ground" id="obj-letter_opener" style="left:68%;top:89%" aria-label="Inspect the letter opener">
+      <button class="room-obj" id="obj-letter_opener" style="left:52%;top:80.5%;z-index:18" aria-label="Inspect the letter opener">
         <div class="prop prop-opener"><svg viewBox="0 0 92 38" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
           <defs>
             <linearGradient id="loBlade" x1="0" y1="0" x2="1" y2="0">
@@ -1415,13 +1421,16 @@
               <stop offset="0" stop-color="#e7c25a"/><stop offset="1" stop-color="#6a4810"/>
             </radialGradient>
           </defs>
-          <g transform="rotate(-16 46 19)">
+          <g transform="rotate(-22 46 19)">
             <path d="M2 19 L52 13 L52 25 Z" fill="url(#loBlade)" stroke="#7a7050" stroke-width="0.6"/>
             <ellipse cx="66" cy="19" rx="16" ry="9" fill="url(#loHilt)" stroke="#4a3208" stroke-width="1"/>
             <circle cx="82" cy="19" r="5" fill="#caa64e" stroke="#4a3208" stroke-width="1"/>
-            <!-- ink/blood smear on the blade -->
-            <path d="M30 16 Q40 14 46 18 Q40 22 30 21 Z" fill="#2a2440" opacity="0.8"/>
-            <circle cx="22" cy="20" r="2" fill="#5a0e0e" opacity="0.7"/>
+            <!-- blood coating the blade + drip -->
+            <path d="M2 19 L34 15 L34 23 Z" fill="#7a0e0e" opacity="0.92"/>
+            <path d="M2 19 L20 17 L20 21 Z" fill="#5a0808"/>
+            <path d="M10 22 q2 6 0 9" fill="none" stroke="#6a0c0c" stroke-width="2" stroke-linecap="round"/>
+            <!-- ink smear ground into the handle (the clue) -->
+            <path d="M58 14 Q66 12 72 16 Q66 20 58 19 Z" fill="#2a2440" opacity="0.8"/>
           </g>
         </svg></div><span class="obj-label">Letter Opener</span>
       </button>
@@ -2467,7 +2476,7 @@
       if(s===0){
         render('Sir Arthur Pembroke', `
           ${ivis('body')}
-          <p class="insp-desc">He lies on the oak floor, a single wound to the side. The weapon is gone from the body — and it is no kitchen knife. The slim shape of the entry suggests a <b>letter opener</b>, not a blade.</p>
+          <p class="insp-desc">He lies sprawled on his back, a single wound to the side. The weapon still rests across his chest — and it is no kitchen knife. The slim blade and ornate handle mark it a <b>letter opener</b>, not a butcher's blade.</p>
           <div class="insp-action-area"><button class="insp-btn" id="bStep">Examine the hands</button></div>`);
         document.getElementById('bStep').onclick=()=>{ G.objStep.body=1; persist(); HANDLERS.body(); };
       } else if(s===1){
@@ -2489,7 +2498,7 @@
       if(s===0){
         render('The Letter Opener', `
           ${ivis('opener')}
-          <p class="insp-desc">The murder weapon lies a few feet from the body. It is monogrammed <b>"A.P." — Arthur Pembroke</b>. His own letter opener, taken from his own desk, turned against him. This was not planned with a smuggled blade; it was seized in the moment.</p>
+          <p class="insp-desc">The murder weapon lies across the dead man's chest, slick with blood. It is monogrammed <b>"A.P." — Arthur Pembroke</b>. His own letter opener, taken from his own desk, turned against him. This was not planned with a smuggled blade; it was seized in the moment.</p>
           <div class="insp-action-area"><button class="insp-btn" id="loStep">Examine the handle</button></div>`);
         document.getElementById('loStep').onclick=()=>{ G.objStep.letter_opener=1; persist(); HANDLERS.letter_opener(); };
       } else {
