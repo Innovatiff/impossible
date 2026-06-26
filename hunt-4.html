@@ -580,7 +580,7 @@
     .prop-glass     { width:clamp(26px,3.4vw,46px);  height:clamp(34px,4.6vw,64px); }
     .prop-table     { width:clamp(82px,12vw,168px);  height:clamp(46px,6.5vw,92px); }
     .prop-body      { width:clamp(168px,24vw,332px); height:clamp(94px,13.4vw,185px); }
-    .prop-opener    { width:clamp(48px,6.5vw,92px);  height:clamp(20px,2.6vw,38px); }
+    .prop-opener    { width:clamp(30px,4vw,58px);    height:clamp(54px,7.4vw,108px); }
     .prop-trail     { width:clamp(70px,10vw,140px);  height:clamp(26px,3.6vw,52px); }
     .prop-portrait  { width:clamp(64px,9vw,124px);   height:clamp(80px,11.5vw,158px); }
     .prop-phone     { width:clamp(50px,7vw,100px);   height:clamp(72px,10vw,144px); }
@@ -1390,48 +1390,88 @@
           <path d="M196 126 C204 126 208 130 206 134 C200 138 192 136 188 130 Z" fill="url(#bdSkin)"/>
           <g stroke="#9c7d62" stroke-width="0.8"><path d="M198 128 l6 1 M196 132 l7 1 M195 135 l6 1"/></g>
 
-          <!-- neck + wing collar -->
-          <path d="M96 92 L114 86 L116 104 L100 108 Z" fill="url(#bdSkin)"/>
-          <path d="M98 86 L118 82 L120 92 L102 98 Z" fill="#e9e0cc"/>
+          <!-- neck + shadow under the jaw -->
+          <path d="M98 94 L116 88 L120 108 L104 112 Z" fill="url(#bdSkin)"/>
+          <path d="M100 96 L116 91 L117 99 L102 103 Z" fill="#000" opacity="0.2"/>
+          <!-- wing collar -->
+          <path d="M96 104 L120 97 L125 109 L116 117 L103 115 Z" fill="#efe7d3"/>
+          <path d="M108 106 L116 112" stroke="#d2c9b0" stroke-width="1"/>
 
-          <!-- HEAD turned to the side, pallid -->
-          <ellipse cx="74" cy="92" rx="22" ry="18" fill="url(#bdSkin)"/>
-          <path d="M74 74 C90 74 96 90 92 100 C84 96 72 98 64 104 C58 92 60 76 74 74 Z" fill="#b8b2a6"/>
-          <path d="M56 86 C58 74 78 70 90 78 C78 74 66 78 58 90 Z" fill="#c8c2b6"/>
+          <!-- HEAD — head tilted back, slack and pallid -->
+          <!-- hair mass behind the face -->
+          <path d="M56 74 C72 64 92 68 97 85 C100 97 95 108 86 113 C92 104 92 92 84 86 C73 79 60 81 54 92 C51 84 52 78 56 74 Z" fill="#a39d93"/>
+          <!-- face -->
+          <path d="M66 75 C79 72 89 80 91 92 C92 103 86 111 75 113 C64 115 54 109 51 98 C49 88 53 78 62 76 C63 75 65 75 66 75 Z" fill="url(#bdSkin)"/>
+          <!-- death pallor (cool overlay) -->
+          <path d="M66 75 C79 72 89 80 91 92 C92 103 86 111 75 113 C64 115 54 109 51 98 C49 88 53 78 62 76 Z" fill="#94a0aa" opacity="0.22"/>
+          <!-- gaunt cheek hollow -->
+          <path d="M56 98 C62 101 70 101 76 98 C72 107 62 108 56 102 Z" fill="#6a564a" opacity="0.34"/>
+          <!-- swept grey hair with strands -->
+          <path d="M58 79 C68 69 89 71 95 85 C91 79 83 75 75 76 C67 77 61 81 58 90 C56 84 56 81 58 79 Z" fill="#bcb6ac"/>
+          <g stroke="#857f76" stroke-width="0.7" opacity="0.7" fill="none"><path d="M61 81 q13 -6 28 1 M62 86 q13 -5 26 2"/></g>
+          <!-- temple sideburn -->
+          <path d="M84 88 C88 86 90 92 88 96 L84 94 Z" fill="#b0aaa0"/>
           <!-- ear -->
-          <path d="M88 96 C94 94 96 100 92 104 C88 106 86 100 88 96 Z" fill="#c2a182"/>
-          <!-- closed eye, brow, slack mouth -->
-          <path d="M62 90 Q70 87 78 90" fill="none" stroke="#6a5038" stroke-width="1.4"/>
-          <path d="M61 84 Q69 81 78 84" fill="none" stroke="#9a9082" stroke-width="1.4"/>
-          <path d="M58 96 C56 98 56 101 59 102" fill="none" stroke="#a07a5e" stroke-width="1.4"/>
-          <path d="M62 104 Q70 107 80 104" fill="none" stroke="#7a4a44" stroke-width="2"/>
-          <!-- grey moustache -->
-          <path d="M62 100 Q70 98 80 100 Q72 103 62 100 Z" fill="#b8b2a6"/>
+          <path d="M85 91 C91 89 93 97 88 100 C85 101 83 95 85 91 Z" fill="url(#bdSkin)"/>
+          <path d="M87 93 C89 93 89 97 87 98" fill="none" stroke="#9c7d62" stroke-width="0.8"/>
+          <!-- brows -->
+          <path d="M57 87 Q63 84 69 86" stroke="#9a9088" stroke-width="1.5" fill="none"/>
+          <path d="M73 85 Q79 83 83 86" stroke="#9a9088" stroke-width="1.3" fill="none"/>
+          <!-- closed eyes: shaded sockets + lash line -->
+          <path d="M56 90 Q63 88 70 91 Q63 93 56 90 Z" fill="#b89a86" opacity="0.5"/>
+          <path d="M57 91 Q63 93 69 91" stroke="#5a4a3e" stroke-width="1.5" fill="none"/>
+          <path d="M74 89 Q79 91 83 89" stroke="#5a4a3e" stroke-width="1.3" fill="none"/>
+          <!-- nose down the centre with a nostril -->
+          <path d="M64 90 C60 96 55 100 52 103 C56 105 61 104 63 101" fill="none" stroke="#a8836a" stroke-width="1.5"/>
+          <path d="M53 102 q3 2 6 1" fill="none" stroke="#7a5a44" stroke-width="1.1"/>
+          <!-- slack, parted mouth (dead) -->
+          <path d="M57 107 Q66 105 75 107 Q67 112 57 107 Z" fill="#5e3c38"/>
+          <path d="M58 107 Q66 106 74 107" stroke="#36211e" stroke-width="0.8" fill="none"/>
+          <!-- grey moustache over the lip -->
+          <path d="M55 105 Q66 101 76 105 Q66 107 55 105 Z" fill="#c4beb4"/>
+          <!-- stubble shadow on the jaw -->
+          <path d="M60 110 Q68 113 76 109" stroke="#8a7a6e" stroke-width="2" fill="none" opacity="0.4"/>
         </svg></div><span class="obj-label">The Body</span>
       </button>
 
       <!-- LETTER OPENER — bloodied/inked blade -->
-      <button class="room-obj" id="obj-letter_opener" style="left:52%;top:80.5%;z-index:18" aria-label="Inspect the letter opener">
-        <div class="prop prop-opener"><svg viewBox="0 0 92 38" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
+      <button class="room-obj" id="obj-letter_opener" style="left:51%;top:77%;z-index:18" aria-label="Inspect the letter opener">
+        <div class="prop prop-opener"><svg viewBox="0 0 48 108" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
           <defs>
             <linearGradient id="loBlade" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0" stop-color="#f0ecd6"/><stop offset="0.5" stop-color="#cfc6a4"/><stop offset="1" stop-color="#9a906a"/>
+              <stop offset="0" stop-color="#fbf6e2"/><stop offset="0.45" stop-color="#d4cba6"/><stop offset="0.55" stop-color="#cfc6a0"/><stop offset="1" stop-color="#8a8060"/>
             </linearGradient>
-            <radialGradient id="loHilt" cx="0.4" cy="0.35" r="0.8">
-              <stop offset="0" stop-color="#e7c25a"/><stop offset="1" stop-color="#6a4810"/>
+            <linearGradient id="loGrip" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#f4d878"/><stop offset="0.5" stop-color="#caa64e"/><stop offset="1" stop-color="#6a4810"/>
+            </linearGradient>
+            <radialGradient id="loPom" cx="0.38" cy="0.32" r="0.8">
+              <stop offset="0" stop-color="#fff0b4"/><stop offset="0.5" stop-color="#dcb24a"/><stop offset="1" stop-color="#6a4810"/>
             </radialGradient>
           </defs>
-          <g transform="rotate(-22 46 19)">
-            <path d="M2 19 L52 13 L52 25 Z" fill="url(#loBlade)" stroke="#7a7050" stroke-width="0.6"/>
-            <ellipse cx="66" cy="19" rx="16" ry="9" fill="url(#loHilt)" stroke="#4a3208" stroke-width="1"/>
-            <circle cx="82" cy="19" r="5" fill="#caa64e" stroke="#4a3208" stroke-width="1"/>
-            <!-- blood coating the blade + drip -->
-            <path d="M2 19 L34 15 L34 23 Z" fill="#7a0e0e" opacity="0.92"/>
-            <path d="M2 19 L20 17 L20 21 Z" fill="#5a0808"/>
-            <path d="M10 22 q2 6 0 9" fill="none" stroke="#6a0c0c" stroke-width="2" stroke-linecap="round"/>
-            <!-- ink smear ground into the handle (the clue) -->
-            <path d="M58 14 Q66 12 72 16 Q66 20 58 19 Z" fill="#2a2440" opacity="0.8"/>
+          <!-- the opener stands upright in the chest, tilted slightly -->
+          <g transform="rotate(11 24 56)">
+            <!-- pommel -->
+            <circle cx="24" cy="9" r="7" fill="url(#loPom)" stroke="#4a3208" stroke-width="1"/>
+            <circle cx="22" cy="7" r="2" fill="#fff6cf" opacity="0.8"/>
+            <!-- grip with binding -->
+            <rect x="19" y="15" width="10" height="22" rx="4" fill="url(#loGrip)" stroke="#4a3208" stroke-width="0.8"/>
+            <g stroke="#5a3e0c" stroke-width="0.8" opacity="0.7"><path d="M19 21 h10 M19 27 h10 M19 33 h10"/></g>
+            <!-- ink smear ground into the grip (the clue) -->
+            <path d="M20 24 q5 -2 8 1 q-4 3 -8 1 Z" fill="#2a2440" opacity="0.85"/>
+            <!-- crossguard -->
+            <rect x="10" y="37" width="28" height="6" rx="2" fill="url(#loGrip)" stroke="#4a3208" stroke-width="0.8"/>
+            <!-- blade plunging down into the wound -->
+            <path d="M18 43 L30 43 L26 86 L22 86 Z" fill="url(#loBlade)" stroke="#8a8060" stroke-width="0.5"/>
+            <path d="M24 43 L24 84" stroke="#fff" stroke-width="0.7" opacity="0.5"/>
+            <!-- blood running down the blade -->
+            <path d="M19 60 L29 60 L26 86 L22 86 Z" fill="#7a0e0e" opacity="0.9"/>
+            <path d="M21 64 q-1 8 1 14" stroke="#5a0808" stroke-width="1.4" fill="none" stroke-linecap="round"/>
           </g>
+          <!-- blood-soaked entry mound where it enters the chest -->
+          <ellipse cx="26" cy="86" rx="15" ry="6" fill="#6a0c0c"/>
+          <ellipse cx="26" cy="85" rx="9" ry="3.5" fill="#3a0606"/>
+          <path d="M14 88 q-4 7 -2 13" stroke="#6a0c0c" stroke-width="2.4" fill="none" stroke-linecap="round" opacity="0.85"/>
+          <path d="M38 88 q3 6 1 11" stroke="#6a0c0c" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.8"/>
         </svg></div><span class="obj-label">Letter Opener</span>
       </button>
 
