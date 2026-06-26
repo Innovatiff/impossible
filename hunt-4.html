@@ -10,642 +10,833 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <style>
-    body { overflow-x:hidden; }
+    /* ════════════════════════════════════════════════════════════════════
+       HUNT 04 — THE WHITMORE AFFAIR
+       A scene-driven murder-mystery escape room.
+       Stylesheet organised in titled sections:
+         00  Scene design tokens
+         01  Small-screen blocker
+         02  Hunt chrome  (progress rail, meta bar, controls)
+         03  Stage frame & shared room scaffolding
+         04  Living room — architecture (walls, floor, window, light)
+         05  Study — architecture
+         06  Object grounding system & shared prop shell
+         07  Atmosphere — light shafts, dust, fire, lamp, sconces
+         08  Inspection panel
+         09  Inspection visual stages
+         10  Bottom HUD & passcode tracker
+         11  Passcode entry
+         12  Email client
+         13  Accusation
+         14  Flash, shake & room transition
+         15  Modals
+         16  Completion screen
+         17  Opening letter
+         18  Motion preferences & responsive
+       ════════════════════════════════════════════════════════════════════ */
 
-    /* ── Small-screen blocker ───────────────────────────────── */
+    /* ───────────────────────────────────────────────────────────────────
+       00 · SCENE DESIGN TOKENS
+       Warm Edwardian daylight for the drawing room; cold lamp-lit night
+       for the study. Everything downstream pulls from these so the two
+       rooms stay internally consistent.
+       ─────────────────────────────────────────────────────────────────── */
+    :root {
+      /* Drawing-room palette — sunlit mahogany & cream */
+      --lr-plaster-hi:  #f3e6c4;
+      --lr-plaster:     #e8d6ac;
+      --lr-plaster-lo:  #d4c08e;
+      --lr-wood-hi:     #8a5e30;
+      --lr-wood:        #6a4422;
+      --lr-wood-lo:     #3e2710;
+      --lr-wood-deep:   #241405;
+      --lr-floor-hi:    #8a5c2e;
+      --lr-floor:       #5e3c1c;
+      --lr-floor-lo:    #2c1b0a;
+      --lr-rug:         #8a2e1e;
+      --lr-rug-lo:      #5e1e14;
+      --lr-daylight:    rgba(255,250,224,0.62);
+
+      /* Study palette — night, green banker's lamp */
+      --st-wood-hi:     #43290f;
+      --st-wood:        #2c1a0a;
+      --st-wood-lo:     #181006;
+      --st-wood-deep:   #0c0703;
+      --st-floor:       #2a1a0a;
+      --st-lamp:        rgba(86,210,120,0.20);
+      --st-lamp-core:   rgba(150,255,180,0.34);
+
+      /* Shared shadow recipes */
+      --grnd-shadow:    0 14px 22px -6px rgba(0,0,0,0.7);
+      --obj-shadow:     drop-shadow(0 6px 10px rgba(0,0,0,0.6));
+      --obj-shadow-lg:  drop-shadow(0 12px 18px rgba(0,0,0,0.72));
+
+      /* Stage perspective depth used by floor & rugs */
+      --persp:          760px;
+    }
+
+    body { overflow-x:hidden; background:var(--ink-deep); }
+
+    /* ───────────────────────────────────────────────────────────────────
+       01 · SMALL-SCREEN BLOCKER
+       The investigation needs real estate; below 720px we replace the
+       whole document with a polished "come back on a bigger screen" card.
+       ─────────────────────────────────────────────────────────────────── */
     .small-screen-block { display:none; }
     @media (max-width: 720px) {
       .small-screen-block {
         display:flex; position:fixed; inset:0; z-index:99999;
         flex-direction:column; align-items:center; justify-content:center;
         text-align:center; padding:2rem 1.6rem;
-        background:radial-gradient(ellipse 70% 60% at 50% 30%, rgba(201,162,39,0.10) 0%, transparent 70%), var(--ink-deep);
+        background:
+          radial-gradient(ellipse 70% 60% at 50% 28%, rgba(201,162,39,0.12) 0%, transparent 70%),
+          radial-gradient(ellipse 90% 50% at 50% 100%, rgba(226,87,43,0.06) 0%, transparent 70%),
+          var(--ink-deep);
       }
       body { overflow:hidden; }
-      .hunt-wrap, .letter-overlay { display:none !important; }
-      .ssb-seal { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.7rem;
-        background:radial-gradient(circle at 35% 35%, #c9a227, #8b6a10 60%, #5a4408); box-shadow:0 2px 12px rgba(0,0,0,0.6), 0 0 18px rgba(201,162,39,0.3); margin-bottom:1.6rem; }
-      .ssb-eyebrow { font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--gold); opacity:0.8; margin-bottom:1rem; }
-      .ssb-title { font-family:var(--font-display); font-size:1.6rem; font-weight:700; color:var(--parchment); line-height:1.25; margin-bottom:1rem; max-width:22ch; }
-      .ssb-text { font-family:var(--font-body); font-size:1rem; font-style:italic; color:var(--parchment-dim); line-height:1.65; max-width:34ch; margin-bottom:1.8rem; }
+      .hunt-wrap, .letter-overlay, .bottom-hud { display:none !important; }
+      .ssb-seal {
+        width:68px; height:68px; border-radius:50%;
+        display:flex; align-items:center; justify-content:center; font-size:1.8rem;
+        background:radial-gradient(circle at 34% 32%, #e9c659, #b3891a 52%, #5a4408 100%);
+        box-shadow:0 3px 16px rgba(0,0,0,0.65), 0 0 22px rgba(201,162,39,0.32),
+                   inset 0 2px 4px rgba(255,236,170,0.5), inset 0 -3px 6px rgba(60,40,4,0.6);
+        margin-bottom:1.7rem;
+      }
+      .ssb-eyebrow {
+        font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.24em;
+        text-transform:uppercase; color:var(--gold); opacity:0.82; margin-bottom:1rem;
+      }
+      .ssb-title {
+        font-family:var(--font-display); font-size:1.6rem; font-weight:700;
+        color:var(--parchment); line-height:1.25; margin-bottom:1rem; max-width:22ch;
+      }
+      .ssb-text {
+        font-family:var(--font-body); font-size:1rem; font-style:italic;
+        color:var(--parchment-dim); line-height:1.65; max-width:34ch; margin-bottom:1.8rem;
+      }
       .ssb-text strong { color:var(--gold); font-style:normal; }
-      .ssb-back { font-family:var(--font-display); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; padding:0.8rem 1.6rem; border:1px solid var(--gold-dim); border-radius:var(--radius-seal); color:var(--gold); text-decoration:none; transition:all var(--transition); }
+      .ssb-back {
+        font-family:var(--font-display); font-size:0.72rem; letter-spacing:0.14em;
+        text-transform:uppercase; padding:0.85rem 1.7rem; border:1px solid var(--gold-dim);
+        border-radius:var(--radius-seal); color:var(--gold); text-decoration:none;
+        transition:all var(--transition);
+      }
       .ssb-back:hover { background:var(--gold-glow); border-color:var(--gold); color:var(--parchment); }
     }
 
-    /* ── Hunt wrap / meta ───────────────────────────────────── */
+    /* ───────────────────────────────────────────────────────────────────
+       02 · HUNT CHROME
+       Top progress rail, meta bar (title + timer + controls).
+       ─────────────────────────────────────────────────────────────────── */
     .hunt-wrap { min-height:100vh; display:flex; flex-direction:column; }
-    .hunt-progress-rail { height:3px; background:rgba(201,162,39,0.10); position:relative; }
-    .hunt-progress-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--ember),var(--gold)); transition:width 0.6s ease; box-shadow:0 0 8px rgba(201,162,39,0.5); }
-    .hunt-meta { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; padding:0.75rem clamp(1rem,4vw,2.5rem); background:var(--ink-mid); border-bottom:1px solid rgba(201,162,39,0.12); }
+
+    .hunt-progress-rail {
+      height:3px; position:relative;
+      background:rgba(201,162,39,0.10);
+      box-shadow:inset 0 -1px 2px rgba(0,0,0,0.4);
+    }
+    .hunt-progress-fill {
+      height:100%; width:0%;
+      background:linear-gradient(90deg, var(--ember), #f0b34e 60%, var(--gold));
+      transition:width 0.6s cubic-bezier(0.22,0.61,0.36,1);
+      box-shadow:0 0 10px rgba(201,162,39,0.6), 0 0 3px rgba(240,179,78,0.8);
+    }
+
+    .hunt-meta {
+      display:flex; align-items:center; justify-content:space-between;
+      flex-wrap:wrap; gap:0.8rem;
+      padding:0.7rem clamp(1rem,4vw,2.5rem);
+      background:linear-gradient(180deg, var(--ink-mid), #14101c);
+      border-bottom:1px solid rgba(201,162,39,0.14);
+      box-shadow:0 2px 14px rgba(0,0,0,0.5);
+    }
     .hunt-title-block { display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; }
-    .hunt-number { font-family:var(--font-mono); font-size:0.62rem; color:var(--gold); opacity:0.7; letter-spacing:0.16em; text-transform:uppercase; }
-    .hunt-name { font-family:var(--font-display); font-size:clamp(0.85rem,2.5vw,1.05rem); font-weight:600; color:var(--parchment); letter-spacing:0.04em; }
+    .hunt-number {
+      font-family:var(--font-mono); font-size:0.62rem; color:var(--gold);
+      opacity:0.72; letter-spacing:0.16em; text-transform:uppercase;
+    }
+    .hunt-name {
+      font-family:var(--font-display); font-size:clamp(0.85rem,2.5vw,1.05rem);
+      font-weight:600; color:var(--parchment); letter-spacing:0.04em;
+    }
     .hunt-controls { display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; }
-    .timer-display { font-family:var(--font-mono); font-size:1rem; color:var(--gold); letter-spacing:0.1em; background:rgba(14,11,18,0.8); padding:0.28rem 0.7rem; border:1px solid rgba(201,162,39,0.2); border-radius:3px; min-width:72px; text-align:center; }
-    .clue-btn { font-family:var(--font-mono); font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.38rem 0.9rem; border:1px solid rgba(226,87,43,0.4); border-radius:var(--radius-seal); background:transparent; color:var(--ember); cursor:pointer; transition:all var(--transition); }
-    .clue-btn:hover { background:rgba(226,87,43,0.1); border-color:var(--ember); }
-    .restart-btn { font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.38rem 0.9rem; border:1px solid rgba(120,80,30,0.4); border-radius:var(--radius-seal); background:transparent; color:var(--parchment-faint); cursor:pointer; transition:all var(--transition); opacity:0.65; }
+    .timer-display {
+      font-family:var(--font-mono); font-size:1rem; color:var(--gold);
+      letter-spacing:0.1em; background:rgba(8,6,12,0.85);
+      padding:0.28rem 0.7rem; border:1px solid rgba(201,162,39,0.22);
+      border-radius:3px; min-width:74px; text-align:center;
+      box-shadow:inset 0 0 8px rgba(0,0,0,0.6), 0 0 6px rgba(201,162,39,0.06);
+    }
+    .clue-btn {
+      font-family:var(--font-mono); font-size:0.65rem; letter-spacing:0.1em;
+      text-transform:uppercase; padding:0.4rem 0.9rem;
+      border:1px solid rgba(226,87,43,0.45); border-radius:var(--radius-seal);
+      background:transparent; color:var(--ember); cursor:pointer; transition:all var(--transition);
+    }
+    .clue-btn:hover { background:rgba(226,87,43,0.12); border-color:var(--ember); box-shadow:0 0 12px rgba(226,87,43,0.2); }
+    .restart-btn {
+      font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.1em;
+      text-transform:uppercase; padding:0.4rem 0.9rem;
+      border:1px solid rgba(120,80,30,0.45); border-radius:var(--radius-seal);
+      background:transparent; color:var(--parchment-faint); cursor:pointer;
+      transition:all var(--transition); opacity:0.66;
+    }
     .restart-btn:hover { opacity:1; color:var(--ember); border-color:var(--ember); background:rgba(226,87,43,0.06); }
-    .step-counter { font-family:var(--font-mono); font-size:0.62rem; color:var(--parchment-faint); opacity:0.55; letter-spacing:0.12em; white-space:nowrap; }
-    .area-tag { font-family:var(--font-mono); font-size:0.56rem; color:var(--ember); letter-spacing:0.14em; text-transform:uppercase; padding:0.18rem 0.5rem; border:1px solid rgba(226,87,43,0.3); border-radius:3px; }
+    .step-counter {
+      font-family:var(--font-mono); font-size:0.62rem; color:var(--parchment-faint);
+      opacity:0.55; letter-spacing:0.12em; white-space:nowrap;
+    }
+    .area-tag {
+      font-family:var(--font-mono); font-size:0.56rem; color:var(--ember);
+      letter-spacing:0.14em; text-transform:uppercase; padding:0.2rem 0.5rem;
+      border:1px solid rgba(226,87,43,0.32); border-radius:3px;
+      background:rgba(226,87,43,0.05);
+    }
 
-    /* ── Room stage ─────────────────────────────────────────── */
-    .room-stage-wrap { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:clamp(1rem,3vw,2rem) clamp(1rem,4vw,2.5rem) 8rem; }
-    .room-label { font-family:var(--font-mono); font-size:0.58rem; color:var(--mist); opacity:0.5; letter-spacing:0.14em; text-transform:uppercase; margin-bottom:0.8rem; }
-    .room-stage { position:relative; width:100%; max-width:1280px; aspect-ratio:16/9; background:#120d05; border:1px solid rgba(201,162,39,0.16); border-radius:6px; overflow:hidden; box-shadow:0 0 50px rgba(0,0,0,0.9); }
+    /* ───────────────────────────────────────────────────────────────────
+       03 · STAGE FRAME & SHARED ROOM SCAFFOLDING
+       ─────────────────────────────────────────────────────────────────── */
+    .room-stage-wrap {
+      flex:1; display:flex; flex-direction:column; align-items:center;
+      justify-content:flex-start;
+      padding:clamp(1rem,3vw,2rem) clamp(1rem,4vw,2.5rem) 8rem;
+    }
+    .room-label {
+      font-family:var(--font-mono); font-size:0.58rem; color:var(--mist);
+      opacity:0.5; letter-spacing:0.14em; text-transform:uppercase; margin-bottom:0.8rem;
+    }
+    .room-stage {
+      position:relative; width:100%; max-width:1320px; aspect-ratio:16/9;
+      background:#0c0904; border:1px solid rgba(201,162,39,0.18);
+      border-radius:7px; overflow:hidden;
+      box-shadow:0 0 60px rgba(0,0,0,0.92), inset 0 0 90px rgba(0,0,0,0.5);
+      isolation:isolate;
+    }
+    /* Soft black inner frame so the scene reads like a lit diorama */
+    .room-stage::after {
+      content:''; position:absolute; inset:0; pointer-events:none; z-index:60;
+      box-shadow:inset 0 0 70px rgba(0,0,0,0.55), inset 0 0 18px rgba(0,0,0,0.7);
+      border-radius:7px;
+    }
 
-    /* ═══ LIVING ROOM — Victorian manor drawing room ═══ */
+    /* ───────────────────────────────────────────────────────────────────
+       04 · LIVING ROOM — ARCHITECTURE
+       A south-facing Edwardian drawing room at mid-morning. Warm plaster
+       above a mahogany dado; herringbone parquet; a tall sash window on
+       the right throwing a hard shaft of daylight across the scene.
+       Layers are stacked back-to-front with explicit z-index.
+       ─────────────────────────────────────────────────────────────────── */
+
+    /* Base ambient wash behind everything */
     .room-bg-living {
-      position:absolute; inset:0;
+      position:absolute; inset:0; z-index:1;
       background:
-        radial-gradient(ellipse 40% 80% at 83% 0%, rgba(255,252,230,0.62) 0%, rgba(255,244,195,0.24) 45%, transparent 66%),
-        radial-gradient(ellipse 22% 35% at 83% 44%, rgba(255,252,220,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 46% 90% at 84% -6%, var(--lr-daylight) 0%, rgba(255,244,196,0.22) 42%, transparent 66%),
+        radial-gradient(ellipse 30% 44% at 84% 40%, rgba(255,250,220,0.16) 0%, transparent 62%),
         linear-gradient(180deg,
-          #7a6535 0%, #c2a96d 2.5%, #d4ba80 6%,
-          #eadaa8 22%, #f2e0b4 40%, #ecd2a2 52.2%,
-          #52380e 52.6%, #3c2708 70%, #201400 100%);
+          #6f5a2c 0%, #b69a5e 3%, #cdb277 7%,
+          #e3d09e 24%, #ecdcaa 44%, #e2cf9a 62%,
+          #4e360d 62.4%, #3a2607 78%, #1d1300 100%);
     }
-    /* Ceiling zone */
+
+    /* — Ceiling band with shallow shadow into the cornice — */
     .lr-ceiling {
-      position:absolute; top:0; left:0; right:0; height:6.5%; z-index:2;
-      background:linear-gradient(180deg, #a08050 0%, #b89a6e 55%, #c6aa7a 100%);
-    }
-    /* Crown molding strip */
-    .lr-cornice {
-      position:absolute; top:6%; left:0; right:0; height:2%; z-index:3;
-      background:linear-gradient(180deg, #cdb985 0%, #ead8a8 40%, #b89a6e 100%);
-      box-shadow:0 3px 8px rgba(0,0,0,0.45);
-    }
-    .lr-cornice::before {
-      content:''; position:absolute; inset:15% 0;
-      background:repeating-linear-gradient(90deg,transparent 0,transparent 3.7%,rgba(0,0,0,0.14) 3.85%,rgba(255,255,255,0.08) 4.1%,transparent 4.25%);
-    }
-    /* Upper wallpaper band */
-    .lr-wallpaper {
-      position:absolute; top:8%; left:0; right:0; bottom:49%; z-index:2;
+      position:absolute; top:0; left:0; right:0; height:7%; z-index:2;
       background:
-        repeating-linear-gradient(90deg,transparent 0,transparent 12.2%,rgba(160,124,72,0.09) 12.35%,rgba(160,124,72,0.09) 12.55%,transparent 12.7%),
-        repeating-linear-gradient(0deg,transparent 0,transparent 7.8%,rgba(160,124,72,0.06) 7.95%,rgba(160,124,72,0.06) 8.15%,transparent 8.3%),
-        linear-gradient(180deg,#e0cc9c 0%,#eadaa8 50%,#dcc892 100%);
+        linear-gradient(180deg, #8f7344 0%, #a98c5a 50%, #bd9f6c 100%);
+      box-shadow:inset 0 6px 14px rgba(0,0,0,0.35);
     }
-    /* Dado / chair rail */
-    .lr-dado-rail {
-      position:absolute; top:51%; left:0; right:0; height:1.6%; z-index:3;
-      background:linear-gradient(180deg,#b89060 0%,#d6ac7c 40%,#8a6438 100%);
-      box-shadow:0 2px 6px rgba(0,0,0,0.55), 0 -1px 2px rgba(255,255,255,0.08);
-    }
-    /* Wainscoting panels */
-    .lr-wainscot {
-      position:absolute; top:52.6%; left:0; right:0; bottom:26%; z-index:2;
-      background:
-        repeating-linear-gradient(90deg,
-          #caa870 0%,#caa870 9.8%,#a88050 10%,#d6b47e 10.3%,#caa870 10.5%,#caa870 20.3%,
-          #a88050 20.5%,#d6b47e 20.8%,#caa870 21%,#caa870 30.8%,
-          #a88050 31%,#d6b47e 31.3%,#caa870 31.5%,#caa870 100%);
-    }
-    /* Parquet herringbone floor */
-    .room-floor-living {
-      position:absolute; bottom:0; left:0; right:0; height:26%; z-index:2;
-      background:
-        repeating-linear-gradient(45deg,
-          transparent 0,transparent 6.8%,rgba(0,0,0,0.38) 7%,transparent 7.2%,transparent 14.2%),
-        repeating-linear-gradient(-45deg,
-          transparent 0,transparent 6.8%,rgba(0,0,0,0.22) 7%,transparent 7.2%,transparent 14.2%),
-        linear-gradient(180deg,#7a5028 0%,#5a3818 50%,#2e1c08 100%);
-      border-top:2px solid rgba(40,26,8,0.8);
-      box-shadow:inset 0 8px 24px rgba(0,0,0,0.55);
-    }
-    /* Area rug on floor */
-    .lr-rug {
-      position:absolute; bottom:26%; left:18%; right:4%; height:22%; z-index:3;
-      background:
-        radial-gradient(ellipse 80% 60% at 50% 50%, rgba(120,40,20,0.28) 0%,transparent 70%),
-        repeating-linear-gradient(0deg,transparent 0,transparent 24%,rgba(180,60,30,0.16) 25%,transparent 25.5%),
-        repeating-linear-gradient(90deg,transparent 0,transparent 24%,rgba(180,60,30,0.16) 25%,transparent 25.5%),
-        linear-gradient(160deg,#8a3020 0%,#6a2218 40%,#8a3020 100%);
-      border-radius:3px; border:2px solid rgba(100,60,30,0.38);
-      transform:perspective(220px) rotateX(13deg); transform-origin:50% 0%;
-    }
-    /* Tall sash window frame */
-    .lr-window-frame {
-      position:absolute; top:8%; right:7.5%; width:21%; height:45%; z-index:4; pointer-events:none;
-      border:5px solid #6a4820; border-radius:2px 2px 0 0;
-      background:linear-gradient(155deg,rgba(255,252,228,0.62) 0%,rgba(215,238,250,0.32) 50%,rgba(195,228,205,0.20) 100%);
-      box-shadow:inset 0 0 28px rgba(255,250,215,0.28);
-    }
-    .lr-window-frame::before {
-      content:''; position:absolute; left:-5px; right:-5px; top:48%; height:5px; background:#6a4820;
-    }
-    .lr-window-frame::after {
-      content:''; position:absolute; left:50%; top:0; bottom:0; width:5px; background:#6a4820; transform:translateX(-50%);
-    }
-    /* Window light shaft */
-    .lr-window-light {
-      position:absolute; top:5%; left:60%; width:38%; height:58%; z-index:1;
-      background:linear-gradient(162deg,rgba(255,252,218,0.52),rgba(255,248,198,0.18) 58%,transparent);
-      filter:blur(5px); pointer-events:none;
-    }
-    /* Curtains */
-    .lr-curtain-l {
-      position:absolute; top:7.5%; right:27%; width:4%; height:49%; z-index:5; pointer-events:none;
-      background:linear-gradient(90deg,rgba(90,64,28,0.72) 0%,rgba(130,94,46,0.38) 65%,transparent 100%);
-    }
-    .lr-curtain-r {
-      position:absolute; top:7.5%; right:7%; width:5%; height:49%; z-index:5; pointer-events:none;
-      background:linear-gradient(270deg,rgba(90,64,28,0.72) 0%,rgba(130,94,46,0.38) 65%,transparent 100%);
-    }
-    .room-vignette {
-      position:absolute; inset:0; pointer-events:none; z-index:50;
-      background:radial-gradient(ellipse 112% 82% at 50% 50%,transparent 38%,rgba(0,0,0,0.52) 100%);
-    }
-
-    /* ═══ STUDY — dark mahogany panelled library ═══ */
-    .room-bg-study {
-      position:absolute; inset:0;
-      background:linear-gradient(180deg,#16100a 0%,#1e1408 4%,#261a0e 25%,#1a1006 52.2%,#110804 52.6%,#0c0602 100%);
-    }
-    /* Ceiling */
-    .st-ceiling {
-      position:absolute; top:0; left:0; right:0; height:8.5%; z-index:2;
-      background:linear-gradient(180deg,#0a0804 0%,#16100a 100%);
-    }
-    /* Cornice */
-    .st-cornice {
-      position:absolute; top:8%; left:0; right:0; height:1.5%; z-index:3;
-      background:linear-gradient(180deg,#3a2810 0%,#5a3e20 40%,#2e1e0c 100%);
-      box-shadow:0 3px 8px rgba(0,0,0,0.65);
-    }
-    /* Mahogany paneled walls */
-    .st-wall-panels {
-      position:absolute; top:9.5%; left:0; right:0; bottom:24%; z-index:2;
-      background:
-        repeating-linear-gradient(90deg,
-          transparent 0,transparent 12.2%,rgba(0,0,0,0.52) 12.35%,rgba(80,50,20,0.18) 12.55%,transparent 12.7%),
-        linear-gradient(180deg,#2c1c0c 0%,#1e1408 60%,#160e06 100%);
-    }
-    /* Study floor */
-    .room-floor-study {
-      position:absolute; bottom:0; left:0; right:0; height:24%; z-index:2;
-      background:
-        repeating-linear-gradient(90deg,
-          transparent 0,transparent 14.5%,rgba(0,0,0,0.52) 14.7%,rgba(80,50,20,0.12) 14.9%,transparent 15.1%,transparent 29.6%),
-        linear-gradient(180deg,#3a2610 0%,#221508 60%,#100a04 100%);
-      border-top:2px solid rgba(0,0,0,0.85); box-shadow:inset 0 6px 20px rgba(0,0,0,0.8);
-    }
-    /* Persian rug */
-    .st-rug {
-      position:absolute; bottom:24%; left:7%; right:9%; height:24%; z-index:3;
-      background:
-        radial-gradient(ellipse 50% 40% at 50% 50%,rgba(180,30,30,0.14) 0%,transparent 60%),
-        repeating-linear-gradient(0deg,transparent 0,transparent 24%,rgba(150,40,20,0.18) 25%,transparent 25.5%),
-        repeating-linear-gradient(90deg,transparent 0,transparent 24%,rgba(150,40,20,0.18) 25%,transparent 25.5%),
-        linear-gradient(140deg,#5a1a14 0%,#3e1210 40%,#5a1a14 100%);
-      border-radius:2px;
-      transform:perspective(220px) rotateX(13deg); transform-origin:50% 0%;
-    }
-    /* Study window (small, upper right) */
-    .st-window-frame {
-      position:absolute; top:11%; right:13%; width:13%; height:28%; z-index:4; pointer-events:none;
-      border:4px solid #2a1c0c; border-radius:2px;
-      background:linear-gradient(180deg,rgba(38,78,58,0.30) 0%,rgba(20,50,35,0.18) 100%);
-      box-shadow:inset 0 0 14px rgba(0,0,0,0.72);
-    }
-    .st-window-frame::before {
-      content:''; position:absolute; left:-4px; right:-4px; top:44%; height:4px; background:#2a1c0c;
-    }
-    /* Desk lamp cone */
-    .study-lamp-glow {
-      position:absolute; left:38%; top:26%; width:26%; height:46%; z-index:4; pointer-events:none;
-      background:radial-gradient(ellipse 58% 68% at 50% 32%,rgba(80,200,100,0.18) 0%,rgba(60,160,80,0.06) 55%,transparent 78%);
-    }
-
-    /* ── Room objects ───────────────────────────────────────── */
-    .room-obj {
-      position:absolute; background:transparent; border:none; cursor:pointer; padding:0;
-      display:flex; align-items:center; justify-content:center;
-      transition:filter 0.2s, transform 0.15s; transform:translate(-50%,-50%);
-      z-index:8;
-    }
-    .room-obj:hover { filter:brightness(1.15) contrast(1.04); }
-    .room-obj:focus-visible { outline:2px solid rgba(201,162,39,0.7); outline-offset:3px; }
-    .room-obj.obj-solved { filter:brightness(1.06) saturate(1.05); }
-    .room-obj.obj-solved::after { content:'✓'; position:absolute; top:-0.4rem; right:-0.4rem; width:1.1rem; height:1.1rem; border-radius:50%; background:var(--gold); color:var(--ink-deep); font-family:var(--font-mono); font-size:0.6rem; display:flex; align-items:center; justify-content:center; font-weight:700; box-shadow:0 0 8px rgba(201,162,39,0.6); }
-    .obj-label { position:absolute; bottom:-1.5em; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:0.52rem; color:var(--gold); opacity:0; white-space:nowrap; letter-spacing:0.1em; transition:opacity 0.2s; pointer-events:none; text-shadow:0 1px 3px rgba(0,0,0,0.9); }
-    .room-obj:hover .obj-label, .room-obj:focus-visible .obj-label { opacity:0.9; }
-    .obj-icon { font-size:clamp(1.3rem,2.8vw,2.4rem); line-height:1; filter:drop-shadow(0 3px 6px rgba(0,0,0,0.8)); }
-
-    /* ═══ OBJECT PROPS — detailed CSS art ═══ */
-    .prop { position:relative; filter:drop-shadow(0 5px 12px rgba(0,0,0,0.82)); display:flex; align-items:center; justify-content:center; }
-
-    /* Body — lying silhouette + blood pool */
-    .prop-body { width:clamp(72px,11vw,138px); height:clamp(48px,7vw,86px); position:relative; }
-    .prop-body::before {
-      content:''; position:absolute; right:0; top:14%; width:76%; height:68%;
-      background:linear-gradient(135deg,#2a2430 0%,#1e1a28 40%,#16121e 100%);
-      border-radius:42% 52% 46% 36% / 56% 50% 56% 44%;
-      box-shadow:inset -2px 2px 7px rgba(0,0,0,0.65);
-    }
-    .prop-body::after {
-      content:''; position:absolute; left:0; bottom:4%; width:56%; height:46%;
-      background:radial-gradient(ellipse at 40% 55%,#8b1a1a 0%,#5a0e0e 50%,rgba(40,6,6,0.38) 82%,transparent 100%);
-      border-radius:62% 50% 40% 56%; filter:blur(0.6px);
-    }
-
-    /* Wall clock — ornate gold case, Roman numerals via radial stops, hands at 10:31 */
-    .prop-clock {
-      width:clamp(44px,6.5vw,82px); aspect-ratio:1; position:relative; border-radius:50%;
-      background:radial-gradient(circle at 28% 24%,#5a3e16 0%,#3a2808 60%,#1e1404 100%);
-      border:3px solid #1a1004;
-      box-shadow:0 2px 10px rgba(0,0,0,0.75),inset 0 1px 3px rgba(255,220,120,0.14);
-    }
-    .prop-clock::before {
-      content:''; position:absolute; inset:9%; border-radius:50%;
-      background:radial-gradient(circle at 38% 32%,#fdf5e0 0%,#ead8a0 40%,#c8a860 78%,#8a6030 100%);
-      border:1px solid rgba(100,70,20,0.48);
-    }
-    /* Hour hand rotated to ~10 o'clock (300°) */
-    .prop-clock::after {
-      content:''; position:absolute; left:50%; top:50%; width:2px; height:28%;
-      background:#1a0e04; transform-origin:50% 100%;
-      transform:translate(-50%,-100%) rotate(-60deg); border-radius:1px;
-    }
-
-    /* Fireplace — marble Victorian mantelpiece */
-    .prop-fireplace { width:clamp(82px,12.5vw,165px); height:clamp(72px,11vw,142px); position:relative; background:transparent; }
-    /* Marble surround */
-    .prop-fireplace::before {
-      content:''; position:absolute; inset:0 0 18% 0;
-      background:linear-gradient(180deg,#ddd0c0 0%,#c6b8a6 12%,#b8a894 32%,#a49882 58%,#9a8878 100%);
-      border-radius:3px;
-      box-shadow:inset -2px 0 6px rgba(0,0,0,0.32),inset 2px 0 4px rgba(255,255,255,0.09);
-    }
-    /* Firebox opening */
-    .prop-fireplace::after {
-      content:''; position:absolute; left:18%; right:18%; top:22%; bottom:22%;
-      background:radial-gradient(ellipse at 50% 92%,rgba(170,85,10,0.55) 0%,rgba(60,30,5,0.92) 42%,#050302 100%);
-      border-radius:3px 3px 5px 5px;
-      box-shadow:inset 0 -4px 14px rgba(0,0,0,0.92);
-    }
-
-    /* Sofa — tufted Chesterfield */
-    .prop-sofa {
-      width:clamp(92px,14vw,184px); height:clamp(42px,6vw,78px);
-      background:linear-gradient(180deg,#7a5030 0%,#5a3820 55%,#3a2210 100%);
-      border-radius:12px 12px 4px 4px; border:1px solid #1e0e06; position:relative;
-      box-shadow:0 4px 12px rgba(0,0,0,0.62);
-    }
-    .prop-sofa::before {
-      content:''; position:absolute; left:5%; right:5%; top:-28%; height:50%;
-      background:radial-gradient(circle at 17% 50%,rgba(0,0,0,0.26) 0%,transparent 30%),
-        radial-gradient(circle at 50% 50%,rgba(0,0,0,0.26) 0%,transparent 30%),
-        radial-gradient(circle at 83% 50%,rgba(0,0,0,0.26) 0%,transparent 30%),
-        linear-gradient(180deg,#8a5a36 0%,#6a4224 70%);
-      border-radius:10px 10px 2px 2px;
-    }
-    .prop-sofa::after {
-      content:''; position:absolute; left:0; top:0; width:8%; height:110%;
-      background:linear-gradient(90deg,#4a2a14 0%,#6a3e22 50%,#4a2a14 100%);
-      border-radius:50% 10% 10% 50%;
-    }
-
-    /* Letter opener — slender blade, ornate ivory handle */
-    .prop-opener { width:clamp(38px,5.5vw,68px); height:clamp(8px,1.1vw,13px); position:relative; transform:rotate(-22deg); }
-    .prop-opener::before {
-      content:''; position:absolute; left:0; top:50%; transform:translateY(-50%);
-      width:62%; height:100%;
-      background:linear-gradient(180deg,#f0eac8 0%,#d4c48a 36%,#b8a060 72%,#8a7040 100%);
-      clip-path:polygon(0 18%,100% 0%,100% 100%,0 82%);
-    }
-    .prop-opener::after {
-      content:''; position:absolute; right:0; top:50%; transform:translateY(-50%);
-      width:44%; height:160%;
-      background:radial-gradient(ellipse at 44% 38%,#d4a030 0%,#a07820 42%,#6a4c10 100%);
-      border-radius:4px; box-shadow:inset 0 1px 4px rgba(255,220,100,0.28);
-    }
-
-    /* Blood trail — irregular dark red pool */
-    .prop-trail {
-      width:clamp(50px,7vw,92px); height:clamp(14px,2.2vw,30px);
-      background:
-        radial-gradient(ellipse at 14% 55%,rgba(132,22,22,0.92) 0%,rgba(90,14,14,0.72) 36%,transparent 70%),
-        radial-gradient(ellipse at 76% 42%,rgba(100,16,16,0.58) 0%,transparent 52%);
-      border-radius:60% 40% 52% 62%; filter:blur(0.5px);
-    }
-
-    /* Wine glass */
-    .prop-glass { width:clamp(18px,2.8vw,36px); height:clamp(30px,4.5vw,56px); position:relative; }
-    .prop-glass::before {
-      content:''; position:absolute; left:8%; right:8%; top:0; height:54%;
-      background:linear-gradient(162deg,rgba(200,220,255,0.46) 0%,rgba(150,180,225,0.24) 62%,rgba(180,200,240,0.14) 100%);
-      border:1px solid rgba(255,255,255,0.48); border-radius:3px 3px 52% 52%;
-      box-shadow:inset -2px 0 6px rgba(255,255,255,0.18);
-    }
-    .prop-glass::after {
-      content:''; position:absolute; left:44%; top:54%; bottom:4%; width:12%;
-      background:rgba(200,220,255,0.34); border-radius:2px;
-    }
-
-    /* Coffee table — low with visible legs */
-    .prop-table {
-      width:clamp(62px,9.5vw,124px); height:clamp(22px,3.2vw,44px);
-      background:linear-gradient(180deg,#7a5228 0%,#5a3a18 52%,#3a2408 100%);
-      border-radius:4px; border:1px solid #1e0e04; position:relative;
-      box-shadow:0 5px 10px rgba(0,0,0,0.62);
-    }
-    .prop-table::before {
-      content:''; position:absolute; left:8%; top:100%; height:50%; width:84%;
-      background:linear-gradient(90deg,#5a3a18 0%,#5a3a18 11%,transparent 11%,transparent 39%,#5a3a18 39%,#5a3a18 50%,transparent 50%,transparent 89%,#5a3a18 89%,#5a3a18 100%);
-      border-bottom:2px solid #3a2410;
-    }
-
-    /* Family portrait — ornate gilded frame */
-    .prop-portrait {
-      width:clamp(52px,7.5vw,98px); height:clamp(62px,9.5vw,120px); position:relative;
-      background:linear-gradient(135deg,#c8a030 0%,#9a7018 22%,#e0b840 36%,#a08020 52%,#d4a030 66%,#8a6010 82%,#c8a030 100%);
-      border:2px solid #4a2e08; border-radius:2px;
-    }
-    .prop-portrait::before {
-      content:''; position:absolute; inset:12%;
-      background:radial-gradient(ellipse 54% 50% at 50% 36%,#caa878 0%,#7a5030 46%,#3a2010 82%,#1e1008 100%);
-      box-shadow:inset 0 2px 10px rgba(0,0,0,0.82);
-    }
-    .prop-portrait::after {
-      content:''; position:absolute; top:-8%; left:50%; transform:translateX(-50%);
-      width:30%; height:13%;
-      background:radial-gradient(ellipse at 50% 62%,#d4a830 0%,#a07818 62%,#6a4e10 100%);
+    .lr-ceiling::after {     /* faint ceiling-rose hint, off to the left */
+      content:''; position:absolute; left:30%; top:18%; width:90px; height:34px;
+      transform:translateX(-50%);
+      background:radial-gradient(ellipse at 50% 50%, rgba(255,248,220,0.18) 0%, transparent 70%);
       border-radius:50%;
     }
 
-    /* Telephone — classic Bakelite desk phone */
-    .prop-phone {
-      width:clamp(32px,4.5vw,60px); height:clamp(22px,3.2vw,44px);
-      background:linear-gradient(162deg,#2e2e38 0%,#1a1a22 62%,#0e0e16 100%);
-      border-radius:8px 8px 5px 5px; border:1px solid #0a0a12; position:relative;
-      box-shadow:0 3px 8px rgba(0,0,0,0.82),inset 0 1px 2px rgba(255,255,255,0.04);
+    /* — Crown cornice with dentil run — */
+    .lr-cornice {
+      position:absolute; top:6.6%; left:0; right:0; height:2.4%; z-index:3;
+      background:linear-gradient(180deg, #d6c187 0%, #efe0ad 38%, #c4a76e 78%, #a98a52 100%);
+      box-shadow:0 4px 10px rgba(0,0,0,0.42), inset 0 1px 0 rgba(255,248,214,0.5);
     }
-    .prop-phone::before {
-      content:''; position:absolute; left:12%; right:12%; top:-34%; height:40%;
-      background:linear-gradient(162deg,#3a3a46 0%,#1e1e28 100%);
-      border-radius:8px 8px 3px 3px; box-shadow:0 2px 6px rgba(0,0,0,0.72);
+    .lr-cornice::before {     /* dentils */
+      content:''; position:absolute; left:0; right:0; bottom:8%; height:42%;
+      background:repeating-linear-gradient(90deg,
+        rgba(70,48,12,0.32) 0, rgba(70,48,12,0.32) 0.7%,
+        rgba(255,248,214,0.18) 0.85%, rgba(255,248,214,0.18) 1.5%,
+        transparent 1.65%, transparent 3.3%);
     }
-    .prop-phone::after {
-      content:''; position:absolute; left:28%; top:22%; width:42%; aspect-ratio:1;
-      background:radial-gradient(circle at 35% 35%,#3a3a48 0%,#1a1a22 100%);
-      border-radius:50%; border:1px solid #0e0e18;
+    .lr-cornice::after {      /* egg-and-dart highlight bead */
+      content:''; position:absolute; left:0; right:0; top:14%; height:14%;
+      background:linear-gradient(180deg, rgba(255,250,220,0.55), transparent);
     }
 
-    /* Security panel — keypad with LEDs */
-    .prop-panel {
-      width:clamp(32px,4.2vw,56px); height:clamp(44px,6.5vw,78px);
-      background:linear-gradient(180deg,#1e2228 0%,#14181c 100%);
-      border:1px solid #0a0c10; border-radius:4px; position:relative;
-      box-shadow:0 2px 6px rgba(0,0,0,0.82);
+    /* — Picture rail — */
+    .lr-picture-rail {
+      position:absolute; top:9%; left:0; right:0; height:0.9%; z-index:3;
+      background:linear-gradient(180deg, #c2a468 0%, #8a6a36 100%);
+      box-shadow:0 2px 5px rgba(0,0,0,0.4);
     }
-    .prop-panel::before {
-      content:''; position:absolute; left:18%; right:18%; top:14%; height:26%;
+
+    /* — Upper wall: cream plaster with a faint damask print — */
+    .lr-wallpaper {
+      position:absolute; top:9.9%; left:0; right:0; bottom:48%; z-index:2;
       background:
-        radial-gradient(circle at 25% 50%,rgba(80,220,120,0.92) 0%,transparent 38%),
-        radial-gradient(circle at 75% 50%,rgba(220,80,60,0.92) 0%,transparent 38%),
-        rgba(18,22,26,0.92);
-      border-radius:2px; box-shadow:0 0 9px rgba(80,220,120,0.42);
+        radial-gradient(circle at 8% 28%, rgba(160,124,72,0.10) 0 8%, transparent 8.5%),
+        radial-gradient(circle at 28% 60%, rgba(160,124,72,0.08) 0 7%, transparent 7.5%),
+        radial-gradient(circle at 48% 24%, rgba(160,124,72,0.10) 0 8%, transparent 8.5%),
+        radial-gradient(circle at 68% 62%, rgba(160,124,72,0.08) 0 7%, transparent 7.5%),
+        radial-gradient(circle at 90% 30%, rgba(160,124,72,0.09) 0 8%, transparent 8.5%),
+        repeating-linear-gradient(90deg, transparent 0 5.9%, rgba(150,114,60,0.06) 5.95% 6.05%, transparent 6.1% 12%),
+        linear-gradient(180deg, #ecddb0 0%, #e6d4a6 52%, #dcc896 100%);
+      box-shadow:inset 0 14px 30px rgba(120,90,40,0.10), inset 0 -8px 22px rgba(80,56,18,0.16);
     }
-    .prop-panel::after {
-      content:''; position:absolute; left:20%; right:20%; top:52%; height:34%;
+    /* directional sun-wash brightening the right half of the wall */
+    .lr-wall-sun {
+      position:absolute; top:9.9%; right:0; width:54%; bottom:48%; z-index:2; pointer-events:none;
+      background:linear-gradient(255deg, rgba(255,250,222,0.5) 0%, rgba(255,248,214,0.16) 44%, transparent 72%);
+      mix-blend-mode:soft-light;
+    }
+
+    /* — Dado / chair rail — */
+    .lr-dado-rail {
+      position:absolute; top:51%; left:0; right:0; height:1.7%; z-index:4;
+      background:linear-gradient(180deg, #a8854c 0%, #d6b478 32%, #8a6432 72%, #6a4a22 100%);
+      box-shadow:0 3px 7px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,236,190,0.4);
+    }
+
+    /* — Wainscot: raised-panel mahogany dado — */
+    .lr-wainscot {
+      position:absolute; top:52.7%; left:0; right:0; bottom:25%; z-index:2;
+      background:linear-gradient(180deg, #7a5026 0%, #6a4420 60%, #50330f 100%);
+    }
+    .lr-wainscot::before {    /* recessed panel faces */
+      content:''; position:absolute; inset:14% 1.4%;
       background:
-        radial-gradient(circle at 25% 25%,rgba(180,180,202,0.62) 0%,transparent 36%),
-        radial-gradient(circle at 75% 25%,rgba(180,180,202,0.62) 0%,transparent 36%),
-        radial-gradient(circle at 25% 75%,rgba(180,180,202,0.62) 0%,transparent 36%),
-        radial-gradient(circle at 75% 75%,rgba(180,180,202,0.62) 0%,transparent 36%),
-        transparent;
+        repeating-linear-gradient(90deg,
+          rgba(40,24,6,0.0) 0 0.4%,
+          rgba(40,24,6,0.55) 0.5% 0.9%,
+          rgba(150,108,58,0.30) 1% 1.5%,
+          rgba(40,24,6,0.0) 1.6% 11.9%,
+          rgba(150,108,58,0.30) 12% 12.5%,
+          rgba(40,24,6,0.55) 12.6% 13%);
+      box-shadow:inset 0 6px 10px rgba(0,0,0,0.3);
+    }
+    .lr-wainscot::after {     /* panel inner bevels (top/bottom light) */
+      content:''; position:absolute; inset:14% 1.4%;
+      background:
+        linear-gradient(180deg, rgba(255,230,180,0.18) 0 3%, transparent 4%),
+        linear-gradient(0deg,  rgba(0,0,0,0.4) 0 3%, transparent 4%);
     }
 
-    /* Study door — 4-panel Georgian with brass handle */
-    .prop-door {
-      width:clamp(52px,7.5vw,98px); height:clamp(90px,14vw,164px);
-      background:linear-gradient(90deg,#2e1c0c 0%,#4a2e16 26%,#5a3c1e 50%,#4a2e16 74%,#2e1c0c 100%);
-      border:2px solid #1a0e06; border-radius:4px 4px 0 0; position:relative;
-      box-shadow:0 0 0 1px #0a0602,0 4px 14px rgba(0,0,0,0.82);
+    /* — Skirting board where dado meets floor — */
+    .lr-skirting {
+      position:absolute; bottom:24.4%; left:0; right:0; height:2.2%; z-index:5;
+      background:linear-gradient(180deg, #8a5e30 0%, #5a3a1a 50%, #321f0c 100%);
+      box-shadow:0 4px 9px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,224,170,0.28);
     }
-    .prop-door::before {
-      content:''; position:absolute; left:11%; right:51%; top:7%; height:40%;
-      border:1px solid rgba(0,0,0,0.52);
-      background:linear-gradient(162deg,rgba(255,255,255,0.04) 0%,rgba(0,0,0,0.16) 100%);
+
+    /* — Parquet floor with one-point perspective & herringbone weave — */
+    .room-floor-living {
+      position:absolute; bottom:0; left:0; right:0; height:25%; z-index:2;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.32) 0%, transparent 16%, transparent 70%, rgba(0,0,0,0.45) 100%),
+        repeating-linear-gradient(50deg,
+          transparent 0 5.6%, rgba(0,0,0,0.42) 5.7% 6%, rgba(150,104,52,0.18) 6.1% 6.4%, transparent 6.5% 12.1%),
+        repeating-linear-gradient(-50deg,
+          transparent 0 5.6%, rgba(0,0,0,0.30) 5.7% 6%, rgba(150,104,52,0.14) 6.1% 6.4%, transparent 6.5% 12.1%),
+        linear-gradient(180deg, var(--lr-floor-hi) 0%, var(--lr-floor) 46%, var(--lr-floor-lo) 100%);
+      box-shadow:inset 0 10px 26px rgba(0,0,0,0.5);
+    }
+    /* receding sheen — a soft band of reflected window light on the boards */
+    .room-floor-living::after {
+      content:''; position:absolute; left:54%; right:6%; top:6%; bottom:8%;
+      background:linear-gradient(200deg, rgba(255,248,216,0.22), transparent 60%);
+      filter:blur(6px); pointer-events:none;
+    }
+
+    /* — Hand-knotted area rug (front of the body) — */
+    .lr-rug {
+      position:absolute; bottom:5%; left:24%; width:56%; height:20%; z-index:3;
+      transform:perspective(var(--persp)) rotateX(58deg); transform-origin:50% 100%;
+      border-radius:3px;
+      background:
+        radial-gradient(ellipse 70% 80% at 50% 50%, rgba(214,176,96,0.20) 0%, transparent 64%),
+        repeating-linear-gradient(0deg,  transparent 0 11%, rgba(214,176,96,0.16) 11.4% 12%, transparent 12.4% 23%),
+        repeating-linear-gradient(90deg, transparent 0 11%, rgba(214,176,96,0.16) 11.4% 12%, transparent 12.4% 23%),
+        linear-gradient(150deg, var(--lr-rug) 0%, var(--lr-rug-lo) 48%, var(--lr-rug) 100%);
+      box-shadow:0 -2px 18px rgba(0,0,0,0.45);
+    }
+    .lr-rug::before {     /* woven border */
+      content:''; position:absolute; inset:8%;
+      border:3px solid rgba(214,176,96,0.34);
+      border-radius:2px;
+      background:repeating-linear-gradient(45deg, transparent 0 6%, rgba(214,176,96,0.12) 6% 8%);
+    }
+    .lr-rug::after {      /* central medallion */
+      content:''; position:absolute; inset:30%;
+      border:2px solid rgba(214,176,96,0.4);
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(40,16,12,0.5), transparent 70%);
+    }
+
+    /* — Tall sash window: outer casing, sashes, glazing bars, transom — */
+    .lr-window-frame {
+      position:absolute; top:10.5%; right:7%; width:20%; height:41%; z-index:4;
+      pointer-events:none;
+      border-radius:4px 4px 0 0;
+      background:linear-gradient(180deg, #6a4824 0%, #543818 100%);
+      padding:6px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,232,180,0.18);
+    }
+    .lr-window-frame::before {     /* the sky / garden seen through the glass */
+      content:''; position:absolute; inset:6px;
+      background:
+        linear-gradient(180deg, #cfe6f2 0%, #bcd8ea 30%, #aecf8a 64%, #7fae5e 100%),
+        radial-gradient(ellipse 50% 30% at 30% 18%, rgba(255,255,255,0.6), transparent 70%);
+      box-shadow:inset 0 0 26px rgba(255,250,220,0.4);
       border-radius:2px;
     }
-    .prop-door::after {
-      content:''; position:absolute; right:11%; left:51%; top:7%; height:40%;
-      border:1px solid rgba(0,0,0,0.52);
-      background:linear-gradient(162deg,rgba(255,255,255,0.04) 0%,rgba(0,0,0,0.16) 100%);
+    .lr-window-frame::after {      /* muntin grid: 3×4 lights + meeting rail */
+      content:''; position:absolute; inset:6px; border-radius:2px;
+      background:
+        linear-gradient(90deg, transparent 32.5%, #543818 33%, #6a4824 34%, transparent 34.5%),
+        linear-gradient(90deg, transparent 65.5%, #543818 66%, #6a4824 67%, transparent 67.5%),
+        linear-gradient(180deg, transparent 23.5%, #543818 24%, #6a4824 25%, transparent 25.5%),
+        linear-gradient(180deg, transparent 48.5%, #4a3014 49%, #6a4824 51%, transparent 51.5%),
+        linear-gradient(180deg, transparent 73.5%, #543818 74%, #6a4824 75%, transparent 75.5%);
+    }
+    /* glazing-bar crossing — subtle reflection streaks */
+    .lr-window-glare {
+      position:absolute; top:11%; right:7.5%; width:19%; height:39%; z-index:5;
+      pointer-events:none;
+      background:linear-gradient(125deg, transparent 38%, rgba(255,255,255,0.32) 44%, transparent 47%,
+                 transparent 60%, rgba(255,255,255,0.18) 64%, transparent 66%);
+      filter:blur(0.4px);
+    }
+    /* carved pelmet / valance above the window */
+    .lr-pelmet {
+      position:absolute; top:9.6%; right:5.4%; width:23.2%; height:3.2%; z-index:6;
+      background:linear-gradient(180deg, #7a4f24 0%, #5a3818 70%, #3e2510 100%);
+      border-radius:3px 3px 0 0;
+      box-shadow:0 5px 12px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,224,170,0.3);
+    }
+    .lr-pelmet::after {
+      content:''; position:absolute; left:0; right:0; bottom:-6px; height:6px;
+      background:repeating-radial-gradient(circle at 6px -2px, #5a3818 0 6px, transparent 6px 12px);
+    }
+    /* drawn-back drapes either side */
+    .lr-curtain-l {
+      position:absolute; top:12.5%; right:26.5%; width:5.5%; height:39%; z-index:6; pointer-events:none;
+      background:repeating-linear-gradient(90deg,
+        rgba(74,30,18,0.92) 0 18%, rgba(120,54,32,0.55) 22%, rgba(74,30,18,0.92) 30% 50%);
+      border-radius:0 0 40% 12%;
+      box-shadow:-3px 6px 14px rgba(0,0,0,0.5);
+    }
+    .lr-curtain-r {
+      position:absolute; top:12.5%; right:4%; width:6%; height:39%; z-index:6; pointer-events:none;
+      background:repeating-linear-gradient(270deg,
+        rgba(74,30,18,0.92) 0 18%, rgba(120,54,32,0.55) 22%, rgba(74,30,18,0.92) 30% 50%);
+      border-radius:0 0 12% 40%;
+      box-shadow:3px 6px 14px rgba(0,0,0,0.5);
+    }
+    /* fabric tie-backs */
+    .lr-curtain-l::after, .lr-curtain-r::after {
+      content:''; position:absolute; top:62%; left:-6%; right:-6%; height:9%;
+      background:linear-gradient(180deg, #d4af52, #8a6420);
+      border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    /* ───────────────────────────────────────────────────────────────────
+       05 · STUDY — ARCHITECTURE
+       The victim's locked private study at night. Mahogany panelling,
+       a coffered ceiling, a small leaded window, and a green banker's
+       lamp as the only warm pool of light.
+       ─────────────────────────────────────────────────────────────────── */
+    .room-bg-study {
+      position:absolute; inset:0; z-index:1;
+      background:
+        radial-gradient(ellipse 34% 46% at 47% 58%, var(--st-lamp) 0%, transparent 60%),
+        linear-gradient(180deg, #140d07 0%, #1e1309 5%, #2a1a0c 26%, #1c1208 52%,
+          #120b05 52.4%, #0d0703 78%, #070402 100%);
+    }
+    .st-ceiling {
+      position:absolute; top:0; left:0; right:0; height:9%; z-index:2;
+      background:
+        repeating-linear-gradient(90deg, transparent 0 18%, rgba(0,0,0,0.5) 19% 20%, transparent 21% 38%),
+        linear-gradient(180deg, #0a0604 0%, #18100a 100%);
+      box-shadow:inset 0 -6px 14px rgba(0,0,0,0.6);
+    }
+    .st-cornice {
+      position:absolute; top:8.5%; left:0; right:0; height:1.6%; z-index:3;
+      background:linear-gradient(180deg, #3e2a12 0%, #5e4022 42%, #2e1e0c 100%);
+      box-shadow:0 4px 9px rgba(0,0,0,0.7), inset 0 1px 0 rgba(160,110,50,0.35);
+    }
+    /* mahogany raised panelling */
+    .st-wall-panels {
+      position:absolute; top:10.1%; left:0; right:0; bottom:23%; z-index:2;
+      background:
+        repeating-linear-gradient(90deg,
+          rgba(0,0,0,0.0) 0 0.5%, rgba(0,0,0,0.6) 0.6% 1.1%,
+          rgba(120,78,36,0.22) 1.2% 1.8%, rgba(0,0,0,0.0) 1.9% 12.4%,
+          rgba(120,78,36,0.22) 12.5% 13%, rgba(0,0,0,0.6) 13.1% 13.6%),
+        linear-gradient(180deg, #34210e 0%, #24160a 58%, #170d05 100%);
+      box-shadow:inset 0 14px 28px rgba(0,0,0,0.5);
+    }
+    .st-wall-panels::after {     /* top & bottom panel bevels catching lamp light */
+      content:''; position:absolute; inset:8% 1%;
+      background:
+        linear-gradient(180deg, rgba(150,100,46,0.16) 0 2%, transparent 3%),
+        linear-gradient(0deg,  rgba(0,0,0,0.5) 0 2%, transparent 3%);
+    }
+    .st-skirting {
+      position:absolute; bottom:22.4%; left:0; right:0; height:2%; z-index:5;
+      background:linear-gradient(180deg, #4a3014 0%, #2c1c0a 60%, #160d04 100%);
+      box-shadow:0 4px 8px rgba(0,0,0,0.7);
+    }
+    .room-floor-study {
+      position:absolute; bottom:0; left:0; right:0; height:23%; z-index:2;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.4) 0%, transparent 18%, transparent 72%, rgba(0,0,0,0.6) 100%),
+        repeating-linear-gradient(90deg,
+          transparent 0 14%, rgba(0,0,0,0.55) 14.3% 14.8%, rgba(110,72,34,0.14) 15% 15.4%, transparent 15.6% 29.6%),
+        linear-gradient(180deg, #36230f 0%, #221408 60%, #0e0804 100%);
+      box-shadow:inset 0 10px 24px rgba(0,0,0,0.78);
+    }
+    .room-floor-study::after {     /* warm lamp spill on the boards */
+      content:''; position:absolute; left:34%; right:34%; top:0; bottom:14%;
+      background:radial-gradient(ellipse 60% 90% at 50% 0%, rgba(120,220,150,0.12), transparent 70%);
+      filter:blur(5px); pointer-events:none;
+    }
+    .st-rug {
+      position:absolute; bottom:4%; left:14%; width:64%; height:18%; z-index:3;
+      transform:perspective(var(--persp)) rotateX(58deg); transform-origin:50% 100%;
       border-radius:2px;
+      background:
+        repeating-linear-gradient(0deg,  transparent 0 12%, rgba(150,40,30,0.2) 12.4% 13%, transparent 13.4% 25%),
+        repeating-linear-gradient(90deg, transparent 0 12%, rgba(150,40,30,0.2) 12.4% 13%, transparent 13.4% 25%),
+        linear-gradient(150deg, #4a1812 0%, #361010 50%, #4a1812 100%);
+      box-shadow:0 -2px 16px rgba(0,0,0,0.55);
+    }
+    .st-rug::before { content:''; position:absolute; inset:9%; border:2px solid rgba(150,60,40,0.4); border-radius:2px; }
+
+    /* small leaded window, high on the back wall */
+    .st-window-frame {
+      position:absolute; top:12%; right:13%; width:12%; height:25%; z-index:4; pointer-events:none;
+      border:5px solid #241608; border-radius:2px;
+      background:
+        linear-gradient(180deg, #1a2a3a 0%, #15202c 100%),
+        radial-gradient(ellipse 60% 40% at 60% 20%, rgba(120,160,200,0.25), transparent 70%);
+      box-shadow:inset 0 0 16px rgba(0,0,0,0.8), 0 0 18px rgba(70,120,160,0.12);
+    }
+    .st-window-frame::before {     /* leaded diamond cames */
+      content:''; position:absolute; inset:0;
+      background:
+        repeating-linear-gradient(45deg, transparent 0 18%, rgba(40,30,16,0.7) 18.5% 20%, transparent 20.5% 38%),
+        repeating-linear-gradient(-45deg, transparent 0 18%, rgba(40,30,16,0.7) 18.5% 20%, transparent 20.5% 38%);
+    }
+    .st-window-frame::after {      /* central mullion */
+      content:''; position:absolute; left:50%; top:-5px; bottom:-5px; width:4px;
+      background:#241608; transform:translateX(-50%);
     }
 
-    /* Desk — leather-topped Victorian writing desk */
-    .prop-desk {
-      width:clamp(78px,12vw,164px); height:clamp(42px,5.5vw,72px);
-      background:linear-gradient(180deg,#3a2410 0%,#2a1808 100%);
-      border:1px solid #140c04; border-radius:3px; position:relative;
-      box-shadow:0 6px 16px rgba(0,0,0,0.72);
+    /* ───────────────────────────────────────────────────────────────────
+       06 · OBJECT GROUNDING SYSTEM & PROP SHELL
+       Every interactive object is an absolutely-positioned <button>.
+       The default anchor is its CENTRE (good for wall-mounted things).
+       Add .ground to anchor the object's FEET to its top-coordinate so
+       furniture stands ON the floor instead of floating over it.
+       Each .prop holds an inline SVG illustration that fills it.
+       ─────────────────────────────────────────────────────────────────── */
+    .room-obj {
+      position:absolute; background:transparent; border:none; cursor:pointer;
+      padding:0; margin:0; display:block; z-index:10;
+      transform:translate(-50%,-50%);           /* default: wall / centre anchor */
+      transition:filter 0.18s ease, transform 0.16s ease;
+      -webkit-tap-highlight-color:transparent;
     }
-    .prop-desk::before {
-      content:''; position:absolute; left:4%; right:4%; top:0; height:28%;
-      background:linear-gradient(180deg,#4c3218 0%,#3c2412 100%);
-      border-radius:2px 2px 0 0; box-shadow:inset 0 1px 4px rgba(0,0,0,0.52);
-    }
-    .prop-desk::after {
-      content:''; position:absolute; left:32%; right:32%; bottom:14%; height:24%;
-      border:1px solid rgba(0,0,0,0.5); border-radius:1px;
-      background:linear-gradient(180deg,#2a1808 0%,#1e1006 100%);
+    .room-obj.ground { transform:translate(-50%,-100%); }   /* feet on the floor */
+    .room-obj.lying  { transform:translate(-50%,-72%); }    /* body on the floor */
+
+    .room-obj:hover  { filter:brightness(1.12) contrast(1.05); transform:translate(-50%,-50%) scale(1.035); }
+    .room-obj.ground:hover { transform:translate(-50%,-100%) scale(1.035); }
+    .room-obj.lying:hover  { transform:translate(-50%,-72%)  scale(1.03); }
+    .room-obj:focus-visible {
+      outline:2px solid rgba(212,167,70,0.85); outline-offset:5px; border-radius:4px;
     }
 
-    /* Computer — early LCD with green glow */
-    .prop-computer {
-      width:clamp(46px,6.5vw,80px); height:clamp(36px,5vw,62px);
-      background:linear-gradient(180deg,#1a1a24 0%,#0e0e16 100%);
-      border:2px solid #0a0a12; border-radius:5px; position:relative;
-      box-shadow:0 2px 8px rgba(0,0,0,0.82);
+    /* completion tick */
+    .room-obj.obj-solved::after {
+      content:'✓'; position:absolute; top:-0.5rem; right:-0.5rem;
+      width:1.15rem; height:1.15rem; border-radius:50%;
+      background:radial-gradient(circle at 35% 30%, #f0d472, var(--gold) 60%, #9a7420);
+      color:var(--ink-deep); font-family:var(--font-mono); font-size:0.6rem;
+      display:flex; align-items:center; justify-content:center; font-weight:700;
+      box-shadow:0 0 10px rgba(201,162,39,0.7), 0 1px 3px rgba(0,0,0,0.6); z-index:3;
     }
-    .prop-computer::before {
-      content:''; position:absolute; inset:8% 8% 28%;
-      background:radial-gradient(ellipse 82% 72% at 40% 28%,rgba(60,180,80,0.26) 0%,rgba(20,100,40,0.14) 62%,rgba(10,80,30,0.10) 100%);
-      box-shadow:inset 0 0 12px rgba(60,200,100,0.32),0 0 8px rgba(60,200,100,0.20);
-      border-radius:2px;
+    .room-obj.obj-solved .prop { filter:saturate(1.06) brightness(1.04) var(--obj-shadow); }
+
+    /* hover name plate */
+    .obj-label {
+      position:absolute; bottom:-1.55em; left:50%; transform:translateX(-50%);
+      font-family:var(--font-mono); font-size:0.54rem; color:var(--gold);
+      opacity:0; white-space:nowrap; letter-spacing:0.1em; pointer-events:none;
+      padding:0.18em 0.5em; border-radius:3px;
+      background:rgba(10,7,4,0.82); border:1px solid rgba(201,162,39,0.28);
+      text-shadow:0 1px 2px rgba(0,0,0,0.9); transition:opacity 0.18s ease; z-index:4;
     }
-    .prop-computer::after {
-      content:''; position:absolute; bottom:0; left:36%; right:36%; height:22%;
-      background:linear-gradient(180deg,#1e1e28 0%,#14141e 100%); border-radius:0 0 3px 3px;
+    .room-obj.ground .obj-label { bottom:-1.2em; }
+    .room-obj:hover .obj-label, .room-obj:focus-visible .obj-label { opacity:0.96; }
+
+    /* The prop shell carries size + the floor contact-shadow */
+    .prop {
+      position:relative; display:block; width:100%; height:100%;
+      filter:var(--obj-shadow);
+    }
+    .prop svg { display:block; width:100%; height:100%; overflow:visible; }
+    /* grounded furniture gets a soft contact shadow puddled under it */
+    .room-obj.ground .prop::after,
+    .room-obj.lying  .prop::after {
+      content:''; position:absolute; left:50%; bottom:-6%;
+      width:96%; height:14%; transform:translateX(-50%);
+      background:radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0,0,0,0.6) 0%, transparent 72%);
+      filter:blur(3px); z-index:-1; pointer-events:none;
     }
 
-    /* Bookshelf — rich mahogany with spines */
-    .prop-bookshelf {
-      width:clamp(62px,9.5vw,120px); height:clamp(82px,13vw,152px);
-      background:linear-gradient(180deg,#3a2010 0%,#2a1408 100%);
-      border:1px solid #100804; border-radius:2px;
-      display:flex; flex-direction:column; gap:4%; padding:4% 3%;
-      box-shadow:inset 0 0 12px rgba(0,0,0,0.52);
-    }
-    .prop-bookshelf .sh {
-      flex:1; display:flex; gap:4%; align-items:flex-end;
-      border-bottom:2px solid #1a0e06; padding-bottom:2%;
-    }
-    .prop-bookshelf .sh i { flex:1; border-radius:1px; box-shadow:inset -1px 0 2px rgba(0,0,0,0.42); }
+    /* Per-object footprint (the SVG scales to fill these) */
+    .prop-fireplace { width:clamp(96px,14vw,196px);  height:clamp(120px,18vw,250px); }
+    .prop-clock     { width:clamp(48px,7vw,92px);    height:clamp(64px,9.5vw,128px); }
+    .prop-sofa      { width:clamp(120px,18vw,250px); height:clamp(74px,11vw,150px); }
+    .prop-glass     { width:clamp(26px,3.4vw,46px);  height:clamp(34px,4.6vw,64px); }
+    .prop-table     { width:clamp(82px,12vw,168px);  height:clamp(46px,6.5vw,92px); }
+    .prop-body      { width:clamp(150px,22vw,300px); height:clamp(78px,11vw,150px); }
+    .prop-opener    { width:clamp(48px,6.5vw,92px);  height:clamp(20px,2.6vw,38px); }
+    .prop-trail     { width:clamp(70px,10vw,140px);  height:clamp(26px,3.6vw,52px); }
+    .prop-portrait  { width:clamp(64px,9vw,124px);   height:clamp(80px,11.5vw,158px); }
+    .prop-phone     { width:clamp(50px,7vw,100px);   height:clamp(72px,10vw,144px); }
+    .prop-panel     { width:clamp(40px,5.2vw,70px);  height:clamp(58px,8vw,110px); }
+    .prop-door      { width:clamp(74px,10.5vw,150px);height:clamp(150px,23vw,320px); }
+    .prop-bookshelf { width:clamp(96px,14vw,196px);  height:clamp(130px,20vw,280px); }
+    .prop-armchair  { width:clamp(92px,13vw,184px);  height:clamp(96px,14vw,196px); }
+    .prop-letter    { width:clamp(56px,7.5vw,104px); height:clamp(44px,6vw,84px); }
+    .prop-desk      { width:clamp(130px,19vw,270px); height:clamp(84px,12vw,168px); }
+    .prop-computer  { width:clamp(58px,8vw,110px);   height:clamp(50px,7vw,96px); }
+    .prop-window    { width:clamp(66px,9vw,124px);   height:clamp(84px,12vw,166px); }
+    .prop-painting  { width:clamp(66px,9vw,124px);   height:clamp(56px,7.6vw,104px); }
+    .prop-cabinet   { width:clamp(56px,7.6vw,100px); height:clamp(96px,14vw,196px); }
 
-    /* Painting — gilded frame with dark landscape */
-    .prop-painting {
-      width:clamp(52px,7.5vw,96px); height:clamp(46px,6.5vw,84px);
-      background:linear-gradient(135deg,#c4a020 0%,#9a7818 26%,#ddc040 42%,#8a6810 62%,#c4a020 100%);
-      border:2px solid #4a3008; border-radius:2px; position:relative;
-    }
-    .prop-painting::before {
-      content:''; position:absolute; inset:12%;
-      background:linear-gradient(142deg,#8a7a5a 0%,#5a4a30 42%,#3a3020 72%,#2a2018 100%);
-      box-shadow:inset 0 2px 10px rgba(0,0,0,0.72);
-    }
+    /* ───────────────────────────────────────────────────────────────────
+       07 · ATMOSPHERE — light shaft, dust, fire, lamp, sconces, vignette
+       ─────────────────────────────────────────────────────────────────── */
 
-    /* Filing cabinet — 3-drawer metal */
-    .prop-cabinet {
-      width:clamp(46px,6.5vw,78px); height:clamp(70px,11vw,130px);
-      background:linear-gradient(180deg,#3c3428 0%,#2a2618 100%);
-      border:1px solid #0e0c08; border-radius:2px;
-      display:flex; flex-direction:column; gap:3%; padding:4% 5%;
-      box-shadow:inset -2px 0 7px rgba(0,0,0,0.42);
+    /* hard diagonal shaft of morning sun from the window across the room */
+    .lr-window-light {
+      position:absolute; top:11%; right:6%; width:60%; height:74%; z-index:7;
+      pointer-events:none; mix-blend-mode:screen;
+      background:linear-gradient(218deg,
+        rgba(255,250,214,0.5) 0%, rgba(255,248,206,0.2) 26%, rgba(255,246,200,0.06) 46%, transparent 64%);
+      clip-path:polygon(100% 0, 100% 42%, 18% 100%, 0 100%, 0 64%, 60% 0);
+      filter:blur(3px);
+      animation:sunBreathe 9s ease-in-out infinite;
     }
-    .prop-cabinet i {
-      flex:1; background:linear-gradient(180deg,#2e2a1e 0%,#1e1c12 100%);
-      border:1px solid #0a0804; border-radius:1px; position:relative;
-    }
-    .prop-cabinet i::after {
-      content:''; position:absolute; left:30%; right:30%; top:36%; bottom:36%;
-      background:linear-gradient(180deg,#c8a050 0%,#8a6820 100%);
-      border-radius:2px; box-shadow:0 1px 3px rgba(0,0,0,0.52);
-    }
+    @keyframes sunBreathe { 0%,100%{opacity:0.85} 50%{opacity:1} }
 
-    /* Torn letter — aged parchment */
-    .prop-letter {
-      width:clamp(46px,6.5vw,82px); height:clamp(36px,5vw,64px);
-      background:linear-gradient(162deg,#f5edd5 0%,#e8d8b8 52%,#d8c898 100%);
-      border:1px solid #8a6a38; border-radius:2px; position:relative;
-      transform:rotate(-5deg); box-shadow:0 3px 8px rgba(0,0,0,0.62);
+    /* drifting dust motes inside the shaft */
+    .lr-dust { position:absolute; inset:0; z-index:8; pointer-events:none; overflow:hidden; }
+    .lr-dust i {
+      position:absolute; width:3px; height:3px; border-radius:50%;
+      background:radial-gradient(circle, rgba(255,250,220,0.9), transparent 70%);
+      opacity:0; animation:mote linear infinite;
     }
-    .prop-letter::before {
-      content:''; position:absolute; left:0; right:0; top:-5%; height:16%;
-      background:linear-gradient(162deg,#f5edd5 0%,#e8d8b8 100%);
-      clip-path:polygon(0 100%,4% 0%,11% 82%,19% 8%,27% 90%,35% 4%,43% 86%,51% 0%,59% 88%,67% 12%,75% 82%,83% 0%,91% 88%,100% 100%);
-    }
-    .prop-letter::after {
-      content:''; position:absolute; left:10%; right:10%; top:32%; height:48%;
-      background:repeating-linear-gradient(0deg,transparent 0,transparent 18%,rgba(80,60,20,0.28) 19%,transparent 20%);
+    .lr-dust i:nth-child(1){ left:74%; top:20%; animation-duration:13s; animation-delay:0s; }
+    .lr-dust i:nth-child(2){ left:66%; top:34%; animation-duration:17s; animation-delay:2s; transform:scale(0.7); }
+    .lr-dust i:nth-child(3){ left:80%; top:28%; animation-duration:15s; animation-delay:4s; transform:scale(1.3); }
+    .lr-dust i:nth-child(4){ left:58%; top:46%; animation-duration:19s; animation-delay:1s; transform:scale(0.6); }
+    .lr-dust i:nth-child(5){ left:70%; top:52%; animation-duration:14s; animation-delay:6s; }
+    .lr-dust i:nth-child(6){ left:86%; top:40%; animation-duration:21s; animation-delay:3s; transform:scale(0.9); }
+    @keyframes mote {
+      0%{ opacity:0; transform:translate(0,0) scale(var(--s,1)); }
+      12%{ opacity:0.8; }
+      88%{ opacity:0.5; }
+      100%{ opacity:0; transform:translate(-40px,60px) scale(var(--s,1)); }
     }
 
-    /* Armchair — burgundy leather reading chair */
-    .prop-armchair {
-      width:clamp(56px,8.5vw,110px); height:clamp(50px,7.5vw,92px);
-      background:linear-gradient(180deg,#6a2218 0%,#4a1610 56%,#2e0e08 100%);
-      border-radius:14px 14px 4px 4px; border:1px solid #1a0804; position:relative;
-      box-shadow:0 4px 10px rgba(0,0,0,0.72);
+    /* paired wall sconces with a warm bloom */
+    .lr-sconce { position:absolute; z-index:6; width:2.4%; height:7%; pointer-events:none; }
+    .lr-sconce.left  { left:14%; top:20%; }
+    .lr-sconce.right { left:54%; top:20%; }
+    .lr-sconce::before {       /* brass back-plate + arm */
+      content:''; position:absolute; left:50%; top:30%; width:42%; height:60%;
+      transform:translateX(-50%);
+      background:linear-gradient(180deg, #caa64e 0%, #6a4a18 100%);
+      border-radius:40% 40% 20% 20%;
     }
-    .prop-armchair::before {
-      content:''; position:absolute; left:-9%; top:18%; width:19%; height:72%;
-      background:linear-gradient(90deg,#3a1208 0%,#5a1e14 52%,#3a1208 100%); border-radius:8px;
+    .lr-sconce::after {        /* flame bloom */
+      content:''; position:absolute; left:50%; top:-30%; width:160%; height:90%;
+      transform:translateX(-50%);
+      background:radial-gradient(circle at 50% 60%, rgba(255,206,120,0.55), rgba(255,170,60,0.18) 45%, transparent 72%);
+      animation:sconceFlicker 3.4s ease-in-out infinite;
     }
-    .prop-armchair::after {
-      content:''; position:absolute; right:-9%; top:18%; width:19%; height:72%;
-      background:linear-gradient(270deg,#3a1208 0%,#5a1e14 52%,#3a1208 100%); border-radius:8px;
+    @keyframes sconceFlicker { 0%,100%{opacity:0.7; transform:translateX(-50%) scale(1)} 45%{opacity:1; transform:translateX(-50%) scale(1.06)} 70%{opacity:0.82} }
+
+    /* corner ambient occlusion + warm centre key-light */
+    .room-vignette {
+      position:absolute; inset:0; pointer-events:none; z-index:55;
+      background:
+        radial-gradient(ellipse 120% 86% at 50% 46%, transparent 36%, rgba(0,0,0,0.46) 86%, rgba(0,0,0,0.66) 100%),
+        radial-gradient(ellipse 50% 40% at 44% 64%, rgba(255,238,196,0.10), transparent 70%);
     }
 
-    /* Study window — leaded casement */
-    .prop-window {
-      width:clamp(48px,7.5vw,92px); height:clamp(62px,9.5vw,116px);
-      background:linear-gradient(180deg,rgba(60,120,80,0.24) 0%,rgba(30,70,50,0.18) 100%);
-      border:4px solid #2a1c0c; border-radius:2px; position:relative;
-      box-shadow:inset 0 0 10px rgba(0,0,0,0.62);
+    /* green banker's-lamp pool for the study */
+    .study-lamp-glow {
+      position:absolute; left:38%; top:24%; width:28%; height:52%; z-index:7; pointer-events:none;
+      background:
+        radial-gradient(ellipse 50% 60% at 50% 30%, var(--st-lamp-core) 0%, var(--st-lamp) 40%, transparent 76%);
+      mix-blend-mode:screen;
+      animation:lampHum 6s ease-in-out infinite;
     }
-    .prop-window::before {
-      content:''; position:absolute; left:50%; top:0; bottom:0; width:4px;
-      background:#2a1c0c; transform:translateX(-50%);
-    }
-    .prop-window::after {
-      content:''; position:absolute; top:45%; left:0; right:0; height:4px;
-      background:#2a1c0c; transform:translateY(-50%);
-    }
+    @keyframes lampHum { 0%,100%{opacity:0.9} 50%{opacity:1} }
 
-    /* ── Inspection panel ───────────────────────────────────── */
-    .insp-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.78); z-index:200; opacity:0; pointer-events:none; transition:opacity 0.3s ease; backdrop-filter:blur(4px); }
+    /* ───────────────────────────────────────────────────────────────────
+       08 · INSPECTION PANEL
+       ─────────────────────────────────────────────────────────────────── */
+    .insp-backdrop {
+      position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:200;
+      opacity:0; pointer-events:none; transition:opacity 0.3s ease; backdrop-filter:blur(5px);
+    }
     .insp-backdrop.open { opacity:1; pointer-events:auto; }
-    .insp-panel { position:fixed; top:50%; left:50%; transform:translate(-50%,-48%) scale(0.94); width:min(760px,94vw); max-height:86vh; background:var(--ink-mid); border:1px solid rgba(201,162,39,0.28); border-radius:var(--radius-card); z-index:201; opacity:0; pointer-events:none; transition:all 0.3s cubic-bezier(0.175,0.885,0.32,1.275); overflow:hidden; display:flex; flex-direction:column; box-shadow:0 0 40px rgba(0,0,0,0.9); }
+    .insp-panel {
+      position:fixed; top:50%; left:50%; transform:translate(-50%,-48%) scale(0.94);
+      width:min(760px,94vw); max-height:86vh;
+      background:linear-gradient(180deg, #1b1626, var(--ink-mid));
+      border:1px solid rgba(201,162,39,0.3); border-radius:var(--radius-card);
+      z-index:201; opacity:0; pointer-events:none;
+      transition:all 0.32s cubic-bezier(0.175,0.885,0.32,1.275);
+      overflow:hidden; display:flex; flex-direction:column;
+      box-shadow:0 24px 60px rgba(0,0,0,0.85), 0 0 0 1px rgba(0,0,0,0.5),
+                 inset 0 1px 0 rgba(255,236,190,0.06);
+    }
     .insp-panel.open { opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
-    .insp-header { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.4rem 0.8rem; border-bottom:1px solid rgba(201,162,39,0.14); background:linear-gradient(90deg,rgba(201,162,39,0.04),transparent); flex-shrink:0; }
+    .insp-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:1rem 1.4rem 0.8rem; border-bottom:1px solid rgba(201,162,39,0.16);
+      background:linear-gradient(90deg, rgba(201,162,39,0.06), transparent); flex-shrink:0;
+    }
     .insp-title { font-family:var(--font-display); font-size:clamp(0.9rem,2vw,1.1rem); color:var(--parchment); letter-spacing:0.06em; }
-    .insp-close { background:transparent; border:1px solid rgba(201,162,39,0.2); color:var(--gold); cursor:pointer; width:2rem; height:2rem; border-radius:50%; font-size:1rem; line-height:1; display:flex; align-items:center; justify-content:center; transition:all 0.2s; flex-shrink:0; }
-    .insp-close:hover { background:rgba(201,162,39,0.1); border-color:var(--gold); }
+    .insp-close {
+      background:transparent; border:1px solid rgba(201,162,39,0.22); color:var(--gold);
+      cursor:pointer; width:2rem; height:2rem; border-radius:50%; font-size:1rem; line-height:1;
+      display:flex; align-items:center; justify-content:center; transition:all 0.2s; flex-shrink:0;
+    }
+    .insp-close:hover { background:rgba(201,162,39,0.12); border-color:var(--gold); transform:rotate(90deg); }
     .insp-body { padding:1.4rem; overflow-y:auto; flex:1; }
     .insp-desc { font-style:italic; color:var(--parchment-dim); line-height:1.7; margin-bottom:1.1rem; font-family:var(--font-body); }
     .insp-desc b { color:var(--parchment); font-style:normal; }
+
+    /* ───────────────────────────────────────────────────────────────────
+       09 · INSPECTION VISUAL STAGES
+       A framed "evidence photograph" area. The inline SVG close-up the JS
+       injects scales to fill it; type modifiers tint the backing.
+       ─────────────────────────────────────────────────────────────────── */
     .insp-vis {
-      width:100%; max-width:340px; margin:0 auto 1.2rem; min-height:130px;
-      border:1px solid rgba(201,162,39,0.22); border-radius:5px;
-      display:flex; align-items:center; justify-content:center; font-size:3rem;
-      background:linear-gradient(162deg,#1e1508,#140f06);
+      width:100%; max-width:380px; margin:0 auto 1.2rem; aspect-ratio:16/10;
+      border:1px solid rgba(201,162,39,0.26); border-radius:6px;
+      display:flex; align-items:center; justify-content:center;
+      background:radial-gradient(ellipse 90% 80% at 50% 36%, #241a0c 0%, #140e06 70%, #0d0904 100%);
       position:relative; overflow:hidden;
+      box-shadow:inset 0 0 36px rgba(0,0,0,0.7), 0 6px 16px rgba(0,0,0,0.5);
     }
-    /* Subtle inner frame line */
-    .insp-vis::before {
-      content:''; position:absolute; inset:6px;
-      border:1px solid rgba(201,162,39,0.08); border-radius:3px; pointer-events:none;
+    .insp-vis::before {     /* photographic inner border */
+      content:''; position:absolute; inset:7px; border:1px solid rgba(201,162,39,0.1);
+      border-radius:3px; pointer-events:none; z-index:3;
     }
-    /* Parchment-style vis for document objects */
-    .insp-vis.vis-doc {
-      background:linear-gradient(162deg,#1e1c0e,#16140a);
-      font-size:0; padding:1.2rem;
-    }
-    .insp-vis.vis-doc::after {
-      content:''; position:absolute; inset:14px;
-      background:linear-gradient(162deg,#f5edd5,#e2d0a8);
-      border-radius:2px;
-      box-shadow:0 2px 8px rgba(0,0,0,0.4);
-    }
-    /* Tech/digital vis for computer, panel */
-    .insp-vis.vis-tech {
-      background:linear-gradient(162deg,#0a120a,#060e06);
-      box-shadow:inset 0 0 20px rgba(60,200,80,0.12);
-    }
-    /* Crime-scene vis with subtle dark floor */
-    .insp-vis.vis-scene {
-      background:linear-gradient(180deg,#1a1208 0%,#100c06 60%,#0c0804 100%);
-    }
+    .insp-vis svg { display:block; width:88%; height:88%; overflow:visible; position:relative; z-index:2;
+      filter:drop-shadow(0 8px 14px rgba(0,0,0,0.6)); }
+    .insp-vis .emoji-fallback { font-size:3rem; z-index:2; }
+    .insp-vis.vis-doc   { background:radial-gradient(ellipse 90% 80% at 50% 36%, #221d10 0%, #14110a 80%); }
+    .insp-vis.vis-tech  { background:radial-gradient(ellipse 80% 80% at 50% 44%, #0c160c 0%, #060e06 80%);
+                          box-shadow:inset 0 0 30px rgba(60,200,80,0.16), 0 6px 16px rgba(0,0,0,0.5); }
+    .insp-vis.vis-scene { background:linear-gradient(180deg,#1c1409 0%, #120c06 58%, #0b0703 100%); }
+
     .insp-action-area { display:flex; flex-direction:column; align-items:center; gap:0.8rem; }
-    .insp-btn { font-family:var(--font-display); font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.55rem 1.4rem; background:transparent; border:1px solid rgba(201,162,39,0.4); color:var(--gold); border-radius:var(--radius-seal); cursor:pointer; transition:all var(--transition); }
-    .insp-btn:hover { background:rgba(201,162,39,0.12); border-color:var(--gold); }
+    .insp-btn {
+      font-family:var(--font-display); font-size:0.72rem; letter-spacing:0.12em;
+      text-transform:uppercase; padding:0.55rem 1.4rem; background:transparent;
+      border:1px solid rgba(201,162,39,0.42); color:var(--gold);
+      border-radius:var(--radius-seal); cursor:pointer; transition:all var(--transition);
+    }
+    .insp-btn:hover { background:rgba(201,162,39,0.14); border-color:var(--gold); box-shadow:0 0 14px rgba(201,162,39,0.18); }
     .insp-btn:disabled { opacity:0.3; cursor:not-allowed; }
     .insp-feedback { font-family:var(--font-mono); font-size:0.78rem; letter-spacing:0.05em; text-align:center; min-height:1.4em; }
-    .insp-feedback.ok { color:var(--gold); }
+    .insp-feedback.ok  { color:var(--gold); }
     .insp-feedback.err { color:var(--ember); }
-    .evidence-tag { display:inline-block; font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.08em; color:var(--gold); background:rgba(201,162,39,0.1); border:1px solid rgba(201,162,39,0.3); border-radius:3px; padding:0.3rem 0.6rem; margin:0.3rem 0.2rem 0; }
-    .insp-clue-strip { margin-top:1rem; padding:0.7rem 1rem; background:rgba(226,87,43,0.06); border:1px solid rgba(226,87,43,0.18); border-radius:4px; font-family:var(--font-mono); font-size:0.72rem; color:var(--ember); letter-spacing:0.04em; line-height:1.6; display:none; }
+    .evidence-tag {
+      display:inline-block; font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.08em;
+      color:var(--gold); background:rgba(201,162,39,0.1); border:1px solid rgba(201,162,39,0.3);
+      border-radius:3px; padding:0.3rem 0.6rem; margin:0.3rem 0.2rem 0;
+    }
+    .insp-clue-strip {
+      margin-top:1rem; padding:0.7rem 1rem; background:rgba(226,87,43,0.06);
+      border:1px solid rgba(226,87,43,0.18); border-radius:4px; font-family:var(--font-mono);
+      font-size:0.72rem; color:var(--ember); letter-spacing:0.04em; line-height:1.6; display:none;
+    }
     .insp-clue-strip.visible { display:block; }
-    .insp-note { background:linear-gradient(160deg,#1e1a0e,#16120a); border:1px solid rgba(201,162,39,0.2); border-radius:4px; padding:1rem 1.2rem; font-family:var(--font-body); color:var(--parchment); line-height:1.7; margin:0.4rem 0 1rem; }
+    .insp-note {
+      background:linear-gradient(160deg,#1e1a0e,#16120a); border:1px solid rgba(201,162,39,0.2);
+      border-radius:4px; padding:1rem 1.2rem; font-family:var(--font-body); color:var(--parchment);
+      line-height:1.7; margin:0.4rem 0 1rem;
+    }
     .insp-note .mono { font-family:var(--font-mono); color:var(--gold); letter-spacing:0.1em; }
 
-    /* digit slots */
-    .bottom-hud { position:fixed; bottom:0; left:0; right:0; background:rgba(10,8,12,0.97); border-top:1px solid rgba(201,162,39,0.22); backdrop-filter:blur(12px); z-index:50; padding:0.6rem clamp(1rem,4vw,2.5rem); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; }
+    /* ───────────────────────────────────────────────────────────────────
+       10 · BOTTOM HUD & PASSCODE TRACKER
+       ─────────────────────────────────────────────────────────────────── */
+    .bottom-hud {
+      position:fixed; bottom:0; left:0; right:0;
+      background:linear-gradient(180deg, rgba(14,10,18,0.9), rgba(8,6,12,0.98));
+      border-top:1px solid rgba(201,162,39,0.24); backdrop-filter:blur(12px);
+      z-index:50; padding:0.6rem clamp(1rem,4vw,2.5rem);
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem;
+      box-shadow:0 -4px 18px rgba(0,0,0,0.5);
+    }
     .digit-tracker { display:flex; align-items:center; gap:0.5rem; }
-    .digit-label { font-family:var(--font-mono); font-size:0.55rem; color:var(--parchment-faint); opacity:0.55; letter-spacing:0.12em; text-transform:uppercase; margin-right:0.3rem; }
-    .digit-slot { width:2.4rem; height:3rem; border:1px solid rgba(201,162,39,0.2); border-radius:4px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:1.4rem; color:rgba(201,162,39,0.2); background:rgba(14,11,18,0.8); transition:all 0.4s ease; }
+    .digit-label { font-family:var(--font-mono); font-size:0.55rem; color:var(--parchment-faint); opacity:0.6; letter-spacing:0.12em; text-transform:uppercase; margin-right:0.3rem; }
+    .digit-slot {
+      width:2.4rem; height:3rem; border:1px solid rgba(201,162,39,0.22); border-radius:4px;
+      display:flex; align-items:center; justify-content:center; font-family:var(--font-mono);
+      font-size:1.4rem; color:rgba(201,162,39,0.2);
+      background:linear-gradient(180deg, rgba(20,15,24,0.9), rgba(10,8,14,0.9));
+      transition:all 0.45s cubic-bezier(0.22,0.61,0.36,1);
+      box-shadow:inset 0 1px 4px rgba(0,0,0,0.6);
+    }
     .digit-slot::after { content:'?'; }
-    .digit-slot.revealed { color:var(--gold); border-color:rgba(201,162,39,0.7); box-shadow:0 0 14px rgba(201,162,39,0.3), inset 0 0 8px rgba(201,162,39,0.08); background:rgba(201,162,39,0.04); }
+    .digit-slot.revealed {
+      color:var(--gold); border-color:rgba(201,162,39,0.75);
+      box-shadow:0 0 16px rgba(201,162,39,0.34), inset 0 0 10px rgba(201,162,39,0.1);
+      background:rgba(201,162,39,0.05); transform:translateY(-2px);
+    }
     .digit-slot.revealed::after { content:attr(data-digit); }
-    .evidence-counter { font-family:var(--font-mono); font-size:0.6rem; color:var(--parchment-faint); letter-spacing:0.1em; opacity:0.7; }
+    .evidence-counter { font-family:var(--font-mono); font-size:0.6rem; color:var(--parchment-faint); letter-spacing:0.1em; opacity:0.74; }
     .evidence-counter b { color:var(--gold); }
 
-    /* passcode */
+    /* ───────────────────────────────────────────────────────────────────
+       11 · PASSCODE ENTRY
+       ─────────────────────────────────────────────────────────────────── */
     .passcode-inputs { display:flex; gap:0.5rem; justify-content:center; }
-    .passcode-input { width:3rem; height:3.8rem; background:rgba(14,11,18,0.9); border:1px solid rgba(201,162,39,0.3); border-radius:4px; text-align:center; font-family:var(--font-mono); font-size:1.6rem; color:var(--gold); -moz-appearance:textfield; }
+    .passcode-input {
+      width:3rem; height:3.8rem; background:rgba(14,11,18,0.9);
+      border:1px solid rgba(201,162,39,0.3); border-radius:4px; text-align:center;
+      font-family:var(--font-mono); font-size:1.6rem; color:var(--gold); -moz-appearance:textfield;
+      box-shadow:inset 0 1px 4px rgba(0,0,0,0.6);
+    }
     .passcode-input::-webkit-outer-spin-button, .passcode-input::-webkit-inner-spin-button { -webkit-appearance:none; }
-    .passcode-input:focus { outline:none; border-color:var(--gold); box-shadow:0 0 12px rgba(201,162,39,0.3); }
+    .passcode-input:focus { outline:none; border-color:var(--gold); box-shadow:0 0 12px rgba(201,162,39,0.32), inset 0 1px 4px rgba(0,0,0,0.6); }
 
-    /* email client */
+    /* ───────────────────────────────────────────────────────────────────
+       12 · EMAIL CLIENT
+       ─────────────────────────────────────────────────────────────────── */
     .email-client { display:grid; grid-template-columns:200px 1fr; gap:0; border:1px solid rgba(201,162,39,0.2); border-radius:5px; overflow:hidden; min-height:340px; }
-    @media (max-width:560px){ .email-client { grid-template-columns:1fr; } .email-list { max-height:160px; } }
     .email-sidebar { background:rgba(10,8,12,0.7); border-right:1px solid rgba(201,162,39,0.12); }
     .email-folder { font-family:var(--font-mono); font-size:0.64rem; letter-spacing:0.08em; text-transform:uppercase; padding:0.6rem 0.9rem; color:var(--parchment-faint); cursor:pointer; border-bottom:1px solid rgba(201,162,39,0.06); }
     .email-folder.active { color:var(--gold); background:rgba(201,162,39,0.08); }
@@ -663,28 +854,38 @@
     .email-reading .eb { font-family:var(--font-body); font-size:0.92rem; color:var(--parchment); line-height:1.8; white-space:pre-line; }
     .email-flag { display:inline-block; font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.1em; color:var(--ember); border:1px solid rgba(226,87,43,0.4); border-radius:3px; padding:0.15rem 0.45rem; margin-bottom:0.6rem; }
 
-    /* accusation */
+    /* ───────────────────────────────────────────────────────────────────
+       13 · ACCUSATION
+       ─────────────────────────────────────────────────────────────────── */
     .accuse-input { width:100%; max-width:320px; background:rgba(14,11,18,0.9); border:1px solid rgba(201,162,39,0.3); border-radius:4px; padding:0.7rem 1rem; font-family:var(--font-mono); font-size:0.95rem; color:var(--gold); text-align:center; letter-spacing:0.05em; }
     .accuse-input:focus { outline:none; border-color:var(--gold); box-shadow:0 0 12px rgba(201,162,39,0.3); }
     .suspect-grid { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:1rem; }
     .suspect-chip { font-family:var(--font-mono); font-size:0.66rem; padding:0.45rem 0.9rem; border:1px solid rgba(201,162,39,0.25); border-radius:20px; background:transparent; color:var(--parchment-dim); cursor:pointer; transition:all 0.2s; }
     .suspect-chip:hover { border-color:var(--gold); color:var(--gold); background:rgba(201,162,39,0.08); }
 
-    /* flash + transition */
+    /* ───────────────────────────────────────────────────────────────────
+       14 · FLASH, SHAKE & ROOM TRANSITION
+       ─────────────────────────────────────────────────────────────────── */
     .solved-flash { position:fixed; inset:0; background:rgba(201,162,39,0.06); border:2px solid rgba(201,162,39,0.3); pointer-events:none; opacity:0; z-index:400; transition:opacity 0.3s ease; }
     .solved-flash.show { opacity:1; }
     @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
     .shake { animation:shake 0.4s ease; }
-    .room-transition { position:fixed; inset:0; z-index:650; background:#0a0805; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.5s ease; }
+    .room-transition {
+      position:fixed; inset:0; z-index:650; display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity 0.5s ease;
+      background:radial-gradient(ellipse 60% 60% at 50% 45%, #1a1207 0%, #0a0805 70%);
+    }
     .room-transition.show { opacity:1; pointer-events:auto; }
-    .rt-key { font-size:4rem; animation:rtKeyTurn 1.4s ease forwards; }
+    .rt-key { font-size:4rem; animation:rtKeyTurn 1.4s ease forwards; filter:drop-shadow(0 0 18px rgba(201,162,39,0.5)); }
     @keyframes rtKeyTurn { 0%{transform:rotate(0) scale(0.8); opacity:0.4} 40%{transform:rotate(95deg) scale(1)} 100%{transform:rotate(90deg) scale(1.05); opacity:1} }
     .rt-text { position:absolute; bottom:34%; font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold); opacity:0.8; }
 
-    /* modals (clue / no-credits / restart) */
-    .modal-back { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:500; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+    /* ───────────────────────────────────────────────────────────────────
+       15 · MODALS
+       ─────────────────────────────────────────────────────────────────── */
+    .modal-back { position:fixed; inset:0; background:rgba(0,0,0,0.76); z-index:500; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
     .modal-back.open { display:flex; }
-    .modal-card { background:var(--ink-mid); border:1px solid rgba(201,162,39,0.22); border-radius:var(--radius-card); padding:2rem; max-width:min(480px,90vw); width:100%; position:relative; }
+    .modal-card { background:linear-gradient(180deg,#1b1626,var(--ink-mid)); border:1px solid rgba(201,162,39,0.24); border-radius:var(--radius-card); padding:2rem; max-width:min(480px,90vw); width:100%; position:relative; box-shadow:0 20px 50px rgba(0,0,0,0.8); }
     .modal-title { font-family:var(--font-display); font-size:1rem; color:var(--gold); letter-spacing:0.08em; margin-bottom:0.8rem; }
     .modal-body { font-style:italic; color:var(--parchment-dim); line-height:1.7; font-size:0.95rem; }
     .modal-credits { font-family:var(--font-mono); font-size:0.68rem; color:var(--ember); margin-top:0.8rem; opacity:0.85; }
@@ -696,7 +897,9 @@
     .modal-close { position:absolute; top:0.8rem; right:0.8rem; background:transparent; border:none; color:var(--parchment-faint); font-size:1.2rem; cursor:pointer; opacity:0.5; transition:opacity 0.2s; line-height:1; padding:0.2rem; }
     .modal-close:hover { opacity:1; }
 
-    /* completion */
+    /* ───────────────────────────────────────────────────────────────────
+       16 · COMPLETION SCREEN
+       ─────────────────────────────────────────────────────────────────── */
     .completion-panel {
       position:fixed; inset:0; z-index:600; display:none; align-items:center; justify-content:center; backdrop-filter:blur(8px);
       background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(50,35,8,0.25) 0%,rgba(10,8,12,0.97) 55%);
@@ -721,62 +924,57 @@
     .completion-btn:hover { background:rgba(201,162,39,0.1); }
     .completion-btn.primary:hover { background:var(--parchment); }
 
-    /* ── Opening letter — Victorian brief ─────────────── */
+    /* ───────────────────────────────────────────────────────────────────
+       17 · OPENING LETTER — Victorian brief on aged paper
+       ─────────────────────────────────────────────────────────────────── */
     .letter-overlay {
       position:fixed; inset:0; z-index:700; display:flex; align-items:center; justify-content:center; padding:2rem;
-      background:radial-gradient(ellipse 80% 70% at 50% 40%,rgba(50,35,8,0.18) 0%,rgba(10,8,12,0.98) 60%);
+      background:radial-gradient(ellipse 80% 70% at 50% 40%,rgba(50,35,8,0.2) 0%,rgba(10,8,12,0.98) 60%);
     }
     .letter-overlay.hidden { display:none; }
     .letter-paper {
       max-width:600px; width:100%;
-      background:linear-gradient(162deg,#f6ecda 0%,#ead8b4 35%,#dcc89a 65%,#ceb888 100%);
+      background:
+        repeating-linear-gradient(0deg, transparent 0 27px, rgba(120,90,30,0.05) 27px 28px),
+        linear-gradient(162deg,#f6ecda 0%,#ead8b4 35%,#dcc89a 65%,#ceb888 100%);
       border:1px solid rgba(120,90,30,0.5); border-radius:3px;
       padding:clamp(1.8rem,4.5vw,3.2rem);
       box-shadow:0 0 80px rgba(0,0,0,0.85), 0 2px 30px rgba(0,0,0,0.6), inset 0 0 40px rgba(180,140,60,0.08);
-      position:relative;
-      color:#2e1e08;
+      position:relative; color:#2e1e08;
     }
-    /* Paper texture edge shadow */
     .letter-paper::before {
       content:''; position:absolute; inset:0; border-radius:3px; pointer-events:none;
       background:
         radial-gradient(ellipse 60% 50% at 50% 0%,rgba(180,140,60,0.12) 0%,transparent 70%),
-        radial-gradient(ellipse 40% 30% at 0% 100%,rgba(0,0,0,0.10) 0%,transparent 60%),
-        radial-gradient(ellipse 40% 30% at 100% 100%,rgba(0,0,0,0.10) 0%,transparent 60%);
+        radial-gradient(ellipse 40% 30% at 0% 100%,rgba(0,0,0,0.1) 0%,transparent 60%),
+        radial-gradient(ellipse 40% 30% at 100% 100%,rgba(0,0,0,0.1) 0%,transparent 60%);
     }
     .letter-seal { text-align:center; margin-bottom:1.6rem; }
     .letter-seal-mark { font-size:2.6rem; display:block; margin-bottom:0.4rem; filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
-    .letter-seal-text {
-      font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.22em;
-      text-transform:uppercase; color:#5a3e10; opacity:0.75;
-    }
-    /* Ruled line under seal */
-    .letter-rule {
-      width:60%; margin:0 auto 1.6rem; height:1px;
-      background:linear-gradient(90deg,transparent,rgba(90,62,16,0.4),transparent);
-    }
-    .letter-body {
-      font-family:'EB Garamond',serif; font-size:clamp(0.9rem,2.1vw,1.05rem);
-      color:#2e1e08; line-height:1.88; font-style:italic;
-    }
+    .letter-seal-text { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.22em; text-transform:uppercase; color:#5a3e10; opacity:0.75; }
+    .letter-rule { width:60%; margin:0 auto 1.6rem; height:1px; background:linear-gradient(90deg,transparent,rgba(90,62,16,0.4),transparent); }
+    .letter-body { font-family:'EB Garamond',serif; font-size:clamp(0.9rem,2.1vw,1.05rem); color:#2e1e08; line-height:1.88; font-style:italic; }
     .letter-body p { margin-bottom:1.05em; }
-    .letter-sign {
-      text-align:right; font-family:'EB Garamond',serif; font-style:italic;
-      color:#3e2a0c; margin-top:1.6rem; font-size:0.95rem; border-top:1px solid rgba(90,62,16,0.2); padding-top:1rem;
-    }
+    .letter-sign { text-align:right; font-family:'EB Garamond',serif; font-style:italic; color:#3e2a0c; margin-top:1.6rem; font-size:0.95rem; border-top:1px solid rgba(90,62,16,0.2); padding-top:1rem; }
     .letter-enter { margin-top:1.8rem; text-align:center; }
-    /* Override insp-btn colours on parchment background */
-    .letter-enter .insp-btn {
-      border-color:rgba(90,62,16,0.6); color:#4a3010;
-      background:rgba(90,62,16,0.08);
-    }
+    .letter-enter .insp-btn { border-color:rgba(90,62,16,0.6); color:#4a3010; background:rgba(90,62,16,0.08); }
     .letter-enter .insp-btn:hover { background:rgba(90,62,16,0.18); border-color:#5a3e10; }
 
+    /* ───────────────────────────────────────────────────────────────────
+       18 · MOTION PREFERENCES & RESPONSIVE
+       ─────────────────────────────────────────────────────────────────── */
+    @media (max-width:560px){ .email-client { grid-template-columns:1fr; } .email-list { max-height:160px; } }
+    @media (max-width:900px){
+      .obj-label { font-size:0.5rem; }
+      .digit-slot { width:2rem; height:2.5rem; font-size:1.2rem; }
+    }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
       .rt-key { animation:none; transform:rotate(90deg); }
+      .lr-window-light, .lr-dust i, .lr-sconce::after, .study-lamp-glow { animation:none; }
     }
-  </style>
+
+</style>
 </head>
 <body>
 
@@ -836,29 +1034,415 @@
       <div class="room-bg-living"></div>
       <div class="lr-ceiling"></div>
       <div class="lr-cornice"></div>
+      <div class="lr-picture-rail"></div>
       <div class="lr-wallpaper"></div>
+      <div class="lr-wall-sun"></div>
+      <div class="lr-sconce left"></div>
+      <div class="lr-sconce right"></div>
       <div class="lr-dado-rail"></div>
       <div class="lr-wainscot"></div>
+      <div class="lr-skirting"></div>
       <div class="room-floor-living"></div>
       <div class="lr-rug"></div>
-      <div class="lr-window-light"></div>
+      <div class="lr-pelmet"></div>
       <div class="lr-window-frame"></div>
+      <div class="lr-window-glare"></div>
       <div class="lr-curtain-l"></div>
       <div class="lr-curtain-r"></div>
+      <div class="lr-window-light"></div>
+      <div class="lr-dust"><i></i><i></i><i></i><i></i><i></i><i></i></div>
       <div class="room-vignette"></div>
 
-      <button class="room-obj" id="obj-fireplace" style="left:9%;top:50%" aria-label="Inspect the fireplace"><div class="prop prop-fireplace"></div><span class="obj-label">Fireplace</span></button>
-      <button class="room-obj" id="obj-wall_clock" style="left:21%;top:22%" aria-label="Inspect the wall clock"><div class="prop prop-clock"></div><span class="obj-label">Wall Clock</span></button>
-      <button class="room-obj" id="obj-sofa" style="left:34%;top:52%" aria-label="Inspect the sofa"><div class="prop prop-sofa"></div><span class="obj-label">Sofa</span></button>
-      <button class="room-obj" id="obj-wine_glass" style="left:38%;top:42%" aria-label="Inspect the wine glasses"><div class="prop prop-glass"></div><span class="obj-label">Wine Glasses</span></button>
-      <button class="room-obj" id="obj-coffee_table" style="left:40%;top:64%" aria-label="Inspect the coffee table"><div class="prop prop-table"></div><span class="obj-label">Coffee Table</span></button>
-      <button class="room-obj" id="obj-body" style="left:48%;top:74%" aria-label="Inspect the body"><div class="prop prop-body"></div><span class="obj-label">The Body</span></button>
-      <button class="room-obj" id="obj-letter_opener" style="left:58%;top:80%" aria-label="Inspect the letter opener"><div class="prop prop-opener"></div><span class="obj-label">Letter Opener</span></button>
-      <button class="room-obj" id="obj-blood_trail" style="left:30%;top:78%" aria-label="Inspect the blood trail"><div class="prop prop-trail"></div><span class="obj-label">Blood Trail</span></button>
-      <button class="room-obj" id="obj-family_portrait" style="left:70%;top:24%" aria-label="Inspect the family portrait"><div class="prop prop-portrait"></div><span class="obj-label">Family Portrait</span></button>
-      <button class="room-obj" id="obj-phone" style="left:80%;top:60%" aria-label="Inspect the telephone"><div class="prop prop-phone"></div><span class="obj-label">Telephone</span></button>
-      <button class="room-obj" id="obj-security_panel" style="left:88%;top:36%" aria-label="Inspect the security panel"><div class="prop prop-panel"></div><span class="obj-label">Security Panel</span></button>
-      <button class="room-obj" id="obj-door_to_study" style="left:93%;top:64%" aria-label="The study door"><div class="prop prop-door"></div><span class="obj-label">Study Door</span></button>
+      <!-- FIREPLACE — marble Victorian chimneypiece, lit -->
+      <button class="room-obj ground" id="obj-fireplace" style="left:11%;top:75%" aria-label="Inspect the fireplace">
+        <div class="prop prop-fireplace"><svg viewBox="0 0 200 256" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="fpMarble" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#e9ddcb"/><stop offset="0.4" stop-color="#cdbda6"/>
+              <stop offset="0.7" stop-color="#b6a489"/><stop offset="1" stop-color="#9c8a70"/>
+            </linearGradient>
+            <radialGradient id="fpFire" cx="0.5" cy="0.95" r="0.9">
+              <stop offset="0" stop-color="#fff1b0"/><stop offset="0.35" stop-color="#ffae33"/>
+              <stop offset="0.7" stop-color="#d8460f"/><stop offset="1" stop-color="#3a0f02"/>
+            </radialGradient>
+            <linearGradient id="fpFlame" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0" stop-color="#ffd24a"/><stop offset="0.5" stop-color="#ff8a1e"/><stop offset="1" stop-color="#e23b0c"/>
+            </linearGradient>
+            <style>
+              .fpfl{transform-origin:center bottom;animation:fpFlk 1.4s ease-in-out infinite}
+              .fpfl2{animation-duration:1s;animation-delay:.3s}
+              .fpfl3{animation-duration:1.7s;animation-delay:.6s}
+              @keyframes fpFlk{0%,100%{transform:scaleY(1) scaleX(1)}50%{transform:scaleY(1.12) scaleX(0.94)}}
+            </style>
+          </defs>
+          <!-- back chimney breast -->
+          <rect x="6" y="40" width="188" height="216" fill="#5a3c1c"/>
+          <!-- hearth slab -->
+          <rect x="2" y="236" width="196" height="20" rx="2" fill="url(#fpMarble)"/>
+          <rect x="2" y="236" width="196" height="5" fill="#fff" opacity="0.18"/>
+          <!-- firebox cavity -->
+          <rect x="50" y="86" width="100" height="150" fill="#140a04"/>
+          <rect x="50" y="86" width="100" height="150" fill="url(#fpFire)" opacity="0.92"/>
+          <!-- grate bars -->
+          <g stroke="#1a1008" stroke-width="3">
+            <line x1="60" y1="214" x2="140" y2="214"/><line x1="64" y1="224" x2="136" y2="224"/>
+          </g>
+          <!-- logs -->
+          <rect x="66" y="200" width="64" height="13" rx="6" fill="#3a2410"/>
+          <rect x="78" y="190" width="48" height="12" rx="6" fill="#4a2e14"/>
+          <!-- flames -->
+          <path class="fpfl" d="M100 230 C84 200 96 184 92 166 C108 184 112 200 108 214 C120 198 116 182 122 170 C130 196 122 214 110 230 Z" fill="url(#fpFlame)"/>
+          <path class="fpfl fpfl2" d="M86 228 C76 206 86 192 84 178 C96 192 98 206 95 218 Z" fill="#ffb845" opacity="0.9"/>
+          <path class="fpfl fpfl3" d="M126 230 C118 208 126 194 124 182 C136 196 137 212 133 224 Z" fill="#ff9a2e" opacity="0.85"/>
+          <!-- marble surround: pilasters + lintel -->
+          <rect x="18" y="60" width="32" height="178" fill="url(#fpMarble)"/>
+          <rect x="150" y="60" width="32" height="178" fill="url(#fpMarble)"/>
+          <rect x="18" y="60" width="6" height="178" fill="#fff" opacity="0.2"/>
+          <rect x="150" y="60" width="6" height="178" fill="#fff" opacity="0.2"/>
+          <rect x="14" y="58" width="172" height="30" fill="url(#fpMarble)"/>
+          <!-- carved centre block -->
+          <rect x="86" y="60" width="28" height="26" fill="#bcab90"/>
+          <circle cx="100" cy="73" r="7" fill="none" stroke="#8a7558" stroke-width="2"/>
+          <!-- mantel shelf -->
+          <rect x="4" y="44" width="192" height="18" rx="2" fill="url(#fpMarble)"/>
+          <rect x="4" y="44" width="192" height="4" fill="#fff" opacity="0.28"/>
+          <!-- mantel ornaments: clock + candlesticks -->
+          <rect x="86" y="20" width="28" height="24" rx="2" fill="#3a2a14"/>
+          <circle cx="100" cy="32" r="8" fill="#f3e8c8" />
+          <circle cx="100" cy="32" r="8" fill="#f3e8c8" stroke="#7a5a20" stroke-width="1.5"/>
+          <g stroke="#caa64e" stroke-width="2"><line x1="40" y1="24" x2="40" y2="44"/><line x1="160" y1="24" x2="160" y2="44"/></g>
+          <circle cx="40" cy="22" r="3" fill="#ffd76a"/><circle cx="160" cy="22" r="3" fill="#ffd76a"/>
+        </svg></div><span class="obj-label">Fireplace</span>
+      </button>
+
+      <!-- WALL CLOCK — Vienna regulator stopped at 10:31 -->
+      <button class="room-obj" id="obj-wall_clock" style="left:20%;top:24%" aria-label="Inspect the wall clock">
+        <div class="prop prop-clock"><svg viewBox="0 0 92 150" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
+          <defs>
+            <radialGradient id="clkFace" cx="0.4" cy="0.36" r="0.75">
+              <stop offset="0" stop-color="#fdf6e2"/><stop offset="0.7" stop-color="#ece0c0"/><stop offset="1" stop-color="#c9b88c"/>
+            </radialGradient>
+            <linearGradient id="clkCase" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#5a3a18"/><stop offset="0.5" stop-color="#3e2810"/><stop offset="1" stop-color="#241405"/>
+            </linearGradient>
+          </defs>
+          <!-- crown finial -->
+          <path d="M46 2 C40 10 34 12 34 18 L58 18 C58 12 52 10 46 2 Z" fill="url(#clkCase)"/>
+          <!-- bezel case -->
+          <circle cx="46" cy="46" r="34" fill="url(#clkCase)"/>
+          <circle cx="46" cy="46" r="30" fill="#1c1208"/>
+          <circle cx="46" cy="46" r="27" fill="url(#clkFace)" stroke="#7a5a24" stroke-width="1.5"/>
+          <!-- numerals -->
+          <g fill="#2a1c0a" font-family="Cinzel, serif" font-size="8" text-anchor="middle">
+            <text x="46" y="28">XII</text><text x="66" y="50">III</text>
+            <text x="46" y="70">VI</text><text x="27" y="50">IX</text>
+          </g>
+          <!-- minute ticks -->
+          <g stroke="#3a2a12" stroke-width="1">
+            <line x1="46" y1="21" x2="46" y2="25"/><line x1="71" y1="46" x2="67" y2="46"/>
+            <line x1="46" y1="71" x2="46" y2="67"/><line x1="21" y1="46" x2="25" y2="46"/>
+          </g>
+          <!-- hands frozen at 10:31 (hour 315.5deg, minute 186deg) -->
+          <g stroke-linecap="round">
+            <line x1="46" y1="46" x2="34" y2="34" stroke="#1a0e04" stroke-width="3"/>
+            <line x1="46" y1="46" x2="44" y2="68" stroke="#1a0e04" stroke-width="2"/>
+            <circle cx="46" cy="46" r="2.4" fill="#1a0e04"/>
+          </g>
+          <!-- pendulum case -->
+          <rect x="30" y="82" width="32" height="60" rx="3" fill="url(#clkCase)"/>
+          <rect x="35" y="88" width="22" height="48" rx="2" fill="#120a04" opacity="0.7"/>
+          <line x1="46" y1="88" x2="46" y2="126" stroke="#8a6a2a" stroke-width="1.5"/>
+          <circle cx="46" cy="128" r="7" fill="#d8b24a"/>
+          <circle cx="46" cy="128" r="7" fill="#d8b24a" stroke="#8a6420" stroke-width="1"/>
+        </svg></div><span class="obj-label">Wall Clock</span>
+      </button>
+
+      <!-- SOFA — buttoned Chesterfield -->
+      <button class="room-obj ground" id="obj-sofa" style="left:32%;top:80%" aria-label="Inspect the sofa">
+        <div class="prop prop-sofa"><svg viewBox="0 0 250 150" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="sofaLeather" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#8a5a34"/><stop offset="0.5" stop-color="#6a4020"/><stop offset="1" stop-color="#43250f"/>
+            </linearGradient>
+          </defs>
+          <!-- shadow base / feet -->
+          <rect x="20" y="132" width="20" height="14" rx="3" fill="#241405"/>
+          <rect x="210" y="132" width="20" height="14" rx="3" fill="#241405"/>
+          <!-- back -->
+          <path d="M14 60 Q14 30 44 30 L206 30 Q236 30 236 60 L236 96 L14 96 Z" fill="url(#sofaLeather)"/>
+          <!-- tufting buttons -->
+          <g fill="#33200f">
+            <circle cx="58" cy="54" r="2.6"/><circle cx="92" cy="50" r="2.6"/><circle cx="125" cy="48" r="2.6"/>
+            <circle cx="158" cy="50" r="2.6"/><circle cx="192" cy="54" r="2.6"/>
+            <circle cx="75" cy="70" r="2.6"/><circle cx="108" cy="68" r="2.6"/><circle cx="142" cy="68" r="2.6"/><circle cx="175" cy="70" r="2.6"/>
+          </g>
+          <!-- arm rolls -->
+          <ellipse cx="26" cy="84" rx="22" ry="40" fill="url(#sofaLeather)"/>
+          <ellipse cx="224" cy="84" rx="22" ry="40" fill="url(#sofaLeather)"/>
+          <ellipse cx="26" cy="66" rx="14" ry="12" fill="#9a6a3e" opacity="0.6"/>
+          <ellipse cx="224" cy="66" rx="14" ry="12" fill="#9a6a3e" opacity="0.6"/>
+          <!-- seat cushions -->
+          <rect x="44" y="92" width="162" height="40" rx="12" fill="url(#sofaLeather)"/>
+          <line x1="125" y1="96" x2="125" y2="128" stroke="#33200f" stroke-width="2"/>
+          <ellipse cx="84" cy="100" rx="36" ry="9" fill="#9a6a3e" opacity="0.4"/>
+          <ellipse cx="166" cy="100" rx="36" ry="9" fill="#9a6a3e" opacity="0.4"/>
+        </svg></div><span class="obj-label">Sofa</span>
+      </button>
+
+      <!-- WINE GLASSES — one upright with wine, one overturned -->
+      <button class="room-obj ground" id="obj-wine_glass" style="left:41%;top:79%;z-index:16" aria-label="Inspect the wine glasses">
+        <div class="prop prop-glass"><svg viewBox="0 0 56 64" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="glassG" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="rgba(230,238,255,0.55)"/><stop offset="1" stop-color="rgba(150,175,215,0.25)"/>
+            </linearGradient>
+          </defs>
+          <!-- upright glass -->
+          <path d="M14 8 Q14 30 22 32 Q30 30 30 8 Z" fill="url(#glassG)" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+          <path d="M16 20 Q22 28 28 20 L28 12 Q22 16 16 12 Z" fill="#6a1020" opacity="0.85"/>
+          <line x1="22" y1="32" x2="22" y2="54" stroke="rgba(220,230,255,0.5)" stroke-width="2"/>
+          <ellipse cx="22" cy="56" rx="9" ry="3" fill="rgba(210,225,255,0.5)"/>
+          <!-- overturned glass + spill -->
+          <ellipse cx="42" cy="58" rx="13" ry="4" fill="#5a0e1a" opacity="0.7"/>
+          <path d="M34 60 Q40 48 50 50 Q44 54 44 60 Z" fill="url(#glassG)" stroke="rgba(255,255,255,0.4)" stroke-width="0.8"/>
+          <ellipse cx="33" cy="60" rx="3" ry="5" fill="rgba(210,225,255,0.45)"/>
+        </svg></div><span class="obj-label">Wine Glasses</span>
+      </button>
+
+      <!-- COFFEE TABLE — low oval table with a silver tray -->
+      <button class="room-obj ground" id="obj-coffee_table" style="left:47%;top:88%" aria-label="Inspect the coffee table">
+        <div class="prop prop-table"><svg viewBox="0 0 168 92" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="tblTop" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#7a4e24"/><stop offset="1" stop-color="#4a2e12"/>
+            </linearGradient>
+          </defs>
+          <!-- legs -->
+          <path d="M30 52 C24 70 22 80 26 88 L34 88 C32 78 34 68 40 54 Z" fill="#3a2410"/>
+          <path d="M138 52 C144 70 146 80 142 88 L134 88 C136 78 134 68 128 54 Z" fill="#3a2410"/>
+          <!-- top -->
+          <ellipse cx="84" cy="44" rx="78" ry="20" fill="url(#tblTop)" stroke="#2a1808" stroke-width="2"/>
+          <ellipse cx="84" cy="40" rx="78" ry="18" fill="#6a4422"/>
+          <ellipse cx="84" cy="39" rx="70" ry="14" fill="#7e5128" opacity="0.6"/>
+          <!-- silver tray + decanter -->
+          <ellipse cx="84" cy="40" rx="34" ry="8" fill="#c9cdd4" opacity="0.6"/>
+          <rect x="74" y="20" width="20" height="20" rx="3" fill="#7a1726" opacity="0.8"/>
+          <rect x="78" y="14" width="12" height="8" rx="2" fill="#9aa0a8"/>
+        </svg></div><span class="obj-label">Coffee Table</span>
+      </button>
+
+      <!-- THE BODY — Sir Arthur Pembroke, lying on the floor -->
+      <button class="room-obj lying" id="obj-body" style="left:55%;top:88%" aria-label="Inspect the body">
+        <div class="prop prop-body"><svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
+          <defs>
+            <radialGradient id="bdBlood" cx="0.4" cy="0.5" r="0.6">
+              <stop offset="0" stop-color="#9a1414"/><stop offset="0.55" stop-color="#6a0e0e"/><stop offset="1" stop-color="rgba(40,4,4,0)"/>
+            </radialGradient>
+            <linearGradient id="bdJacket" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#3a3a44"/><stop offset="1" stop-color="#1e1e28"/>
+            </linearGradient>
+            <linearGradient id="bdTrouser" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#43434e"/><stop offset="1" stop-color="#26262f"/>
+            </linearGradient>
+            <radialGradient id="bdSkin" cx="0.4" cy="0.35" r="0.8">
+              <stop offset="0" stop-color="#e9c4a2"/><stop offset="1" stop-color="#c79a76"/>
+            </radialGradient>
+          </defs>
+          <!-- blood pool -->
+          <path d="M30 118 C10 100 18 78 50 74 C92 68 120 78 132 92 C150 78 150 110 120 120 C150 128 96 142 70 138 C44 134 40 130 30 118 Z" fill="url(#bdBlood)"/>
+          <!-- left arm flung up -->
+          <path d="M120 70 C100 58 80 46 64 44 C56 43 52 50 60 54 C78 60 100 74 116 84 Z" fill="url(#bdJacket)"/>
+          <ellipse cx="60" cy="48" rx="9" ry="7" fill="url(#bdSkin)"/>
+          <!-- legs (trousers) -->
+          <path d="M176 70 C212 64 244 66 262 74 C268 77 268 88 260 90 C236 86 206 90 184 96 Z" fill="url(#bdTrouser)"/>
+          <path d="M176 92 C210 92 240 96 258 104 C264 107 262 118 254 118 C232 112 200 112 180 108 Z" fill="url(#bdTrouser)"/>
+          <!-- shoes -->
+          <path d="M258 70 C276 68 288 74 286 84 C284 90 270 90 260 88 Z" fill="#120a06"/>
+          <path d="M254 104 C272 104 284 110 282 120 C280 126 266 124 256 120 Z" fill="#120a06"/>
+          <!-- torso: jacket -->
+          <path d="M104 60 C104 44 120 40 140 40 L176 42 C190 44 192 64 188 86 C184 104 168 108 146 106 C122 104 104 96 104 78 Z" fill="url(#bdJacket)"/>
+          <!-- waistcoat + shirt V -->
+          <path d="M126 50 L160 50 C168 66 166 86 150 96 C134 88 124 70 126 50 Z" fill="#5a4632"/>
+          <path d="M138 50 L150 50 L150 92 L142 92 Z" fill="#e6ddc8"/>
+          <!-- buttons + watch chain -->
+          <g fill="#caa64e"><circle cx="144" cy="60" r="1.8"/><circle cx="145" cy="70" r="1.8"/><circle cx="146" cy="80" r="1.8"/></g>
+          <path d="M150 58 Q160 64 158 76" fill="none" stroke="#caa64e" stroke-width="1.2"/>
+          <!-- lapels -->
+          <path d="M128 48 L140 50 L132 78 Z" fill="#2a2a34"/>
+          <path d="M172 50 L160 50 L168 80 Z" fill="#2a2a34"/>
+          <!-- right arm along body -->
+          <path d="M150 96 C168 110 184 116 196 112 C202 110 200 100 192 100 C178 100 164 94 154 86 Z" fill="url(#bdJacket)"/>
+          <ellipse cx="196" cy="108" rx="8" ry="6" fill="url(#bdSkin)"/>
+          <!-- head + collar -->
+          <path d="M104 60 L120 56 L118 74 L104 74 Z" fill="#e6ddc8"/>
+          <ellipse cx="92" cy="66" rx="19" ry="16" fill="url(#bdSkin)"/>
+          <path d="M76 58 C80 46 104 46 108 60 C100 56 84 56 76 64 Z" fill="#4a3a2a"/>
+          <path d="M80 50 C92 44 104 48 108 58 C98 52 88 52 80 58 Z" fill="#3a2c1e"/>
+          <!-- closed eye + moustache -->
+          <path d="M84 66 Q90 64 96 66" fill="none" stroke="#7a5a44" stroke-width="1.4"/>
+          <path d="M84 76 Q92 80 100 76" fill="none" stroke="#5a4030" stroke-width="2"/>
+        </svg></div><span class="obj-label">The Body</span>
+      </button>
+
+      <!-- LETTER OPENER — bloodied/inked blade -->
+      <button class="room-obj ground" id="obj-letter_opener" style="left:68%;top:89%" aria-label="Inspect the letter opener">
+        <div class="prop prop-opener"><svg viewBox="0 0 92 38" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="loBlade" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#f0ecd6"/><stop offset="0.5" stop-color="#cfc6a4"/><stop offset="1" stop-color="#9a906a"/>
+            </linearGradient>
+            <radialGradient id="loHilt" cx="0.4" cy="0.35" r="0.8">
+              <stop offset="0" stop-color="#e7c25a"/><stop offset="1" stop-color="#6a4810"/>
+            </radialGradient>
+          </defs>
+          <g transform="rotate(-16 46 19)">
+            <path d="M2 19 L52 13 L52 25 Z" fill="url(#loBlade)" stroke="#7a7050" stroke-width="0.6"/>
+            <ellipse cx="66" cy="19" rx="16" ry="9" fill="url(#loHilt)" stroke="#4a3208" stroke-width="1"/>
+            <circle cx="82" cy="19" r="5" fill="#caa64e" stroke="#4a3208" stroke-width="1"/>
+            <!-- ink/blood smear on the blade -->
+            <path d="M30 16 Q40 14 46 18 Q40 22 30 21 Z" fill="#2a2440" opacity="0.8"/>
+            <circle cx="22" cy="20" r="2" fill="#5a0e0e" opacity="0.7"/>
+          </g>
+        </svg></div><span class="obj-label">Letter Opener</span>
+      </button>
+
+      <!-- BLOOD TRAIL — drag smear leading toward the hearth -->
+      <button class="room-obj" id="obj-blood_trail" style="left:40%;top:90%" aria-label="Inspect the blood trail">
+        <div class="prop prop-trail"><svg viewBox="0 0 140 52" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="btG" x1="1" y1="0" x2="0" y2="0">
+              <stop offset="0" stop-color="#8a1414"/><stop offset="1" stop-color="rgba(70,8,8,0)"/>
+            </linearGradient>
+          </defs>
+          <path d="M132 26 C100 14 70 36 40 24 C24 18 14 30 6 26 C16 38 30 30 44 38 C70 50 100 22 132 34 Z" fill="url(#btG)"/>
+          <circle cx="24" cy="20" r="3" fill="#7a1212" opacity="0.8"/>
+          <circle cx="14" cy="34" r="2.4" fill="#6a1010" opacity="0.7"/>
+          <circle cx="36" cy="40" r="2" fill="#6a1010" opacity="0.6"/>
+        </svg></div><span class="obj-label">Blood Trail</span>
+      </button>
+
+      <!-- FAMILY PORTRAIT — gilt frame, a scratched-out name plate -->
+      <button class="room-obj" id="obj-family_portrait" style="left:64%;top:26%" aria-label="Inspect the family portrait">
+        <div class="prop prop-portrait"><svg viewBox="0 0 124 158" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="ptFrame" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#e8c45a"/>
+              <stop offset="0.5" stop-color="#9a7418"/><stop offset="1" stop-color="#e0bc4e"/>
+            </linearGradient>
+            <linearGradient id="ptCanvas" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#6a5a3e"/><stop offset="1" stop-color="#2a2014"/>
+            </linearGradient>
+            <radialGradient id="ptSkin" cx="0.5" cy="0.4" r="0.6"><stop offset="0" stop-color="#d8b08a"/><stop offset="1" stop-color="#8a6044"/></radialGradient>
+          </defs>
+          <rect x="2" y="2" width="120" height="142" rx="3" fill="url(#ptFrame)"/>
+          <rect x="14" y="14" width="96" height="118" fill="url(#ptCanvas)"/>
+          <!-- painted family: father, mother, two children -->
+          <ellipse cx="44" cy="52" rx="11" ry="13" fill="url(#ptSkin)"/>
+          <path d="M30 70 Q44 58 58 70 L58 110 L30 110 Z" fill="#2a2436"/>
+          <ellipse cx="74" cy="56" rx="10" ry="12" fill="url(#ptSkin)"/>
+          <path d="M62 72 Q74 62 86 72 L88 110 L62 110 Z" fill="#5a2438"/>
+          <ellipse cx="52" cy="92" rx="6" ry="7" fill="url(#ptSkin)"/>
+          <ellipse cx="70" cy="94" rx="6" ry="7" fill="url(#ptSkin)"/>
+          <!-- name plate, one name scratched -->
+          <rect x="30" y="136" width="64" height="12" rx="2" fill="#2a1c0a"/>
+          <rect x="34" y="140" width="22" height="3" fill="#caa64e" opacity="0.7"/>
+          <rect x="60" y="139" width="28" height="5" fill="#1a1008"/>
+          <path d="M60 139 L88 144 M60 144 L88 139" stroke="#8a1a1a" stroke-width="1.4"/>
+        </svg></div><span class="obj-label">Family Portrait</span>
+      </button>
+
+      <!-- TELEPHONE — candlestick phone on a round table -->
+      <button class="room-obj ground" id="obj-phone" style="left:84%;top:75%" aria-label="Inspect the telephone">
+        <div class="prop prop-phone"><svg viewBox="0 0 90 130" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="phTable" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a4422"/><stop offset="1" stop-color="#3a2410"/></linearGradient>
+            <linearGradient id="phMetal" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a3a44"/><stop offset="0.5" stop-color="#16161e"/><stop offset="1" stop-color="#2a2a32"/></linearGradient>
+          </defs>
+          <!-- round side table -->
+          <path d="M40 96 L36 126 L44 126 Z" fill="#3a2410"/>
+          <path d="M50 96 L54 126 L46 126 Z" fill="#3a2410"/>
+          <ellipse cx="45" cy="96" rx="40" ry="11" fill="url(#phTable)" stroke="#241405" stroke-width="1.5"/>
+          <ellipse cx="45" cy="93" rx="40" ry="9" fill="#6a4422"/>
+          <!-- candlestick phone -->
+          <ellipse cx="45" cy="92" rx="14" ry="4" fill="#0e0e14"/>
+          <rect x="42" y="40" width="6" height="52" fill="url(#phMetal)"/>
+          <!-- mouthpiece cup -->
+          <path d="M38 34 Q45 26 52 34 L50 42 L40 42 Z" fill="url(#phMetal)"/>
+          <ellipse cx="45" cy="33" rx="8" ry="4" fill="#0a0a10"/>
+          <!-- cradle hook + receiver -->
+          <path d="M30 44 Q24 44 24 52 L26 64" fill="none" stroke="url(#phMetal)" stroke-width="4"/>
+          <rect x="18" y="62" width="16" height="8" rx="4" fill="#16161e"/>
+          <circle cx="20" cy="66" r="5" fill="#1a1a22"/>
+          <!-- dial -->
+          <circle cx="45" cy="56" r="7" fill="#26262e" stroke="#0a0a10" stroke-width="1"/>
+        </svg></div><span class="obj-label">Telephone</span>
+      </button>
+
+      <!-- SECURITY PANEL — wall alarm keypad -->
+      <button class="room-obj" id="obj-security_panel" style="left:86%;top:34%" aria-label="Inspect the security panel">
+        <div class="prop prop-panel"><svg viewBox="0 0 70 110" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="spBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2e34"/><stop offset="1" stop-color="#14181c"/></linearGradient>
+          </defs>
+          <rect x="6" y="4" width="58" height="102" rx="8" fill="url(#spBody)" stroke="#0a0c10" stroke-width="2"/>
+          <!-- screen -->
+          <rect x="14" y="12" width="42" height="20" rx="3" fill="#0a1410"/>
+          <rect x="17" y="16" width="30" height="4" rx="2" fill="#4ade8a" opacity="0.85"/>
+          <rect x="17" y="23" width="20" height="3" rx="1.5" fill="#4ade8a" opacity="0.5"/>
+          <!-- status LEDs -->
+          <circle cx="20" cy="40" r="3" fill="#4ade8a"/><circle cx="35" cy="40" r="3" fill="#e2572b"/><circle cx="50" cy="40" r="3" fill="#caa64e" opacity="0.6"/>
+          <!-- keypad -->
+          <g fill="#3a3e46" stroke="#0a0c10" stroke-width="0.6">
+            <rect x="15" y="50" width="12" height="11" rx="2"/><rect x="29" y="50" width="12" height="11" rx="2"/><rect x="43" y="50" width="12" height="11" rx="2"/>
+            <rect x="15" y="64" width="12" height="11" rx="2"/><rect x="29" y="64" width="12" height="11" rx="2"/><rect x="43" y="64" width="12" height="11" rx="2"/>
+            <rect x="15" y="78" width="12" height="11" rx="2"/><rect x="29" y="78" width="12" height="11" rx="2"/><rect x="43" y="78" width="12" height="11" rx="2"/>
+            <rect x="29" y="92" width="12" height="11" rx="2"/>
+          </g>
+        </svg></div><span class="obj-label">Security Panel</span>
+      </button>
+
+      <!-- STUDY DOOR — standing on the floor, locked -->
+      <button class="room-obj ground" id="obj-door_to_study" style="left:91%;top:75%" aria-label="The study door">
+        <div class="prop prop-door"><svg viewBox="0 0 150 320" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="drLeaf" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#2e1c0c"/><stop offset="0.5" stop-color="#5a3c1c"/><stop offset="1" stop-color="#34200e"/>
+            </linearGradient>
+            <linearGradient id="drFrame" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#6a4824"/><stop offset="1" stop-color="#43290f"/>
+            </linearGradient>
+            <linearGradient id="drPanel" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#46290f"/><stop offset="1" stop-color="#2a1808"/>
+            </linearGradient>
+          </defs>
+          <!-- architrave frame -->
+          <rect x="2" y="2" width="146" height="316" fill="url(#drFrame)"/>
+          <rect x="14" y="14" width="122" height="306" fill="#1a0e06"/>
+          <!-- threshold -->
+          <rect x="2" y="306" width="146" height="14" fill="#3a2410"/>
+          <!-- door leaf -->
+          <rect x="18" y="16" width="114" height="290" fill="url(#drLeaf)"/>
+          <!-- raised panels -->
+          <rect x="28" y="26" width="42" height="74" rx="2" fill="url(#drPanel)" stroke="#1a0e06" stroke-width="2"/>
+          <rect x="80" y="26" width="42" height="74" rx="2" fill="url(#drPanel)" stroke="#1a0e06" stroke-width="2"/>
+          <rect x="28" y="110" width="42" height="86" rx="2" fill="url(#drPanel)" stroke="#1a0e06" stroke-width="2"/>
+          <rect x="80" y="110" width="42" height="86" rx="2" fill="url(#drPanel)" stroke="#1a0e06" stroke-width="2"/>
+          <rect x="28" y="206" width="42" height="86" rx="2" fill="url(#drPanel)" stroke="#1a0e06" stroke-width="2"/>
+          <rect x="80" y="206" width="42" height="86" rx="2" fill="url(#drPanel)" stroke="#1a0e06" stroke-width="2"/>
+          <!-- panel bevel highlights -->
+          <g stroke="#7a5430" stroke-width="1" opacity="0.5">
+            <line x1="30" y1="28" x2="68" y2="28"/><line x1="82" y1="28" x2="120" y2="28"/>
+          </g>
+          <!-- hinges -->
+          <rect x="18" y="40" width="6" height="18" rx="1" fill="#8a7038"/>
+          <rect x="18" y="250" width="6" height="18" rx="1" fill="#8a7038"/>
+          <!-- brass knob + escutcheon -->
+          <circle cx="118" cy="166" r="8" fill="#e7c25a" stroke="#8a6420" stroke-width="1.5"/>
+          <circle cx="118" cy="166" r="3" fill="#fff3c4"/>
+          <rect x="114" y="178" width="8" height="14" rx="2" fill="#caa64e"/>
+          <circle cx="118" cy="185" r="1.6" fill="#3a2808"/>
+        </svg></div><span class="obj-label">Study Door</span>
+      </button>
     </div>
 
     <!-- STUDY -->
@@ -867,21 +1451,230 @@
       <div class="st-ceiling"></div>
       <div class="st-cornice"></div>
       <div class="st-wall-panels"></div>
+      <div class="st-skirting"></div>
       <div class="room-floor-study"></div>
       <div class="st-rug"></div>
       <div class="st-window-frame"></div>
       <div class="study-lamp-glow"></div>
       <div class="room-vignette"></div>
 
-      <button class="room-obj" id="obj-bookshelf" style="left:15%;top:34%" aria-label="Inspect the bookshelf"><div class="prop prop-bookshelf"><div class="sh"><i style="background:#8a2818"></i><i style="background:#1e4a5a"></i><i style="background:#2a5a1a"></i></div><div class="sh"><i style="background:#5a4218"></i><i style="background:#4a1e5a"></i><i style="background:#7a2410"></i></div></div><span class="obj-label">Bookshelf</span></button>
-      <button class="room-obj" id="obj-armchair" style="left:20%;top:64%" aria-label="Inspect the armchair"><div class="prop prop-armchair"></div><span class="obj-label">Armchair</span></button>
-      <button class="room-obj" id="obj-torn_letter" style="left:35%;top:78%" aria-label="Inspect the torn letter"><div class="prop prop-letter"></div><span class="obj-label">Torn Letter</span></button>
-      <button class="room-obj" id="obj-desk" style="left:46%;top:58%" aria-label="Inspect the desk"><div class="prop prop-desk"></div><span class="obj-label">Desk</span></button>
-      <button class="room-obj" id="obj-computer" style="left:52%;top:44%" aria-label="Inspect the computer"><div class="prop prop-computer"></div><span class="obj-label">Computer</span></button>
-      <button class="room-obj" id="obj-study_window" style="left:62%;top:18%" aria-label="Inspect the study window"><div class="prop prop-window"></div><span class="obj-label">Window</span></button>
-      <button class="room-obj" id="obj-painting" style="left:74%;top:26%" aria-label="Inspect the painting"><div class="prop prop-painting"></div><span class="obj-label">Painting</span></button>
-      <button class="room-obj" id="obj-filing_cabinet" style="left:84%;top:52%" aria-label="Inspect the filing cabinet"><div class="prop prop-cabinet"><i></i><i></i><i></i></div><span class="obj-label">Filing Cabinet</span></button>
+      <!-- BOOKSHELF — tall mahogany bookcase, one volume pulled proud -->
+      <button class="room-obj ground" id="obj-bookshelf" style="left:14%;top:76%" aria-label="Inspect the bookshelf">
+        <div class="prop prop-bookshelf"><svg viewBox="0 0 196 280" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="bsCase" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3a2010"/><stop offset="0.5" stop-color="#2a1608"/><stop offset="1" stop-color="#1e0e04"/></linearGradient>
+          </defs>
+          <rect x="2" y="2" width="192" height="278" fill="url(#bsCase)" stroke="#120804" stroke-width="2"/>
+          <rect x="10" y="10" width="176" height="262" fill="#0e0703"/>
+          <!-- shelves -->
+          <g fill="#2a1808"><rect x="10" y="74" width="176" height="8"/><rect x="10" y="146" width="176" height="8"/><rect x="10" y="218" width="176" height="8"/></g>
+          <!-- shelf 1 books -->
+          <g>
+            <rect x="16" y="22" width="13" height="52" fill="#6a1f18"/><rect x="30" y="18" width="11" height="56" fill="#1e4452"/>
+            <rect x="42" y="24" width="14" height="50" fill="#2a5a24"/><rect x="58" y="20" width="10" height="54" fill="#5a4218"/>
+            <rect x="70" y="26" width="12" height="48" fill="#43204e"/><rect x="84" y="20" width="13" height="54" fill="#7a2410"/>
+            <rect x="99" y="24" width="11" height="50" fill="#244a2a"/><rect x="112" y="18" width="12" height="56" fill="#3a3a52"/>
+            <rect x="126" y="22" width="13" height="52" fill="#6a3a14"/><rect x="141" y="20" width="11" height="54" fill="#2a2a3a"/>
+            <rect x="154" y="24" width="13" height="50" fill="#5a1f30"/><rect x="169" y="20" width="11" height="54" fill="#3a5a3a"/>
+          </g>
+          <!-- shelf 2 (one book pulled out, lit) -->
+          <g>
+            <rect x="16" y="92" width="12" height="54" fill="#3a3a52"/><rect x="29" y="94" width="13" height="52" fill="#6a2418"/>
+            <rect x="43" y="90" width="11" height="56" fill="#244a52"/>
+            <rect x="60" y="96" width="20" height="50" fill="#caa64e" stroke="#7a5418" stroke-width="1.5"/>
+            <text x="70" y="124" fill="#3a2808" font-family="Cinzel,serif" font-size="9" text-anchor="middle" transform="rotate(90 70 121)">IV</text>
+            <rect x="84" y="92" width="12" height="54" fill="#2a5a24"/><rect x="98" y="94" width="13" height="52" fill="#43204e"/>
+            <rect x="113" y="90" width="11" height="56" fill="#7a2410"/><rect x="126" y="96" width="12" height="50" fill="#2a2a3a"/>
+            <rect x="140" y="92" width="13" height="54" fill="#5a4218"/><rect x="155" y="94" width="12" height="52" fill="#244a2a"/><rect x="169" y="92" width="11" height="54" fill="#5a1f30"/>
+          </g>
+          <!-- shelf 3 -->
+          <g>
+            <rect x="16" y="164" width="13" height="54" fill="#5a1f30"/><rect x="31" y="166" width="11" height="52" fill="#2a5a24"/>
+            <rect x="44" y="162" width="12" height="56" fill="#6a3a14"/><rect x="58" y="168" width="13" height="50" fill="#1e4452"/>
+            <rect x="73" y="164" width="11" height="54" fill="#43204e"/><rect x="86" y="166" width="12" height="52" fill="#7a2410"/>
+            <rect x="100" y="162" width="13" height="56" fill="#3a3a52"/><rect x="115" y="168" width="11" height="50" fill="#5a4218"/>
+            <rect x="128" y="164" width="12" height="54" fill="#244a2a"/><rect x="142" y="166" width="13" height="52" fill="#6a2418"/><rect x="157" y="162" width="12" height="56" fill="#2a2a3a"/><rect x="171" y="168" width="10" height="50" fill="#5a1f30"/>
+          </g>
+          <!-- bottom shelf: ledgers laid flat -->
+          <g fill="#3a2614"><rect x="18" y="234" width="160" height="10"/><rect x="18" y="246" width="160" height="10"/><rect x="18" y="258" width="160" height="9"/></g>
+        </svg></div><span class="obj-label">Bookshelf</span>
+      </button>
+
+      <!-- ARMCHAIR — buttoned leather wingback -->
+      <button class="room-obj ground" id="obj-armchair" style="left:23%;top:85%" aria-label="Inspect the armchair">
+        <div class="prop prop-armchair"><svg viewBox="0 0 184 196" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="acLeather" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a2418"/><stop offset="0.5" stop-color="#561610"/><stop offset="1" stop-color="#330c08"/></linearGradient>
+          </defs>
+          <!-- legs -->
+          <rect x="36" y="168" width="14" height="26" rx="3" fill="#241405"/>
+          <rect x="134" y="168" width="14" height="26" rx="3" fill="#241405"/>
+          <!-- wings + back -->
+          <path d="M22 40 Q18 18 44 16 L140 16 Q166 18 162 40 L162 120 L22 120 Z" fill="url(#acLeather)"/>
+          <path d="M22 40 Q14 36 16 70 L34 74 L34 44 Z" fill="#4a120c"/>
+          <path d="M162 40 Q170 36 168 70 L150 74 L150 44 Z" fill="#4a120c"/>
+          <!-- buttoned tufts -->
+          <g fill="#330c08"><circle cx="64" cy="44" r="3"/><circle cx="92" cy="40" r="3"/><circle cx="120" cy="44" r="3"/><circle cx="78" cy="64" r="3"/><circle cx="106" cy="64" r="3"/></g>
+          <!-- seat cushion -->
+          <path d="M30 116 L154 116 Q160 116 160 132 L160 150 Q160 158 150 158 L34 158 Q24 158 24 150 L24 132 Q24 116 30 116 Z" fill="url(#acLeather)"/>
+          <ellipse cx="92" cy="132" rx="52" ry="10" fill="#8a3020" opacity="0.4"/>
+          <!-- arm fronts -->
+          <ellipse cx="30" cy="130" rx="14" ry="34" fill="url(#acLeather)"/>
+          <ellipse cx="154" cy="130" rx="14" ry="34" fill="url(#acLeather)"/>
+          <ellipse cx="30" cy="112" rx="10" ry="9" fill="#8a3020" opacity="0.5"/>
+          <ellipse cx="154" cy="112" rx="10" ry="9" fill="#8a3020" opacity="0.5"/>
+        </svg></div><span class="obj-label">Armchair</span>
+      </button>
+
+      <!-- TORN LETTER — four pieces of a torn note -->
+      <button class="room-obj ground" id="obj-torn_letter" style="left:35%;top:91%" aria-label="Inspect the torn letter">
+        <div class="prop prop-letter"><svg viewBox="0 0 104 84" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="tlPaper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3e9cf"/><stop offset="1" stop-color="#d8c79c"/></linearGradient>
+          </defs>
+          <g stroke="#9a824e" stroke-width="0.6">
+            <path d="M8 22 L52 16 L56 50 L12 56 Z" fill="url(#tlPaper)" transform="rotate(-7 30 36)"/>
+            <path d="M54 14 L96 20 L92 52 L50 48 Z" fill="url(#tlPaper)" transform="rotate(5 72 33)"/>
+          </g>
+          <g stroke="#7a6438" stroke-width="1.2" opacity="0.65">
+            <line x1="16" y1="30" x2="46" y2="27"/><line x1="16" y1="38" x2="48" y2="35"/><line x1="18" y1="46" x2="40" y2="44"/>
+            <line x1="60" y1="28" x2="88" y2="31"/><line x1="58" y1="36" x2="86" y2="39"/>
+          </g>
+          <!-- torn edges -->
+          <path d="M50 12 L54 50 L58 50 L52 12 Z" fill="#c4b388"/>
+        </svg></div><span class="obj-label">Torn Letter</span>
+      </button>
+
+      <!-- DESK — pedestal writing desk with green banker's lamp -->
+      <button class="room-obj ground" id="obj-desk" style="left:50%;top:83%" aria-label="Inspect the desk">
+        <div class="prop prop-desk"><svg viewBox="0 0 270 168" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="dkWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a2e12"/><stop offset="1" stop-color="#2a1808"/></linearGradient>
+            <linearGradient id="dkTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a3818"/><stop offset="1" stop-color="#3a2410"/></linearGradient>
+            <radialGradient id="dkLamp" cx="0.5" cy="0.3" r="0.7"><stop offset="0" stop-color="#7ef0a0"/><stop offset="1" stop-color="#1e6a36"/></radialGradient>
+          </defs>
+          <!-- leather writing surface + apron -->
+          <rect x="10" y="58" width="250" height="22" rx="3" fill="url(#dkTop)"/>
+          <rect x="6" y="48" width="258" height="14" rx="3" fill="#5e3c1c"/>
+          <rect x="20" y="50" width="230" height="9" rx="2" fill="#3a5a3a" opacity="0.5"/>
+          <!-- pedestals + drawers -->
+          <rect x="14" y="80" width="70" height="84" fill="url(#dkWood)"/>
+          <rect x="186" y="80" width="70" height="84" fill="url(#dkWood)"/>
+          <g fill="#1e1006" stroke="#6a4422" stroke-width="1">
+            <rect x="22" y="88" width="54" height="20" rx="2"/><rect x="22" y="112" width="54" height="20" rx="2"/><rect x="22" y="136" width="54" height="22" rx="2"/>
+            <rect x="194" y="88" width="54" height="20" rx="2"/><rect x="194" y="112" width="54" height="20" rx="2"/><rect x="194" y="136" width="54" height="22" rx="2"/>
+          </g>
+          <g fill="#caa64e"><circle cx="49" cy="98" r="2.4"/><circle cx="49" cy="122" r="2.4"/><circle cx="49" cy="147" r="2.4"/><circle cx="221" cy="98" r="2.4"/><circle cx="221" cy="122" r="2.4"/><circle cx="221" cy="147" r="2.4"/></g>
+          <!-- knee hole shadow -->
+          <rect x="84" y="80" width="102" height="84" fill="#160d05"/>
+          <!-- papers on top -->
+          <rect x="96" y="44" width="42" height="16" fill="#ece0c2" transform="rotate(-4 117 52)"/>
+          <!-- green banker's lamp -->
+          <rect x="200" y="34" width="6" height="22" fill="#8a6a2a"/>
+          <ellipse cx="203" cy="56" rx="14" ry="4" fill="#6a4a18"/>
+          <path d="M186 34 Q203 18 220 34 Q220 40 203 40 Q186 40 186 34 Z" fill="url(#dkLamp)"/>
+          <ellipse cx="203" cy="34" rx="17" ry="5" fill="#2a8a4a"/>
+        </svg></div><span class="obj-label">Desk</span>
+      </button>
+
+      <!-- COMPUTER — CRT terminal with a green login screen -->
+      <button class="room-obj ground" id="obj-computer" style="left:52%;top:71%" aria-label="Inspect the computer">
+        <div class="prop prop-computer"><svg viewBox="0 0 110 96" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="crtBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a382f"/><stop offset="1" stop-color="#201e18"/></linearGradient>
+            <radialGradient id="crtScreen" cx="0.5" cy="0.45" r="0.7"><stop offset="0" stop-color="#103a1e"/><stop offset="1" stop-color="#04140a"/></radialGradient>
+            <style>.crtcur{animation:crtBl 1.1s steps(1) infinite}@keyframes crtBl{50%{opacity:0}}</style>
+          </defs>
+          <!-- stand -->
+          <rect x="42" y="80" width="26" height="8" fill="#26241d"/>
+          <ellipse cx="55" cy="90" rx="26" ry="5" fill="#1a1812"/>
+          <!-- monitor body -->
+          <rect x="8" y="6" width="94" height="78" rx="8" fill="url(#crtBody)" stroke="#100f0b" stroke-width="2"/>
+          <!-- screen -->
+          <rect x="18" y="14" width="74" height="58" rx="6" fill="url(#crtScreen)" stroke="#0a1a10" stroke-width="2"/>
+          <rect x="18" y="14" width="74" height="58" rx="6" fill="none" stroke="rgba(120,255,160,0.12)" stroke-width="1"/>
+          <!-- prompt text -->
+          <g fill="#5af0a0" font-family="'Space Mono',monospace" font-size="6">
+            <text x="24" y="28">PEMBROKE//mail</text>
+            <text x="24" y="40">login: ____</text>
+            <text x="24" y="52">pass: ****</text>
+          </g>
+          <rect class="crtcur" x="48" y="35" width="6" height="6" fill="#5af0a0"/>
+          <!-- scanline sheen -->
+          <rect x="18" y="14" width="74" height="58" rx="6" fill="url(#crtScreen)" opacity="0"/>
+        </svg></div><span class="obj-label">Computer</span>
+      </button>
+
+      <!-- STUDY WINDOW — casement, latched from the inside -->
+      <button class="room-obj" id="obj-study_window" style="left:62%;top:22%" aria-label="Inspect the study window">
+        <div class="prop prop-window"><svg viewBox="0 0 124 166" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="swGlass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a3148"/><stop offset="1" stop-color="#0e1c2a"/></linearGradient>
+          </defs>
+          <rect x="2" y="2" width="120" height="162" rx="3" fill="#3a2410" stroke="#1a0e06" stroke-width="2"/>
+          <rect x="12" y="12" width="100" height="142" fill="#241608"/>
+          <!-- two casements -->
+          <rect x="16" y="16" width="44" height="134" fill="url(#swGlass)"/>
+          <rect x="64" y="16" width="44" height="134" fill="url(#swGlass)"/>
+          <!-- glazing bars -->
+          <g stroke="#241608" stroke-width="4">
+            <line x1="38" y1="16" x2="38" y2="150"/><line x1="86" y1="16" x2="86" y2="150"/>
+            <line x1="16" y1="60" x2="108" y2="60"/><line x1="16" y1="106" x2="108" y2="106"/>
+          </g>
+          <!-- moonlit reflection -->
+          <path d="M20 20 L34 20 L24 80 L18 80 Z" fill="#cfe2f0" opacity="0.12"/>
+          <!-- centre latch, clearly thrown/locked -->
+          <rect x="56" y="78" width="12" height="20" rx="2" fill="#caa64e" stroke="#6a4810" stroke-width="1"/>
+          <rect x="52" y="84" width="20" height="5" rx="2" fill="#e7c25a"/>
+          <circle cx="62" cy="86" r="2" fill="#3a2808"/>
+        </svg></div><span class="obj-label">Window</span>
+      </button>
+
+      <!-- PAINTING — landscape on a hinge, swung open over a wall safe -->
+      <button class="room-obj" id="obj-painting" style="left:75%;top:32%" aria-label="Inspect the painting">
+        <div class="prop prop-painting"><svg viewBox="0 0 124 104" preserveAspectRatio="xMidYMid meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="paFrame" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e2bc4e"/><stop offset="0.5" stop-color="#8a6414"/><stop offset="1" stop-color="#d8b44a"/></linearGradient>
+            <linearGradient id="paSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9ab0c4"/><stop offset="1" stop-color="#d8c79a"/></linearGradient>
+          </defs>
+          <!-- exposed wall + safe behind -->
+          <rect x="78" y="10" width="44" height="86" fill="#1a1008"/>
+          <rect x="84" y="20" width="34" height="64" rx="3" fill="#2a2e34" stroke="#0a0c10" stroke-width="2"/>
+          <circle cx="101" cy="52" r="11" fill="#3a3e46" stroke="#14161a" stroke-width="2"/>
+          <circle cx="101" cy="52" r="4" fill="#caa64e"/>
+          <g stroke="#1a1c20" stroke-width="1"><line x1="101" y1="41" x2="101" y2="45"/><line x1="112" y1="52" x2="108" y2="52"/></g>
+          <!-- the painting, hinged open from the left -->
+          <g transform="rotate(-18 8 52)">
+            <rect x="2" y="6" width="84" height="92" rx="2" fill="url(#paFrame)"/>
+            <rect x="12" y="16" width="64" height="72" fill="url(#paSky)"/>
+            <path d="M12 70 Q30 54 46 64 Q60 50 76 66 L76 88 L12 88 Z" fill="#4a5a32"/>
+            <ellipse cx="30" cy="34" rx="9" ry="9" fill="#f0e6c2" opacity="0.7"/>
+          </g>
+        </svg></div><span class="obj-label">Painting</span>
+      </button>
+
+      <!-- FILING CABINET — three labelled drawers -->
+      <button class="room-obj ground" id="obj-filing_cabinet" style="left:85%;top:80%" aria-label="Inspect the filing cabinet">
+        <div class="prop prop-cabinet"><svg viewBox="0 0 100 196" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
+          <defs>
+            <linearGradient id="fcBody" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#46402f"/><stop offset="0.5" stop-color="#2e2a1d"/><stop offset="1" stop-color="#3a3527"/></linearGradient>
+            <linearGradient id="fcDrawer" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3526"/><stop offset="1" stop-color="#1e1a10"/></linearGradient>
+          </defs>
+          <rect x="6" y="4" width="88" height="190" rx="3" fill="url(#fcBody)" stroke="#16140d" stroke-width="2"/>
+          <g stroke="#16140d" stroke-width="1.5">
+            <rect x="12" y="12" width="76" height="56" rx="2" fill="#322d20"/>
+            <rect x="12" y="72" width="76" height="56" rx="2" fill="#322d20"/>
+            <rect x="12" y="132" width="76" height="56" rx="2" fill="#322d20"/>
+          </g>
+          <!-- handles -->
+          <g fill="#caa64e"><rect x="38" y="34" width="24" height="6" rx="3"/><rect x="38" y="94" width="24" height="6" rx="3"/><rect x="38" y="154" width="24" height="6" rx="3"/></g>
+          <!-- label cards -->
+          <g fill="#e8dcbe"><rect x="42" y="20" width="20" height="9" rx="1"/><rect x="42" y="80" width="20" height="9" rx="1"/><rect x="42" y="140" width="20" height="9" rx="1"/></g>
+          <g fill="#6a5836" font-family="'Space Mono',monospace" font-size="5" text-anchor="middle"><text x="52" y="27">A–F</text><text x="52" y="87">G–P</text><text x="52" y="147">Q–Z</text></g>
+        </svg></div><span class="obj-label">Filing Cabinet</span>
+      </button>
     </div>
+
   </div>
 </div><!-- /hunt-wrap -->
 
@@ -1226,13 +2019,334 @@
 
   function render(title, html){ openInsp(title); inspBody.innerHTML=html+clueStripHtml(currentObjId); }
 
+  /* ── Inspection close-ups ───────────────────────────────────
+     Detailed SVG "evidence photographs" shown in the inspection
+     panel. Keyed by token; each entry is [visType, svgMarkup].
+     All use a 320×200 frame so they crop consistently.            */
+  const IVIS = {
+    /* victim torso: wound, waistcoat, the M.C. pocket square */
+    body: ['scene', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="ivBdJ" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3a46"/><stop offset="1" stop-color="#1c1c26"/></linearGradient>
+      <radialGradient id="ivBdW" cx="0.5" cy="0.5" r="0.6"><stop offset="0" stop-color="#b81616"/><stop offset="0.6" stop-color="#6a0e0e"/><stop offset="1" stop-color="#2a0606"/></radialGradient></defs>
+      <rect x="20" y="40" width="280" height="150" rx="10" fill="url(#ivBdJ)"/>
+      <path d="M150 40 L150 190 L120 190 L132 40 Z" fill="#5a4632"/>
+      <path d="M150 40 L168 40 L168 190 L150 190 Z" fill="#e7decb"/>
+      <g fill="#caa64e"><circle cx="158" cy="74" r="4"/><circle cx="159" cy="104" r="4"/><circle cx="160" cy="134" r="4"/></g>
+      <path d="M150 60 Q176 80 172 120" fill="none" stroke="#caa64e" stroke-width="2.5"/>
+      <ellipse cx="96" cy="118" rx="34" ry="26" fill="url(#ivBdW)"/>
+      <path d="M78 104 L114 132 M114 104 L78 132" stroke="#3a0808" stroke-width="3" opacity="0.5"/>
+      <g transform="rotate(-8 232 96)"><rect x="200" y="64" width="64" height="64" rx="4" fill="#efe7d2" stroke="#caa64e" stroke-width="2"/>
+      <text x="232" y="104" fill="#7a1726" font-family="Cinzel,serif" font-size="26" font-weight="700" text-anchor="middle">M.C.</text>
+      <path d="M206 70 q4 6 0 12 M206 116 q4 -6 0 -12" stroke="#c9b88c" stroke-width="2" fill="none"/></g>
+    </svg>`],
+
+    /* letter opener: blade with ink smear and A.P. monogram */
+    opener: ['scene', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="ivLoB" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f2ecd6"/><stop offset="0.5" stop-color="#cfc6a2"/><stop offset="1" stop-color="#8a8060"/></linearGradient>
+      <radialGradient id="ivLoH" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#f0d27a"/><stop offset="0.6" stop-color="#b88a26"/><stop offset="1" stop-color="#5a3e0c"/></radialGradient></defs>
+      <g transform="rotate(-14 160 100)">
+        <path d="M30 100 L196 86 L196 114 Z" fill="url(#ivLoB)" stroke="#7a7050" stroke-width="1"/>
+        <ellipse cx="236" cy="100" rx="46" ry="26" fill="url(#ivLoH)" stroke="#4a3208" stroke-width="2"/>
+        <circle cx="286" cy="100" r="14" fill="#caa64e" stroke="#4a3208" stroke-width="2"/>
+        <text x="236" y="107" fill="#3a2808" font-family="Cinzel,serif" font-size="18" font-weight="700" text-anchor="middle">A.P.</text>
+        <path d="M96 92 Q128 84 150 96 Q128 110 96 104 Z" fill="#262040" opacity="0.85"/>
+        <circle cx="70" cy="100" r="5" fill="#5a0e0e" opacity="0.7"/>
+      </g>
+      <text x="160" y="184" fill="#8a7a4a" font-family="'Space Mono',monospace" font-size="11" text-anchor="middle">INK — not blood</text>
+    </svg>`],
+
+    /* blood trail pointing to the hearth */
+    blood: ['scene', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="ivBtF" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a4422"/><stop offset="1" stop-color="#3a2410"/></linearGradient>
+      <linearGradient id="ivBt" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#9a1414"/><stop offset="1" stop-color="rgba(70,8,8,0)"/></linearGradient></defs>
+      <rect x="0" y="0" width="320" height="200" fill="url(#ivBtF)"/>
+      <g stroke="#2a1808" stroke-width="2" opacity="0.5"><line x1="0" y1="50" x2="320" y2="50"/><line x1="0" y1="110" x2="320" y2="110"/><line x1="0" y1="160" x2="320" y2="160"/></g>
+      <rect x="6" y="40" width="58" height="120" fill="#b6a489"/><rect x="14" y="70" width="42" height="80" fill="#2a1206"/>
+      <ellipse cx="34" cy="150" rx="22" ry="6" fill="#ff8a2e" opacity="0.5"/>
+      <path d="M300 96 C240 70 180 120 120 96 C92 84 70 110 40 100 C70 122 96 104 124 120 C180 150 240 86 300 116 Z" fill="url(#ivBt)"/>
+      <g fill="#7a1212"><circle cx="120" cy="84" r="6"/><circle cx="92" cy="118" r="5"/><circle cx="64" cy="100" r="4"/></g>
+      <path d="M150 40 L80 40 M80 40 L94 30 M80 40 L94 50" stroke="#e2572b" stroke-width="3" fill="none"/>
+      <text x="200" y="36" fill="#e2572b" font-family="'Space Mono',monospace" font-size="11" text-anchor="middle">toward the hearth →</text>
+    </svg>`],
+
+    /* two wine glasses, one shattered, lipstick print */
+    wine: ['scene', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="ivWg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(232,240,255,0.6)"/><stop offset="1" stop-color="rgba(150,175,215,0.3)"/></linearGradient></defs>
+      <path d="M86 36 Q86 96 116 104 Q146 96 146 36 Z" fill="url(#ivWg)" stroke="rgba(255,255,255,0.55)" stroke-width="2"/>
+      <path d="M92 70 Q116 96 140 70 L140 46 Q116 58 92 46 Z" fill="#6a1020" opacity="0.85"/>
+      <line x1="116" y1="104" x2="116" y2="168" stroke="rgba(220,230,255,0.6)" stroke-width="4"/>
+      <ellipse cx="116" cy="172" rx="30" ry="7" fill="rgba(210,225,255,0.55)"/>
+      <ellipse cx="138" cy="52" rx="7" ry="11" fill="#a01030" opacity="0.85"/>
+      <text x="116" y="194" fill="#b0506a" font-family="'Space Mono',monospace" font-size="10" text-anchor="middle">claret lipstick</text>
+      <g opacity="0.9"><ellipse cx="232" cy="166" rx="56" ry="12" fill="#5a0e1a" opacity="0.6"/>
+      <path d="M196 168 Q220 120 268 132 Q244 146 246 168 Z" fill="url(#ivWg)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+      <path d="M210 150 L186 138 M236 122 L226 100 M262 140 L286 132" stroke="rgba(220,230,255,0.5)" stroke-width="2"/></g>
+    </svg>`],
+
+    /* clock frozen at 10:31, cracked */
+    clock: ['scene', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <defs><radialGradient id="ivClF" cx="0.4" cy="0.36" r="0.75"><stop offset="0" stop-color="#fdf6e2"/><stop offset="0.7" stop-color="#ece0c0"/><stop offset="1" stop-color="#c9b88c"/></radialGradient>
+      <linearGradient id="ivClC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#caa64e"/><stop offset="1" stop-color="#6a4a16"/></linearGradient></defs>
+      <circle cx="160" cy="100" r="84" fill="url(#ivClC)"/>
+      <circle cx="160" cy="100" r="74" fill="#1c1208"/>
+      <circle cx="160" cy="100" r="68" fill="url(#ivClF)" stroke="#7a5a24" stroke-width="2"/>
+      <g fill="#2a1c0a" font-family="Cinzel,serif" font-size="16" text-anchor="middle">
+        <text x="160" y="48">XII</text><text x="212" y="106">III</text><text x="160" y="166">VI</text><text x="108" y="106">IX</text></g>
+      <g stroke-linecap="round"><line x1="160" y1="100" x2="128" y2="68" stroke="#1a0e04" stroke-width="7"/>
+      <line x1="160" y1="100" x2="154" y2="166" stroke="#1a0e04" stroke-width="5"/><circle cx="160" cy="100" r="6" fill="#1a0e04"/></g>
+      <path d="M196 52 L214 70 M206 60 L188 78" stroke="#9a9080" stroke-width="1.5" opacity="0.7"/>
+      <rect x="120" y="176" width="80" height="20" rx="3" fill="#1e1a0e"/>
+      <text x="160" y="191" fill="#e2572b" font-family="'Space Mono',monospace" font-size="13" font-weight="700" text-anchor="middle">10:31</text>
+    </svg>`],
+
+    /* sofa cushion lifted, Claridge's receipt */
+    sofa: ['scene', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="ivSf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a5030"/><stop offset="1" stop-color="#43250f"/></linearGradient></defs>
+      <rect x="10" y="80" width="300" height="110" rx="14" fill="url(#ivSf)"/>
+      <g fill="#33200f"><circle cx="70" cy="110" r="4"/><circle cx="130" cy="106" r="4"/><circle cx="190" cy="106" r="4"/></g>
+      <g transform="rotate(-12 120 120)"><rect x="60" y="74" width="120" height="70" rx="10" fill="#8a5a36"/></g>
+      <g transform="rotate(6 210 120)">
+        <rect x="176" y="58" width="96" height="120" rx="3" fill="#f4ecd6" stroke="#b6a07a" stroke-width="2"/>
+        <text x="224" y="82" fill="#3a2a14" font-family="Cinzel,serif" font-size="14" text-anchor="middle">CLARIDGE'S</text>
+        <line x1="188" y1="92" x2="260" y2="92" stroke="#b6a07a"/>
+        <g stroke="#7a6438" stroke-width="2" opacity="0.6"><line x1="188" y1="106" x2="252" y2="106"/><line x1="188" y1="120" x2="248" y2="120"/><line x1="188" y1="134" x2="256" y2="134"/></g>
+        <text x="224" y="162" fill="#7a1726" font-family="'Space Mono',monospace" font-size="9" text-anchor="middle">Jun 13 · 11:45pm</text>
+      </g>
+    </svg>`],
+
+    /* coffee table: crested pen + plate of powder */
+    table: ['scene', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="ivTb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a4422"/><stop offset="1" stop-color="#3a2410"/></linearGradient></defs>
+      <rect x="0" y="70" width="320" height="130" fill="url(#ivTb)"/>
+      <ellipse cx="100" cy="130" rx="60" ry="24" fill="#c9cdd4" opacity="0.5"/>
+      <ellipse cx="100" cy="128" rx="44" ry="16" fill="#e8eaee"/>
+      <ellipse cx="100" cy="126" rx="30" ry="10" fill="#f6f6f8"/>
+      <g transform="rotate(-24 210 120)">
+        <rect x="150" y="112" width="140" height="16" rx="8" fill="#1a1a22"/>
+        <rect x="150" y="112" width="36" height="16" rx="8" fill="#caa64e"/>
+        <circle cx="172" cy="120" r="5" fill="#3a2808"/>
+        <path d="M290 112 L304 120 L290 128 Z" fill="#9aa0a8"/>
+      </g>
+      <text x="210" y="170" fill="#caa64e" font-family="'Space Mono',monospace" font-size="11" text-anchor="middle">Claridge's crest</text>
+    </svg>`],
+
+    /* family portrait with scratched name */
+    portrait: ['scene', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="ivPtF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8c45a"/><stop offset="0.5" stop-color="#9a7418"/><stop offset="1" stop-color="#e0bc4e"/></linearGradient>
+      <linearGradient id="ivPtC" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a5a3e"/><stop offset="1" stop-color="#2a2014"/></linearGradient>
+      <radialGradient id="ivPtS" cx="0.5" cy="0.4" r="0.6"><stop offset="0" stop-color="#d8b08a"/><stop offset="1" stop-color="#8a6044"/></radialGradient></defs>
+      <rect x="50" y="14" width="220" height="146" rx="4" fill="url(#ivPtF)"/>
+      <rect x="68" y="32" width="184" height="110" fill="url(#ivPtC)"/>
+      <ellipse cx="120" cy="66" rx="16" ry="19" fill="url(#ivPtS)"/><path d="M98 92 Q120 76 142 92 L142 140 L98 140 Z" fill="#2a2436"/>
+      <ellipse cx="172" cy="70" rx="15" ry="18" fill="url(#ivPtS)"/><path d="M152 94 Q172 80 192 94 L194 140 L152 140 Z" fill="#5a2438"/>
+      <ellipse cx="146" cy="116" rx="9" ry="11" fill="url(#ivPtS)"/>
+      <rect x="96" y="146" width="128" height="20" rx="2" fill="#2a1c0a"/>
+      <text x="120" y="160" fill="#caa64e" font-family="'Space Mono',monospace" font-size="9" text-anchor="middle">PEMBROKE</text>
+      <rect x="160" y="149" width="56" height="14" fill="#1a1008"/>
+      <path d="M160 149 L216 163 M160 163 L216 149" stroke="#8a1a1a" stroke-width="2.5"/>
+    </svg>`],
+
+    /* telephone call log: MARGARET 10:28 */
+    phone: ['tech', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <rect x="40" y="24" width="240" height="152" rx="16" fill="#16161e" stroke="#0a0a12" stroke-width="3"/>
+      <rect x="58" y="42" width="204" height="104" rx="8" fill="#08140e"/>
+      <text x="74" y="70" fill="#5af0a0" font-family="'Space Mono',monospace" font-size="13">RECENT CALLS</text>
+      <line x1="74" y1="80" x2="246" y2="80" stroke="#1a4a2e"/>
+      <text x="74" y="104" fill="#9affc4" font-family="'Space Mono',monospace" font-size="15" font-weight="700">▸ MARGARET</text>
+      <text x="74" y="126" fill="#5af0a0" font-family="'Space Mono',monospace" font-size="13">outgoing  10:28 AM</text>
+      <text x="74" y="140" fill="#2a8a52" font-family="'Space Mono',monospace" font-size="10">— 3 min before 10:31 —</text>
+      <circle cx="160" cy="162" r="7" fill="#2a2a32"/>
+    </svg>`],
+
+    /* security alarm panel screen */
+    panel: ['tech', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <rect x="64" y="14" width="192" height="172" rx="14" fill="#1e2228" stroke="#0a0c10" stroke-width="3"/>
+      <rect x="82" y="28" width="156" height="70" rx="5" fill="#08140e"/>
+      <text x="92" y="48" fill="#5af0a0" font-family="'Space Mono',monospace" font-size="10">ACCESS LOG</text>
+      <text x="92" y="66" fill="#9affc4" font-family="'Space Mono',monospace" font-size="11">FRONT  open  10:26</text>
+      <text x="92" y="80" fill="#9affc4" font-family="'Space Mono',monospace" font-size="11">FRONT  shut  10:28</text>
+      <text x="92" y="94" fill="#ffb45a" font-family="'Space Mono',monospace" font-size="11">STUDY  open  10:31</text>
+      <g fill="#3a3e46" stroke="#0a0c10"><rect x="92" y="110" width="30" height="24" rx="3"/><rect x="128" y="110" width="30" height="24" rx="3"/><rect x="164" y="110" width="30" height="24" rx="3"/>
+      <rect x="92" y="140" width="30" height="24" rx="3"/><rect x="128" y="140" width="30" height="24" rx="3"/><rect x="164" y="140" width="30" height="24" rx="3"/></g>
+      <circle cx="214" cy="122" r="5" fill="#4ade8a"/><circle cx="214" cy="152" r="5" fill="#e2572b"/>
+    </svg>`],
+
+    /* fireplace with ash box */
+    fire: ['scene', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="ivFpM" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0d4c0"/><stop offset="1" stop-color="#9c8a70"/></linearGradient>
+      <radialGradient id="ivFpF" cx="0.5" cy="0.95" r="0.9"><stop offset="0" stop-color="#fff1b0"/><stop offset="0.4" stop-color="#ffae33"/><stop offset="0.75" stop-color="#d8460f"/><stop offset="1" stop-color="#3a0f02"/></radialGradient></defs>
+      <rect x="36" y="20" width="248" height="20" fill="url(#ivFpM)"/>
+      <rect x="44" y="40" width="40" height="150" fill="url(#ivFpM)"/><rect x="236" y="40" width="40" height="150" fill="url(#ivFpM)"/>
+      <rect x="84" y="44" width="152" height="146" fill="#140a04"/>
+      <rect x="84" y="44" width="152" height="146" fill="url(#ivFpF)" opacity="0.9"/>
+      <path d="M160 184 C132 134 156 104 148 74 C176 104 184 134 176 158 C200 128 192 100 204 80 C220 126 200 160 178 184 Z" fill="#ff9a2e"/>
+      <rect x="104" y="156" width="112" height="22" rx="3" fill="#2a1c10" stroke="#caa64e" stroke-width="1.5"/>
+      <text x="160" y="172" fill="#e0c890" font-family="'Space Mono',monospace" font-size="10" text-anchor="middle">ash box</text>
+    </svg>`],
+
+    /* locked study door, keyhole, no key */
+    doorlocked: ['scene', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="ivDr" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2e1c0c"/><stop offset="0.5" stop-color="#5a3c1c"/><stop offset="1" stop-color="#34200e"/></linearGradient></defs>
+      <rect x="70" y="6" width="180" height="188" fill="url(#ivDr)" stroke="#1a0e06" stroke-width="3"/>
+      <rect x="86" y="18" width="60" height="76" rx="3" fill="#2a1808" stroke="#1a0e06" stroke-width="2"/>
+      <rect x="174" y="18" width="60" height="76" rx="3" fill="#2a1808" stroke="#1a0e06" stroke-width="2"/>
+      <rect x="86" y="104" width="60" height="80" rx="3" fill="#2a1808" stroke="#1a0e06" stroke-width="2"/>
+      <rect x="174" y="104" width="60" height="80" rx="3" fill="#2a1808" stroke="#1a0e06" stroke-width="2"/>
+      <circle cx="226" cy="120" r="12" fill="#e7c25a" stroke="#8a6420" stroke-width="2"/>
+      <rect x="220" y="138" width="12" height="22" rx="3" fill="#caa64e"/>
+      <path d="M226 146 l0 8 M226 146 a3 3 0 1 1 0 0.1" fill="none" stroke="#1a0e04" stroke-width="2"/>
+      <text x="160" y="198" fill="#e2572b" font-family="'Space Mono',monospace" font-size="11" text-anchor="middle">LOCKED</text>
+    </svg>`],
+
+    /* brass key */
+    key: ['scene', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <defs><radialGradient id="ivKey" cx="0.4" cy="0.35" r="0.8"><stop offset="0" stop-color="#ffe79a"/><stop offset="0.5" stop-color="#caa64e"/><stop offset="1" stop-color="#6a4810"/></radialGradient></defs>
+      <g transform="rotate(-18 160 100)">
+        <circle cx="80" cy="100" r="40" fill="none" stroke="url(#ivKey)" stroke-width="18"/>
+        <circle cx="80" cy="100" r="14" fill="#1a1208"/>
+        <rect x="116" y="92" width="150" height="16" rx="3" fill="url(#ivKey)"/>
+        <rect x="232" y="108" width="14" height="26" rx="2" fill="url(#ivKey)"/>
+        <rect x="252" y="108" width="12" height="18" rx="2" fill="url(#ivKey)"/>
+      </g>
+      <text x="160" y="186" fill="#caa64e" font-family="'Space Mono',monospace" font-size="12" text-anchor="middle">STUDY</text>
+    </svg>`],
+
+    /* desk top: circled figures + hidden-drawer note 3 8 _ 7 */
+    desk: ['doc', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <rect x="0" y="0" width="320" height="200" fill="#3a5a3a" opacity="0.18"/>
+      <rect x="24" y="20" width="170" height="160" rx="3" fill="#f1e7cd" stroke="#c4b58c" stroke-width="2" transform="rotate(-3 109 100)"/>
+      <g transform="rotate(-3 109 100)" font-family="'Space Mono',monospace" font-size="11" fill="#3a2c14">
+        <text x="36" y="46">EST. ACCOUNTS</text>
+        <text x="36" y="70">Jan  ......  12,400</text>
+        <text x="36" y="92">Mar  ......  31,900</text>
+        <text x="36" y="114">Jun  ......  47,250</text>
+        <text x="36" y="146">Cayman .... 180,000</text>
+      </g>
+      <ellipse cx="150" cy="139" rx="44" ry="14" fill="none" stroke="#c01818" stroke-width="2.5" transform="rotate(-3 150 139)"/>
+      <g transform="rotate(8 250 120)">
+        <rect x="208" y="86" width="96" height="64" rx="3" fill="#efe6cd" stroke="#b6a47a" stroke-width="2"/>
+        <text x="256" y="112" fill="#2a1c0a" font-family="Cinzel,serif" font-size="14" text-anchor="middle">passcode</text>
+        <text x="256" y="138" fill="#7a1726" font-family="'Space Mono',monospace" font-size="22" font-weight="700" text-anchor="middle">3 8 _ 7</text>
+      </g>
+    </svg>`],
+
+    /* law book open, Chapter 4 circled, spine IV */
+    book: ['doc', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="ivBk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#caa64e"/><stop offset="1" stop-color="#7a5418"/></linearGradient></defs>
+      <path d="M40 40 L160 30 L160 176 L40 184 Z" fill="#f1e7cd" stroke="#b6a47a" stroke-width="2"/>
+      <path d="M160 30 L280 40 L280 184 L160 176 Z" fill="#ece0c2" stroke="#b6a47a" stroke-width="2"/>
+      <line x1="160" y1="30" x2="160" y2="176" stroke="#9a824e" stroke-width="3"/>
+      <g font-family="'Space Mono',monospace" font-size="9" fill="#6a5836">
+        <text x="52" y="64">THE LAWS OF</text><text x="52" y="78">PROPERTY</text>
+        <text x="176" y="64">CHAPTER</text></g>
+      <text x="206" y="108" fill="#2a1c0a" font-family="Cinzel,serif" font-size="42" font-weight="700" text-anchor="middle">IV</text>
+      <ellipse cx="206" cy="100" rx="42" ry="34" fill="none" stroke="#c01818" stroke-width="2.5"/>
+      <ellipse cx="206" cy="100" rx="50" ry="42" fill="none" stroke="#c01818" stroke-width="1.5" opacity="0.6"/>
+      <text x="160" y="194" fill="#caa64e" font-family="'Space Mono',monospace" font-size="11" text-anchor="middle">third digit = 4</text>
+    </svg>`],
+
+    /* open empty wall safe, dial 38 */
+    safe: ['scene', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <rect x="0" y="0" width="320" height="200" fill="#1a1008"/>
+      <rect x="60" y="24" width="150" height="152" rx="6" fill="#0c0c10" stroke="#2a2e34" stroke-width="3"/>
+      <rect x="72" y="36" width="126" height="128" rx="3" fill="#06070a"/>
+      <text x="135" y="104" fill="#4a4e56" font-family="'Space Mono',monospace" font-size="13" text-anchor="middle">EMPTY</text>
+      <g transform="translate(214 0)">
+        <rect x="0" y="24" width="46" height="152" rx="6" fill="#2a2e34" stroke="#14161a" stroke-width="2"/>
+        <circle cx="0" cy="100" r="34" fill="#3a3e46" stroke="#14161a" stroke-width="3"/>
+        <circle cx="0" cy="100" r="22" fill="#26282e"/>
+        <line x1="0" y1="100" x2="0" y2="78" stroke="#caa64e" stroke-width="3"/>
+        <text x="0" y="150" fill="#caa64e" font-family="'Space Mono',monospace" font-size="14" font-weight="700" text-anchor="middle">38</text>
+      </g>
+    </svg>`],
+
+    /* filing cabinet open folder: CALLOWAY PRIVATE */
+    cabinet: ['doc', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <path d="M40 60 L150 50 L165 66 L290 66 L290 184 L40 184 Z" fill="#c8a05a"/>
+      <rect x="54" y="40" width="220" height="130" rx="3" fill="#f1e7cd" stroke="#b6a47a" stroke-width="2"/>
+      <text x="164" y="66" fill="#7a1726" font-family="Cinzel,serif" font-size="15" font-weight="700" text-anchor="middle">CALLOWAY — PRIVATE</text>
+      <line x1="70" y1="76" x2="258" y2="76" stroke="#b6a47a"/>
+      <g font-family="'Space Mono',monospace" font-size="10" fill="#3a2c14">
+        <text x="70" y="96">Transfer ........ £42,000</text>
+        <text x="70" y="114">Transfer ........ £61,000</text>
+        <text x="70" y="132">Transfer ........ £77,000</text>
+        <text x="70" y="156">→ Cayman Trust Holdings</text></g>
+      <text x="164" y="178" fill="#c01818" font-family="'Space Mono',monospace" font-size="11" font-weight="700" text-anchor="middle">£180,000 TOTAL</text>
+    </svg>`],
+
+    /* torn note reassembled */
+    torn: ['doc', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="ivTn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4ecd6"/><stop offset="1" stop-color="#dccca0"/></linearGradient></defs>
+      <g stroke="#9a824e" stroke-width="1">
+        <path d="M40 40 L160 36 L162 110 L42 116 Z" fill="url(#ivTn)" transform="rotate(-3 100 78)"/>
+        <path d="M162 34 L280 40 L278 112 L160 108 Z" fill="url(#ivTn)" transform="rotate(2 220 74)"/>
+        <path d="M40 116 L160 110 L162 168 L42 170 Z" fill="url(#ivTn)" transform="rotate(2 100 142)"/>
+        <path d="M162 108 L280 114 L278 168 L160 166 Z" fill="url(#ivTn)" transform="rotate(-2 220 138)"/>
+      </g>
+      <path d="M160 32 L164 168 L168 168 L162 32 Z" fill="#c4b388" opacity="0.7"/>
+      <line x1="158" y1="34" x2="162" y2="170" stroke="#b6a07a" stroke-dasharray="3 3"/>
+      <g font-family="'EB Garamond',serif" font-size="14" fill="#2a1c0a" font-style="italic">
+        <text x="56" y="78">I know what</text><text x="186" y="76">you've done.</text>
+        <text x="56" y="148">Authorities —</text><text x="186" y="146">Monday.  A.P.</text></g>
+    </svg>`],
+
+    /* notebook with M.C. entries */
+    notebook: ['doc', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <rect x="70" y="20" width="180" height="160" rx="6" fill="#2a1c10" transform="rotate(-2 160 100)"/>
+      <rect x="80" y="28" width="170" height="148" rx="3" fill="#f1e7cd" stroke="#c4b58c" stroke-width="2" transform="rotate(-2 165 102)"/>
+      <g transform="rotate(-2 165 102)">
+        <line x1="98" y1="28" x2="98" y2="176" stroke="#c08a8a" stroke-width="1.5"/>
+        <g font-family="'EB Garamond',serif" font-size="12" fill="#3a2c14">
+          <text x="106" y="52">Mar 3 — £4,200 short</text>
+          <text x="106" y="80">Apr 19 — £6,100 short</text>
+          <text x="106" y="108">May 2 — £7,700 short</text>
+          <text x="106" y="136">Jun 9 — £9,000 short</text></g>
+        <g font-family="Cinzel,serif" font-size="13" fill="#7a1726" font-weight="700">
+          <text x="226" y="52">M.C.</text><text x="226" y="80">M.C.</text><text x="226" y="108">M.C.</text><text x="226" y="136">M.C.</text></g>
+        <line x1="218" y1="56" x2="252" y2="56" stroke="#7a1726"/>
+      </g>
+    </svg>`],
+
+    /* latched study window */
+    window: ['scene', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <defs><linearGradient id="ivSw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a3148"/><stop offset="1" stop-color="#0e1c2a"/></linearGradient></defs>
+      <rect x="50" y="14" width="220" height="172" rx="3" fill="#3a2410" stroke="#1a0e06" stroke-width="3"/>
+      <rect x="64" y="28" width="192" height="144" fill="#241608"/>
+      <rect x="70" y="34" width="86" height="132" fill="url(#ivSw)"/><rect x="164" y="34" width="86" height="132" fill="url(#ivSw)"/>
+      <g stroke="#241608" stroke-width="6"><line x1="113" y1="34" x2="113" y2="166"/><line x1="207" y1="34" x2="207" y2="166"/><line x1="70" y1="100" x2="250" y2="100"/></g>
+      <path d="M76 40 L96 40 L80 96 L70 96 Z" fill="#cfe2f0" opacity="0.14"/>
+      <rect x="146" y="86" width="28" height="40" rx="3" fill="#caa64e" stroke="#6a4810" stroke-width="2"/>
+      <rect x="136" y="98" width="48" height="11" rx="3" fill="#e7c25a"/>
+      <circle cx="160" cy="103" r="4" fill="#3a2808"/>
+      <text x="160" y="190" fill="#5af0a0" font-family="'Space Mono',monospace" font-size="10" text-anchor="middle">latched from inside</text>
+    </svg>`],
+
+    /* computer login (passcode) */
+    computer: ['tech', `<svg viewBox="0 0 320 200" preserveAspectRatio="xMidYMid meet">
+      <rect x="34" y="14" width="252" height="150" rx="12" fill="#26241d" stroke="#100f0b" stroke-width="3"/>
+      <rect x="50" y="28" width="220" height="118" rx="6" fill="#06140a"/>
+      <g fill="#5af0a0" font-family="'Space Mono',monospace">
+        <text x="66" y="56" font-size="13">PEMBROKE ESTATE // mail server</text>
+        <text x="66" y="86" font-size="12">enter 4-digit passcode:</text>
+        <text x="66" y="116" font-size="22" letter-spacing="8">[ ][ ][ ][ ]</text></g>
+      <rect x="44" y="150" width="40" height="6" fill="#1a1812"/>
+      <rect x="118" y="164" width="84" height="8" fill="#1a1812"/>
+    </svg>`],
+  };
+  function ivis(tok){
+    const e = IVIS[tok];
+    if(!e) return '<div class="insp-vis" aria-hidden="true"></div>';
+    return '<div class="insp-vis vis-'+e[0]+'" aria-hidden="true">'+e[1]+'</div>';
+  }
+
+
   const HANDLERS = {
     /* ── LIVING ROOM ── */
     body(){
       const s=G.objStep.body||0;
       if(s===0){
         render('Sir Arthur Pembroke', `
-          <div class="insp-vis" aria-hidden="true">🧍</div>
+          ${ivis('body')}
           <p class="insp-desc">He lies on the oak floor, a single wound to the side. The weapon is gone from the body — and it is no kitchen knife. The slim shape of the entry suggests a <b>letter opener</b>, not a blade.</p>
           <div class="insp-action-area"><button class="insp-btn" id="bStep">Examine the hands</button></div>`);
         document.getElementById('bStep').onclick=()=>{ G.objStep.body=1; persist(); HANDLERS.body(); };
@@ -1254,7 +2368,7 @@
       const s=G.objStep.letter_opener||0;
       if(s===0){
         render('The Letter Opener', `
-          <div class="insp-vis" aria-hidden="true">🗡️</div>
+          ${ivis('opener')}
           <p class="insp-desc">The murder weapon lies a few feet from the body. It is monogrammed <b>"A.P." — Arthur Pembroke</b>. His own letter opener, taken from his own desk, turned against him. This was not planned with a smuggled blade; it was seized in the moment.</p>
           <div class="insp-action-area"><button class="insp-btn" id="loStep">Examine the handle</button></div>`);
         document.getElementById('loStep').onclick=()=>{ G.objStep.letter_opener=1; persist(); HANDLERS.letter_opener(); };
@@ -1271,7 +2385,7 @@
       const isNew=gainEvidence('BLOOD_TRAIL_DIRECTION',[6]);
       markSolved('blood_trail'); persist();
       render('The Blood Trail', `
-        <div class="insp-vis" aria-hidden="true">🩸</div>
+        ${ivis('blood')}
         <p class="insp-desc">The pooling beneath the body is one thing; the <b>trail</b> is another. Smeared droplets lead away from the body — <b>not toward the door</b>, but inward, toward the <b>fireplace</b> on the far wall. Someone crossed to the hearth after the blow, then left another way.</p>
         <div class="insp-note">The blood points at the fireplace, not the exit. ${isNew?ev('BLOOD_TRAIL_DIRECTION'):''}</div>`);
     },
@@ -1281,7 +2395,7 @@
       const isNew2=gainEvidence('LIPSTICK_SHADE',[8]);
       markSolved('wine_glass'); persist();
       render('The Wine Glasses', `
-        <div class="insp-vis" aria-hidden="true">🍷</div>
+        ${ivis('wine')}
         <p class="insp-desc">Two glasses were poured. One lies shattered against the coffee table's edge; the other stands intact. On the rim of the surviving glass: a print of <b>lipstick</b>, a deep claret shade. Sir Arthur did not drink with a man this morning — he drank with a <b>woman</b>.</p>
         <div class="insp-note">Two glasses, one woman, one quarrel. ${(isNew1||isNew2)?(ev('TWO_GUESTS')+ev('LIPSTICK_SHADE')):''}</div>`);
     },
@@ -1290,7 +2404,7 @@
       const isNew=gainEvidence('TIME_OF_DEATH_1031',[9]);
       markSolved('wall_clock'); persist();
       render('The Wall Clock', `
-        <div class="insp-vis" aria-hidden="true">🕥</div>
+        ${ivis('clock')}
         <p class="insp-desc">A heavy ormolu clock, knocked in the struggle and now silent. Its hands are frozen at <b>10:31</b>. A clock does not stop itself — it stopped when it fell, at the moment of the attack. <b>Time of death: 10:31 a.m.</b></p>
         <div class="insp-note">The hands rest at <span class="mono">10:31</span>. Remember that number. ${isNew?ev('TIME_OF_DEATH_1031'):''}</div>`);
     },
@@ -1299,7 +2413,7 @@
       const isNew=gainEvidence('HOTEL_RECEIPT',[10,11]);
       markSolved('sofa'); persist();
       render('The Sofa', `
-        <div class="insp-vis" aria-hidden="true">🛋️</div>
+        ${ivis('sofa')}
         <p class="insp-desc">A cushion sits askew. Beneath it, a slip of paper: a <b>receipt from Claridge's Hotel</b>, dated <b>June 13th, 11:45 p.m.</b> — dinner for one, the night before the murder. Someone in this circle dined late at Claridge's.</p>
         <div class="insp-note">Claridge's. June 13, 11:45 p.m. ${isNew?ev('HOTEL_RECEIPT'):''}</div>`);
     },
@@ -1308,7 +2422,7 @@
       const isNew=gainEvidence('HOTEL_PEN',[12]);
       markSolved('coffee_table'); persist();
       render('The Coffee Table', `
-        <div class="insp-vis" aria-hidden="true">☕</div>
+        ${ivis('table')}
         <p class="insp-desc">A dusting of white powder near a plate — only powdered sugar from a half-eaten pastry; a red herring. More useful is the <b>pen</b> resting beside it, branded with a hotel crest: <b>Claridge's</b>. The same establishment as the receipt.</p>
         <div class="insp-note">A Claridge's pen. The night before is connected to this room. ${isNew?ev('HOTEL_PEN'):''}</div>`);
     },
@@ -1317,7 +2431,7 @@
       const s=G.objStep.family_portrait||0;
       if(s===0){
         render('The Family Portrait', `
-          <div class="insp-vis" aria-hidden="true">🖼️</div>
+          ${ivis('portrait')}
           <p class="insp-desc">A large oil portrait: the Pembroke family, three children in stiff Sunday clothes. Arthur as a boy stands at the left. He had siblings, then — an old, large family.</p>
           <div class="insp-action-area"><button class="insp-btn" id="fpStep">Read the nameplate</button></div>`);
         document.getElementById('fpStep').onclick=()=>{ G.objStep.family_portrait=1; persist(); HANDLERS.family_portrait(); };
@@ -1334,7 +2448,7 @@
       const isNew=gainEvidence('PHONE_CALL_1028',[15,16]);
       markSolved('phone'); persist();
       render('The Telephone', `
-        <div class="insp-vis" aria-hidden="true">☎️</div>
+        ${ivis('phone')}
         <p class="insp-desc">The landline's call log glows on its little screen. The last dialled contact is saved as <b>"MARGARET"</b>. An outgoing call was placed to her at <b>10:28 a.m.</b> — just <b>three minutes</b> before the clock stopped at 10:31. He rang his secretary moments before he died.</p>
         <div class="insp-note">10:28 a.m. — Arthur calls Margaret. 10:31 — he is dead. ${isNew?ev('PHONE_CALL_1028'):''}</div>`);
     },
@@ -1343,7 +2457,7 @@
       const isNew=gainEvidence('SECURITY_LOG',[17,18]);
       markSolved('security_panel'); persist();
       render('The Security Panel', `
-        <div class="insp-vis" aria-hidden="true">🔓</div>
+        ${ivis('panel')}
         <p class="insp-desc">The access panel beside the door keeps a log:</p>
         <div class="insp-note" style="font-family:var(--font-mono);font-size:0.8rem;line-height:2;">
           FRONT DOOR — opened <span class="mono">10:26</span><br>
@@ -1359,19 +2473,19 @@
       const haveTime=!!G.discoveredEvidence['TIME_OF_DEATH_1031'];
       const s=G.objStep.fireplace||0;
       if(G.hasKey){
-        render('The Fireplace', `<div class="insp-vis" aria-hidden="true">🔥</div><p class="insp-desc">The ash box stands open and empty now — you have already recovered the study key from beneath its false bottom.</p>`);
+        render('The Fireplace', `${ivis('fire')}<p class="insp-desc">The ash box stands open and empty now — you have already recovered the study key from beneath its false bottom.</p>`);
         return;
       }
       if(!haveBlood || !haveTime){
         const need=[]; if(!haveBlood)need.push('where the blood trail leads'); if(!haveTime)need.push('exactly when the attack happened');
         render('The Fireplace', `
-          <div class="insp-vis" aria-hidden="true">🔥</div>
+          ${ivis('fire')}
           <p class="insp-desc">A grand marble fireplace, cold this morning. You sense it matters — but you have no reason yet to disturb it. First understand <b>${need.join('</b> and <b>')}</b>, then return.</p>`);
         return;
       }
       if(s===0){
         render('The Fireplace', `
-          <div class="insp-vis" aria-hidden="true">🔥</div>
+          ${ivis('fire')}
           <p class="insp-desc">The blood led <b>here</b>, and the study door was forced open at <b>10:31</b>. After the blow, the killer crossed to this hearth in a panic. You test the <b>ash box</b> — it slides oddly, heavier than ash alone should be.</p>
           <div class="insp-action-area"><button class="insp-btn" id="fpStep">Lift the ash box</button></div>`);
         document.getElementById('fpStep').onclick=()=>{ G.objStep.fireplace=1; persist(); HANDLERS.fireplace(); };
@@ -1387,12 +2501,12 @@
     door_to_study(){
       if(!G.hasKey){
         render('The Study Door', `
-          <div class="insp-vis" aria-hidden="true">🚪</div>
+          ${ivis('doorlocked')}
           <p class="insp-desc">A solid oak door to Sir Arthur's private study, firmly <b>locked</b>. The answers — his computer, his correspondence — are behind it. You need the key. The blood trail suggested where it might have been hidden.</p>`);
         return;
       }
       render('The Study Door', `
-        <div class="insp-vis" aria-hidden="true">🗝️</div>
+        ${ivis('key')}
         <p class="insp-desc">You fit the brass key into the lock. It turns with a heavy, satisfying click. The private study opens before you.</p>
         <div class="insp-action-area"><button class="insp-btn" id="enterStudy">Enter the study</button></div>`);
       document.getElementById('enterStudy').onclick=()=>{ closeInsp(); transitionToStudy(); };
@@ -1403,7 +2517,7 @@
       const s=G.objStep.desk||0;
       if(s===0){
         render('The Mahogany Desk', `
-          <div class="insp-vis" aria-hidden="true">🪑</div>
+          ${ivis('desk')}
           <p class="insp-desc">Sir Arthur's desk. Financial statements are fanned across the leather top — columns of figures, several circled in red. Along the right edge, the wood is <b>scratched</b>, as if a hidden drawer is opened often.</p>
           <div class="insp-action-area"><button class="insp-btn" id="dStep">Press the scratched panel</button></div>`);
         document.getElementById('dStep').onclick=()=>{ G.objStep.desk=1; persist(); HANDLERS.desk(); };
@@ -1423,7 +2537,7 @@
       const isNew=gainEvidence('DIGIT_3_4',[40]);
       markSolved('bookshelf'); persist();
       render('The Bookshelf', `
-        <div class="insp-vis" aria-hidden="true">📚</div>
+        ${ivis('book')}
         <p class="insp-desc">One volume juts out from the rest: <b>"The Laws of Property, Vol. IV."</b> You draw it down. Inside the cover, in Arthur's hand, <b>"Chapter 4"</b> is circled again and again. The Roman numeral on the spine, the circled chapter — the digit he chose was <b>4</b>. That is the missing third digit.</p>
         <div class="insp-note">Third digit: <span class="mono">4</span>. The passcode is complete: <span class="mono">3 8 4 7</span>. ${isNew?ev('DIGIT_3_4'):''}</div>`);
     },
@@ -1433,7 +2547,7 @@
       gainEvidence('SAFE_LOCATION',[]);
       markSolved('painting'); persist();
       render('The Painting', `
-        <div class="insp-vis" aria-hidden="true">🖼️</div>
+        ${ivis('safe')}
         <p class="insp-desc">A small landscape hangs slightly askew — wrong, in so careful a room. You swing it aside on its hinge. Behind it: a wall <b>safe, already open and empty</b>. The killer cleared it before fleeing. The combination dial is still set, frozen at <b>38</b> — echoing the first two passcode digits.</p>
         <div class="insp-note">An empty, pre-opened safe. Dial reads <span class="mono">38</span>. She took whatever was inside. ${isNew?ev('SAFE_OPEN'):''}</div>`);
     },
@@ -1442,7 +2556,7 @@
       const s=G.objStep.filing_cabinet||0;
       if(s===0){
         render('The Filing Cabinet', `
-          <div class="insp-vis" aria-hidden="true">🗄️</div>
+          ${ivis('cabinet')}
           <p class="insp-desc">A steel cabinet, top drawer ajar. A folder is labelled in Arthur's hand: <b>"CALLOWAY — PRIVATE."</b></p>
           <div class="insp-action-area"><button class="insp-btn" id="fcStep">Open the Calloway folder</button></div>`);
         document.getElementById('fcStep').onclick=()=>{ G.objStep.filing_cabinet=1; persist(); HANDLERS.filing_cabinet(); };
@@ -1468,7 +2582,7 @@
       const isNew=gainEvidence('TORN_NOTE_AP',[52]);
       markSolved('torn_letter'); persist();
       render('The Torn Letter', `
-        <div class="insp-vis" aria-hidden="true">📄</div>
+        ${ivis('torn')}
         <p class="insp-desc">Four torn scraps on the study floor. You fit them together:</p>
         <div class="insp-note" style="font-style:italic;">"I know what you've done. The authorities will be contacted Monday.<br>— A.P."</div>
         <p class="insp-desc">He confronted her in writing. She had until Monday before the police were told. The murder happened on the <b>14th</b> — she could not let Monday come. ${isNew?ev('TORN_NOTE_AP'):''}</p>`);
@@ -1478,7 +2592,7 @@
       const isNew=gainEvidence('NOTEBOOK_ENTRIES',[54]);
       markSolved('armchair'); persist();
       render('The Reading Armchair', `
-        <div class="insp-vis" aria-hidden="true">🪑</div>
+        ${ivis('notebook')}
         <p class="insp-desc">A worn leather reading chair by the window. Beneath the cushion, a small <b>notebook</b> in Arthur's hand — dated entries tracking discrepancies in the accounts, each one followed by a single underlined initial: <b>"M.C."</b> He had been building his case for weeks.</p>
         <div class="insp-note">His private ledger of her thefts. Every entry signed M.C. ${isNew?ev('NOTEBOOK_ENTRIES'):''}</div>`);
     },
@@ -1487,7 +2601,7 @@
       const isNew=gainEvidence('STUDY_WINDOW_LOCKED',[56]);
       markSolved('study_window'); persist();
       render('The Study Window', `
-        <div class="insp-vis" aria-hidden="true">🪟</div>
+        ${ivis('window')}
         <p class="insp-desc">The study window is <b>latched from the inside</b> and undisturbed — no one climbed out here. The killer left the way she came: through the house, in the gap the security log records. There was no outside intruder.</p>
         <div class="insp-note">Window locked from within. No stranger entered or escaped. ${isNew?ev('STUDY_WINDOW_LOCKED'):''}</div>`);
     },
@@ -1495,7 +2609,7 @@
     computer(){
       if(G.computerUnlocked){ openEmailClient(); return; }
       render('The Computer', `
-        <div class="insp-vis" aria-hidden="true">💻</div>
+        ${ivis('computer')}
         <p class="insp-desc">Sir Arthur's desktop. The screen demands a <b>four-digit passcode</b>. ${G.digits.every(d=>d!==null)?'You have all four digits.':'You have not found every digit yet — search the desk and the bookshelf.'}</p>
         <div class="insp-action-area">
           <div class="passcode-inputs">
