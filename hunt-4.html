@@ -66,10 +66,11 @@
       --st-lamp:        rgba(86,210,120,0.20);
       --st-lamp-core:   rgba(150,255,180,0.34);
 
-      /* Shared shadow recipes */
+      /* Shared shadow recipes — two-layer (tight contact + soft ambient cast)
+         for photographic depth under every object */
       --grnd-shadow:    0 14px 22px -6px rgba(0,0,0,0.7);
-      --obj-shadow:     drop-shadow(0 6px 10px rgba(0,0,0,0.6));
-      --obj-shadow-lg:  drop-shadow(0 12px 18px rgba(0,0,0,0.72));
+      --obj-shadow:     drop-shadow(0 3px 4px rgba(0,0,0,0.52)) drop-shadow(0 11px 15px rgba(0,0,0,0.42));
+      --obj-shadow-lg:  drop-shadow(0 5px 7px rgba(0,0,0,0.58)) drop-shadow(0 18px 24px rgba(0,0,0,0.5));
 
       /* Stage perspective depth used by floor & rugs */
       --persp:          760px;
@@ -219,6 +220,14 @@
       box-shadow:inset 0 0 70px rgba(0,0,0,0.55), inset 0 0 18px rgba(0,0,0,0.7);
       border-radius:7px;
     }
+    /* Photographic film-grain + micro-texture across the whole diorama —
+       breaks up the flat CSS gradients so surfaces read as real materials */
+    .room-stage::before {
+      content:''; position:absolute; inset:0; pointer-events:none; z-index:57;
+      opacity:0.08; mix-blend-mode:overlay;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='150' height='150' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:160px 160px;
+    }
 
     /* ───────────────────────────────────────────────────────────────────
        04 · LIVING ROOM — ARCHITECTURE
@@ -297,25 +306,43 @@
       box-shadow:0 2px 6px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,250,214,0.6);
     }
 
-    /* — Upper wall: solid gilded boiserie (real gold) — */
+    /* — Upper wall: solid gilded boiserie (aged real gold) — */
     .lr-wallpaper {
       position:absolute; top:11.4%; left:0; right:0; bottom:48%; z-index:2;
       background:
-        /* soft top-down key light */
-        linear-gradient(180deg, rgba(255,248,214,0.22) 0%, transparent 26%, transparent 78%, rgba(60,40,8,0.3) 100%),
-        /* damask sheen blooms */
-        radial-gradient(ellipse 16% 40% at 16% 46%, rgba(255,246,196,0.22) 0%, transparent 60%),
-        radial-gradient(ellipse 16% 40% at 50% 46%, rgba(255,246,196,0.20) 0%, transparent 60%),
-        radial-gradient(ellipse 16% 40% at 84% 46%, rgba(255,246,196,0.22) 0%, transparent 60%),
-        /* metallic gold field */
-        linear-gradient(180deg, #d4ac44 0%, #e4c258 34%, #d2a83e 70%, #b88c2a 100%);
-      box-shadow:inset 0 16px 30px rgba(120,90,30,0.16), inset 0 -10px 26px rgba(70,48,12,0.28);
+        /* soft top-down key light from the chandelier */
+        linear-gradient(180deg, rgba(255,248,214,0.26) 0%, transparent 24%, transparent 74%, rgba(50,34,6,0.4) 100%),
+        /* burnished sheen blooms where light catches the gilt */
+        radial-gradient(ellipse 15% 38% at 16% 44%, rgba(255,244,190,0.20) 0%, transparent 60%),
+        radial-gradient(ellipse 15% 38% at 50% 42%, rgba(255,246,196,0.22) 0%, transparent 60%),
+        radial-gradient(ellipse 15% 38% at 84% 44%, rgba(255,244,190,0.20) 0%, transparent 60%),
+        /* aged metallic gold field — warmer, less neon, graduated to tarnish */
+        linear-gradient(180deg, #c6a142 0%, #d6b251 26%, #c39c39 58%, #a37e29 84%, #7c5e1d 100%);
+      box-shadow:inset 0 16px 34px rgba(110,82,26,0.2), inset 0 -12px 30px rgba(56,38,8,0.36);
+    }
+    /* brushed-gilt micro-grain + irregular tarnish to age the metal */
+    .lr-wallpaper::before {
+      content:''; position:absolute; inset:0; pointer-events:none; mix-blend-mode:multiply; opacity:0.7;
+      background:
+        /* fine vertical brushed striations */
+        repeating-linear-gradient(90deg,
+          rgba(255,244,200,0) 0 0.5%, rgba(255,248,210,0.06) 0.6% 0.85%,
+          rgba(70,50,14,0.07) 1% 1.35%, rgba(255,244,200,0) 1.5% 2.2%),
+        /* tarnish / oxidation patches gathering in the recesses */
+        radial-gradient(ellipse 26% 44% at 24% 72%, rgba(78,56,18,0.3), transparent 62%),
+        radial-gradient(ellipse 22% 36% at 66% 26%, rgba(78,56,18,0.22), transparent 62%),
+        radial-gradient(ellipse 30% 30% at 90% 80%, rgba(60,42,12,0.26), transparent 64%);
+    }
+    .lr-wallpaper::after {     /* faint specular streak raking across the gilt */
+      content:''; position:absolute; inset:0; pointer-events:none; mix-blend-mode:screen; opacity:0.5;
+      background:linear-gradient(108deg, transparent 0 40%, rgba(255,250,220,0.12) 48%, transparent 56% 100%);
     }
     /* gilded ornamental boiserie panels over the upper wall */
     .lr-boiserie {
       position:absolute; top:11.4%; left:0; right:0; bottom:48%; z-index:2; pointer-events:none;
     }
-    .lr-boiserie svg { width:100%; height:100%; display:block; }
+    .lr-boiserie svg { width:100%; height:100%; display:block;
+      filter:drop-shadow(0 2px 2px rgba(40,28,6,0.5)); }
 
     /* — Gilt dado / chair rail — */
     .lr-dado-rail {
@@ -472,6 +499,15 @@
           rgba(120,78,36,0.22) 12.5% 13%, rgba(0,0,0,0.6) 13.1% 13.6%),
         linear-gradient(180deg, #34210e 0%, #24160a 58%, #170d05 100%);
       box-shadow:inset 0 14px 28px rgba(0,0,0,0.5);
+    }
+    .st-wall-panels::before {    /* fine mahogany wood grain + figure */
+      content:''; position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay; opacity:0.5;
+      background:
+        repeating-linear-gradient(178deg,
+          rgba(120,78,36,0.0) 0 0.7%, rgba(150,100,46,0.14) 0.8% 1.1%,
+          rgba(20,12,6,0.16) 1.2% 1.5%, rgba(120,78,36,0.0) 1.6% 2.6%),
+        radial-gradient(ellipse 40% 18% at 30% 36%, rgba(150,100,46,0.18), transparent 60%),
+        radial-gradient(ellipse 36% 16% at 72% 64%, rgba(120,78,36,0.16), transparent 60%);
     }
     .st-wall-panels::after {     /* top & bottom panel bevels catching lamp light */
       content:''; position:absolute; inset:8% 1%;
