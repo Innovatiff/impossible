@@ -720,6 +720,9 @@
     .hunt-card-actions {
       padding: 0.8rem 1.4rem;
       border-top: 1px solid rgba(212,167,70,0.06);
+      /* Keep the action buttons above the locked veil so Unlock stays clickable */
+      position: relative;
+      z-index: 2;
       display: flex;
       flex-direction: column;
       gap: 0.45rem;
@@ -781,6 +784,8 @@
       justify-content: center;
       gap: 0.6rem;
       backdrop-filter: blur(2px);
+      /* Decorative veil only — let clicks reach the Unlock button beneath it */
+      pointer-events: none;
     }
 
     .lock-icon { font-size: 1.8rem; opacity: 0.5; }
@@ -857,32 +862,6 @@
       color: var(--gold);
       min-width: 2.5em;
       text-align: right;
-    }
-
-    .progress-chips {
-      display: flex;
-      gap: 0.3rem;
-      flex-wrap: wrap;
-      margin-top: 0.4rem;
-    }
-
-    .p-chip {
-      width: 24px; height: 24px;
-      border: 1px solid rgba(212,167,70,0.18);
-      border-radius: 2px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: rgba(212,167,70,0.18);
-      background: rgba(14,11,18,0.5);
-    }
-
-    .p-chip.found {
-      color: var(--gold);
-      border-color: rgba(212,167,70,0.45);
     }
 
     .progress-meta-row {
@@ -1742,12 +1721,9 @@
 
     /* ── Hunt catalog (static for now) ───────────────────── */
     const HUNT_CATALOG = [
-      { id: 'hunt-1', number: '01', name: 'The Glass & The Flame',       difficulty: 'Initiate',   isFree: true,  url: 'hunt-1.html', scenes: 10, description: 'A sealed envelope. A dark mirror. A lantern in the void.' },
-      { id: 'hunt-2', number: '02', name: 'The Clockwork Confession',    difficulty: 'Inspector',  isFree: false, url: '#',           scenes: 10, description: 'The confession was hidden inside the mechanism itself.' },
-      { id: 'hunt-3', number: '03', name: 'The Phosphor Letters',        difficulty: 'Inspector',  isFree: false, url: '#',           scenes: 10, description: 'Written in a light only visible to those who know where to look.' },
-      { id: 'hunt-4', number: '04', name: 'The Cartographer\'s Lie',     difficulty: 'Senior',     isFree: false, url: '#',           scenes: 10, description: 'Every map has one place it refuses to show.' },
-      { id: 'hunt-5', number: '05', name: 'The Widow\'s Frequency',      difficulty: 'Senior',     isFree: false, url: '#',           scenes: 10, description: 'The signal broadcasts at an hour no one is listening.' },
-      { id: 'hunt-6', number: '06', name: 'The Second Autopsy',          difficulty: 'Chief',      isFree: false, url: '#',           scenes: 10, description: 'The first report was wrong. Deliberately.' },
+      { id: 'hunt-1', number: '01', name: 'The Glass & The Flame',  difficulty: 'Initiate',  isFree: true,  url: 'hunt-1.html', scenes: 20, description: 'A sealed envelope. A dark mirror. A lantern in the void.' },
+      { id: 'hunt-2', number: '02', name: 'The Whispering Page',    difficulty: 'Inspector', isFree: true,  url: 'hunt-2.html', scenes: 30, description: 'A Victorian parlour. A secret cipher. A man named Venturi.' },
+      { id: 'hunt-3', number: '03', name: 'The Locked Chamber',     difficulty: 'Chief',     isFree: false, url: 'hunt-3.html', scenes: 70, description: 'A sealed room. Four digits. Eleven years of silence.', tag: 'Escape Room', price: 4.99 },
     ];
 
     const DETECTIVE_RANKS = [
@@ -2078,7 +2054,7 @@
         if (activeFilter === 'in-library') return !!userLibrary[h.id];
         if (activeFilter === 'free')       return h.isFree;
         if (activeFilter === 'completed')  return allProg[h.id]?.completed;
-        if (activeFilter === 'locked')     return !h.isFree && plan === 'free';
+        if (activeFilter === 'locked')     return !h.isFree && plan === 'free' && !userLibrary[h.id];
         return true;
       });
 
@@ -2091,7 +2067,8 @@
         const inLib    = !!userLibrary[h.id];
         const progress = allProg[h.id];
         const completed = progress?.completed;
-        const isLocked  = !h.isFree && plan === 'free';
+        // Unlocked if: free hunt, Full Dossier plan, OR permanently purchased (in library)
+        const isLocked  = !h.isFree && plan === 'free' && !inLib;
         const total     = progress?.totalSlides || h.scenes || 10;
         const solved    = completed ? total : (Array.isArray(progress?.slideSolved) ? progress.slideSolved.length : Math.max(0, (progress?.currentSlide || 1) - 1));
         const pct       = progress ? Math.min(100, Math.round((solved / total) * 100)) : 0;
@@ -2101,13 +2078,13 @@
           <div class="hunt-card" data-hunt="${h.id}">
             <div class="hunt-card-header">
               <span class="hunt-card-number">Hunt ${h.number} · ${h.difficulty}</span>
-              <div class="hunt-card-name">${h.name}</div>
+              <div class="hunt-card-name">${h.name}${h.tag ? ` <span style="font-size:0.58rem;font-family:var(--font-mono);color:#e2572b;letter-spacing:0.08em;border:1px solid rgba(226,87,43,0.4);padding:0.1rem 0.35rem;border-radius:3px;vertical-align:middle;">${h.tag}</span>` : ''}</div>
             </div>
             <div class="hunt-card-body">
               <p style="font-size:0.82rem;color:var(--parchment-faint);opacity:0.7;font-style:italic;line-height:1.5;margin:0;">${h.description}</p>
               <div class="hunt-card-meta">
                 <span>${h.scenes} scenes</span>
-                <span>${h.isFree ? 'Free' : 'Members'}</span>
+                <span>${h.isFree ? 'Free' : h.price ? `$${h.price}` : 'Members'}</span>
               </div>
               ${progress ? `
               <div>
@@ -2116,11 +2093,6 @@
                     <div class="progress-bar-fill" style="width:${pct}%"></div>
                   </div>
                   <span class="progress-pct">${pct}%</span>
-                </div>
-                <div class="progress-chips">
-                  ${['S','H','A','D','O','W'].map(l =>
-                    `<div class="p-chip ${fragments.includes(l) ? 'found' : ''}">${l}</div>`
-                  ).join('')}
                 </div>
               </div>` : ''}
             </div>
@@ -2231,11 +2203,6 @@
               <div class="progress-bar-wrap">
                 <div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
                 <span class="progress-pct">${pct}%</span>
-              </div>
-              <div class="progress-chips">
-                ${['S','H','A','D','O','W'].map(l =>
-                  `<div class="p-chip ${fragments.includes(l) ? 'found' : ''}">${l}</div>`
-                ).join('')}
               </div>
               <div class="progress-meta-row">
                 <span>Scene ${p.currentSlide || 1} / ${total}</span>
