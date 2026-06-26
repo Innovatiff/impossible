@@ -950,6 +950,27 @@
     .suspect-chip { font-family:var(--font-mono); font-size:0.66rem; padding:0.45rem 0.9rem; border:1px solid rgba(201,162,39,0.25); border-radius:20px; background:transparent; color:var(--parchment-dim); cursor:pointer; transition:all 0.2s; }
     .suspect-chip:hover { border-color:var(--gold); color:var(--gold); background:rgba(201,162,39,0.08); }
 
+    /* lipstick-shade match (wine glass) */
+    .shade-grid { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin:0.4rem 0 0.6rem; }
+    .shade-chip { display:flex; align-items:center; gap:0.5rem; font-family:var(--font-mono); font-size:0.66rem; padding:0.5rem 0.8rem 0.5rem 0.5rem; border:1px solid rgba(201,162,39,0.25); border-radius:6px; background:transparent; color:var(--parchment-dim); cursor:pointer; transition:all 0.2s; }
+    .shade-chip::before { content:''; width:18px; height:18px; border-radius:50%; background:var(--sw); box-shadow:inset 0 1px 2px rgba(255,255,255,0.3), 0 1px 3px rgba(0,0,0,0.5); flex:0 0 auto; }
+    .shade-chip:hover { border-color:var(--gold); color:var(--gold); background:rgba(201,162,39,0.08); }
+
+    /* alibi-deduction (security panel) */
+    .alibi-grid { display:flex; flex-direction:column; gap:0.5rem; margin:0.4rem 0 0.6rem; }
+    .alibi-chip { text-align:left; font-family:var(--font-body); font-size:0.82rem; padding:0.65rem 0.85rem; border:1px solid rgba(201,162,39,0.25); border-radius:6px; background:transparent; color:var(--parchment); cursor:pointer; transition:all 0.2s; }
+    .alibi-chip b { color:var(--gold); font-size:0.8rem; letter-spacing:0.03em; }
+    .alibi-chip span { display:block; margin-top:0.2rem; color:var(--parchment-dim); font-style:italic; font-size:0.78rem; }
+    .alibi-chip:hover { border-color:var(--gold); background:rgba(201,162,39,0.07); }
+
+    /* multi-part accusation */
+    .accuse-q { margin-bottom:1rem; }
+    .accuse-q-label { font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.05em; color:var(--gold); margin-bottom:0.45rem; }
+    .accuse-opts { display:flex; flex-direction:column; gap:0.4rem; }
+    .accuse-opt { text-align:left; font-family:var(--font-body); font-size:0.82rem; padding:0.55rem 0.8rem; border:1px solid rgba(201,162,39,0.22); border-radius:6px; background:transparent; color:var(--parchment); cursor:pointer; transition:all 0.18s; }
+    .accuse-opt:hover { border-color:var(--gold); background:rgba(201,162,39,0.06); }
+    .accuse-opt.sel { border-color:var(--gold); background:rgba(201,162,39,0.16); color:var(--gold); box-shadow:0 0 10px rgba(201,162,39,0.18); }
+
     /* ───────────────────────────────────────────────────────────────────
        14 · FLASH, SHAKE & ROOM TRANSITION
        ─────────────────────────────────────────────────────────────────── */
@@ -2241,19 +2262,19 @@
     body:           'The monogram on the cloth is not his. Note the initials carefully.',
     letter_opener:  'The mark on the handle is not blood — it is ink, from correspondence. Who handles correspondence?',
     blood_trail:    'The blood does not lead to the door. It leads inward, toward the hearth. Something was hidden — or someone fled that way.',
-    wine_glass:     'Two glasses suggest two people. Only one is broken. The surviving glass holds a detail about who drank from it.',
+    wine_glass:     'Two glasses suggest two people. The print on the surviving rim is dark — a deep, blood-red claret, not coral or rose. Match it to the woman who wears that shade.',
     wall_clock:     'The clock did not stop by accident. The time it shows is the time everything changed.',
     fireplace:      'The blood leads here for a reason. Something was hidden quickly, in a moment of panic. Look below the obvious — but you must understand the timing first.',
     sofa:           'The receipt tells you someone was nearby the night before. Check the establishment and the hour.',
     coffee_table:   'Not every white powder is sinister. But the branding on a stray pen is worth noting.',
     family_portrait:'An old family had more than one child. One label was scratched out for a reason.',
     phone:          'The last call was placed at 10:28 — minutes before everything stopped. Who answered?',
-    security_panel: 'The log never lies. Compare what the panel records against what people claim about their morning.',
+    security_panel: 'The log never lies. The study door opened at 10:31 — someone was inside. Only one suspect swore they never came to the estate that morning. That is the alibi it breaks.',
     door_to_study:  'You cannot force it. Find the key the killer hid in her hurry.',
     desk:           'The desk has more layers than it shows. A scratched surface hides a drawer; the drawer hides three of four digits.',
     computer:       'Four digits. Three are written on a smudged note; the fourth is circled in a law book on the shelf.',
     bookshelf:      'One book is not shelved like the others. Its chapter number matters more than its contents.',
-    painting:       'Paintings are rarely crooked by accident in a house like this. Move it.',
+    painting:       'Behind the crooked landscape is a four-digit safe. Arthur set the combination to a number that mattered to him — a year engraved on the family portrait downstairs.',
     filing_cabinet: 'The paperwork here is the real crime scene. Follow the money, and read the letter he never signed.',
     torn_letter:    'Assemble the four pieces. The final line is the reason he had to die before Monday.',
     armchair:       'Reading chairs collect what falls from pockets. Lift the cushion.',
@@ -2725,13 +2746,38 @@
     },
 
     wine_glass(){
-      const isNew1=gainEvidence('TWO_GUESTS',[7]);
-      const isNew2=gainEvidence('LIPSTICK_SHADE',[8]);
-      markSolved('wine_glass'); persist();
+      if(G.solvedObjects['wine_glass']){
+        render('The Wine Glasses', `
+          ${ivis('wine')}
+          <p class="insp-desc">Two glasses, one shattered. The surviving rim carries a <b>claret</b> lipstick print — matched and logged. He drank with a woman this morning.</p>
+          <div class="insp-note">Two glasses, one woman, one quarrel. ${ev('TWO_GUESTS')}${ev('LIPSTICK_SHADE')}</div>`);
+        return;
+      }
+      gainEvidence('TWO_GUESTS',[7]);
       render('The Wine Glasses', `
         ${ivis('wine')}
-        <p class="insp-desc">Two glasses were poured. One lies shattered against the coffee table's edge; the other stands intact. On the rim of the surviving glass: a print of <b>lipstick</b>, a deep claret shade. Sir Arthur did not drink with a man this morning — he drank with a <b>woman</b>.</p>
-        <div class="insp-note">Two glasses, one woman, one quarrel. ${(isNew1||isNew2)?(ev('TWO_GUESTS')+ev('LIPSTICK_SHADE')):''}</div>`);
+        <p class="insp-desc">Two glasses were poured. One lies shattered against the coffee table's edge; the other stands intact. On the rim of the surviving glass: a clear print of <b>lipstick</b>. Sir Arthur drank with someone this morning — and that someone wore lipstick.</p>
+        <p class="insp-desc">The forensics card lists three shades on file for the women connected to this house. <b>Lift the print and match the shade.</b></p>
+        <div class="shade-grid">
+          <button class="shade-chip" data-s="coral"  style="--sw:#e8745a">Coral — <span class="mono">Mrs. Hale</span></button>
+          <button class="shade-chip" data-s="claret" style="--sw:#7a1230">Claret — <span class="mono">M. Calloway</span></button>
+          <button class="shade-chip" data-s="rose"   style="--sw:#d98a9a">Rose — <span class="mono">Lady V.</span></button>
+        </div>
+        <div class="insp-feedback" id="wgFeedback"></div>`);
+      inspBody.querySelectorAll('.shade-chip').forEach(c=>{
+        c.onclick=()=>{
+          const fb=document.getElementById('wgFeedback');
+          if(c.dataset.s==='claret'){
+            gainEvidence('LIPSTICK_SHADE',[8]);
+            markSolved('wine_glass'); persist();
+            HANDLERS.wine_glass();
+          } else {
+            fb.textContent='That shade is too light against the print under the lens. Look again — the print is dark, almost blood-red.';
+            fb.className='insp-feedback err';
+            c.classList.add('shake'); setTimeout(()=>c.classList.remove('shake'),500);
+          }
+        };
+      });
     },
 
     wall_clock(){
@@ -2788,8 +2834,13 @@
     },
 
     security_panel(){
-      const isNew=gainEvidence('SECURITY_LOG',[17,18]);
-      markSolved('security_panel'); persist();
+      if(G.solvedObjects['security_panel']){
+        render('The Security Panel', `
+          ${ivis('panel')}
+          <p class="insp-desc">The log places someone inside the house from 10:26, opening the study door at 10:31 — the moment of death. It breaks <b>Margaret Calloway's</b> claim that she was in town all morning.</p>
+          <div class="insp-note">${ev('SECURITY_LOG')}</div>`);
+        return;
+      }
       render('The Security Panel', `
         ${ivis('panel')}
         <p class="insp-desc">The access panel beside the door keeps a log:</p>
@@ -2798,8 +2849,38 @@
           FRONT DOOR — closed <span class="mono">10:28</span><br>
           STUDY DOOR — opened <span class="mono">10:31</span>
         </div>
-        <p class="insp-desc">Someone entered the house at 10:26 and the study door was opened at 10:31 — <b>the very moment the clock stopped</b>. Whoever opened that study door is your killer. Note: this contradicts anyone who claims to have been elsewhere all morning.</p>
-        ${isNew?('<div class="insp-note">'+ev('SECURITY_LOG')+'</div>'):''}`);
+        <p class="insp-desc">Someone was inside from 10:26 and opened the study door at <b>10:31</b> — the very moment the clock stopped. The log alone does not name them, but it <b>contradicts</b> exactly one person's account. Three statements were taken this morning. <b>Whose alibi does this log break?</b></p>
+        <div class="alibi-grid">
+          <button class="alibi-chip" data-n="margaret">
+            <b>Margaret Calloway</b> — secretary
+            <span>"I was in town until noon. I never came to the estate this morning."</span>
+          </button>
+          <button class="alibi-chip" data-n="victor">
+            <b>Victor Pembroke</b> — nephew
+            <span>"I was at the Ascot races all day. Hundreds saw me there."</span>
+          </button>
+          <button class="alibi-chip" data-n="roland">
+            <b>Roland Ashby</b> — former partner
+            <span>"I was at my London office from nine. My staff can confirm it."</span>
+          </button>
+        </div>
+        <div class="insp-feedback" id="spFeedback"></div>`);
+      inspBody.querySelectorAll('.alibi-chip').forEach(c=>{
+        c.onclick=()=>{
+          const fb=document.getElementById('spFeedback');
+          if(c.dataset.n==='margaret'){
+            gainEvidence('SECURITY_LOG',[17,18]);
+            markSolved('security_panel'); persist();
+            HANDLERS.security_panel();
+          } else if(c.dataset.n==='victor'){
+            fb.textContent='Ascot is forty miles away and his presence there is well-witnessed. The log does not touch his account.';
+            fb.className='insp-feedback err'; c.classList.add('shake'); setTimeout(()=>c.classList.remove('shake'),500);
+          } else {
+            fb.textContent='A London office alibi can be checked, but nothing here contradicts it. Whose claim puts them somewhere the log proves false?';
+            fb.className='insp-feedback err'; c.classList.add('shake'); setTimeout(()=>c.classList.remove('shake'),500);
+          }
+        };
+      });
     },
 
     fireplace(){
@@ -2877,13 +2958,45 @@
     },
 
     painting(){
-      const isNew=gainEvidence('SAFE_OPEN',[42]);
-      gainEvidence('SAFE_LOCATION',[]);
-      markSolved('painting'); persist();
+      if(G.solvedObjects['painting']){
+        render('The Painting', `
+          ${ivis('safe')}
+          <p class="insp-desc">The wall safe stands open. Inside were the <b>signed originals</b> of the offshore transfer authorisations — every one bearing Margaret Calloway's signature. She never reached them.</p>
+          <div class="insp-note">${ev('SAFE_OPEN')}${ev('SAFE_ORIGINALS')}</div>`);
+        return;
+      }
+      const sawYear=!!G.discoveredEvidence['SCRATCHED_NAME'];
       render('The Painting', `
         ${ivis('safe')}
-        <p class="insp-desc">A small landscape hangs slightly askew — wrong, in so careful a room. You swing it aside on its hinge. Behind it: a wall <b>safe, already open and empty</b>. The killer cleared it before fleeing. The combination dial is still set, frozen at <b>38</b> — echoing the first two passcode digits.</p>
-        <div class="insp-note">An empty, pre-opened safe. Dial reads <span class="mono">38</span>. She took whatever was inside. ${isNew?ev('SAFE_OPEN'):''}</div>`);
+        <p class="insp-desc">A small landscape hangs slightly askew — wrong, in so careful a room. You swing it aside on its hinge. Behind it: a <b>wall safe</b>, firmly shut, with a <b>four-digit dial</b>. The killer never got it open — she ran out of time.</p>
+        <p class="insp-desc">A man like Arthur would not choose a random combination. ${sawYear?'You recall a <b>year</b> engraved somewhere in this house.':'You have nothing to go on yet — perhaps something <b>engraved</b> elsewhere in the house gives the number. Find it first.'}</p>
+        <div class="insp-action-area">
+          <div class="passcode-inputs">
+            <input class="passcode-input" id="sf1" inputmode="numeric" maxlength="1" aria-label="Dial 1">
+            <input class="passcode-input" id="sf2" inputmode="numeric" maxlength="1" aria-label="Dial 2">
+            <input class="passcode-input" id="sf3" inputmode="numeric" maxlength="1" aria-label="Dial 3">
+            <input class="passcode-input" id="sf4" inputmode="numeric" maxlength="1" aria-label="Dial 4">
+          </div>
+          <div class="insp-feedback" id="sfFeedback"></div>
+          <button class="insp-btn" id="sfOpen">Turn the dial</button>
+        </div>`);
+      const inputs=['sf1','sf2','sf3','sf4'].map(id=>document.getElementById(id));
+      inputs.forEach((el,i)=>{ el.addEventListener('input',()=>{ el.value=el.value.replace(/[^0-9]/g,''); if(el.value&&i<3)inputs[i+1].focus(); }); });
+      document.getElementById('sfOpen').onclick=()=>{
+        const entered=inputs.map(el=>el.value).join('');
+        const fb=document.getElementById('sfFeedback');
+        if(entered==='1978'){
+          gainEvidence('SAFE_OPEN',[42]);
+          gainEvidence('SAFE_ORIGINALS',[]);
+          markSolved('painting'); persist();
+          HANDLERS.painting();
+        } else {
+          fb.textContent='The dial does not give. That is not the number.';
+          fb.className='insp-feedback err';
+          const box=document.querySelector('.passcode-inputs');
+          if(box){ box.classList.add('shake'); setTimeout(()=>box.classList.remove('shake'),500); }
+        }
+      };
     },
 
     filing_cabinet(){
@@ -2969,8 +3082,8 @@
           setTimeout(openEmailClient,500);
         } else {
           fb.textContent='Incorrect passcode.'; fb.className='insp-feedback err';
-          document.querySelector('.passcode-inputs').classList.add('shake');
-          setTimeout(()=>document.querySelector('.passcode-inputs').classList.remove('shake'),500);
+          const box=document.querySelector('.passcode-inputs');
+          if(box){ box.classList.add('shake'); setTimeout(()=>box.classList.remove('shake'),500); }
         }
       };
     },
@@ -3062,36 +3175,75 @@
 
   /* ── Accusation ─────────────────────────────────────────── */
   function openAccuse(){
-    openInsp('Name the Killer');
+    openInsp('Build the Case');
     inspBody.innerHTML=`
-      <p class="insp-desc">You have the motive (embezzlement and a looming exposure), the means (his own letter opener, ink on the grip), and the lie that breaks the case: she swore she was in town until noon, yet she composed a draft from the estate at <b>10:47 a.m.</b> — sixteen minutes after the clock stopped at 10:31. Victor was at Ascot; Roland fought him through lawyers, not blades. Type the killer's name.</p>
-      <div class="suspect-grid">
-        <button class="suspect-chip" data-n="Margaret Calloway">Margaret Calloway</button>
-        <button class="suspect-chip" data-n="Victor Pembroke">Victor Pembroke</button>
-        <button class="suspect-chip" data-n="Roland Ashby">Roland Ashby</button>
+      <p class="insp-desc">The Crown will not act on a name alone. Assemble the full case — <b>the killer, the motive, the weapon, and the single fact that destroys their alibi</b>. Every part must be right, or the case is thrown out.</p>
+      <div class="accuse-q" data-q="who">
+        <div class="accuse-q-label">1 · Who killed Sir Arthur Pembroke?</div>
+        <div class="accuse-opts">
+          <button class="accuse-opt" data-v="margaret">Margaret Calloway</button>
+          <button class="accuse-opt" data-v="victor">Victor Pembroke</button>
+          <button class="accuse-opt" data-v="roland">Roland Ashby</button>
+        </div>
+      </div>
+      <div class="accuse-q" data-q="motive">
+        <div class="accuse-q-label">2 · Why?</div>
+        <div class="accuse-opts">
+          <button class="accuse-opt" data-v="inheritance">To inherit the estate under the will</button>
+          <button class="accuse-opt" data-v="embezzle">To bury proof of £180,000 embezzled — before Monday's report</button>
+          <button class="accuse-opt" data-v="contract">Revenge for a dissolved business partnership</button>
+        </div>
+      </div>
+      <div class="accuse-q" data-q="weapon">
+        <div class="accuse-q-label">3 · The weapon?</div>
+        <div class="accuse-opts">
+          <button class="accuse-opt" data-v="smuggled">A blade brought to the house for the purpose</button>
+          <button class="accuse-opt" data-v="opener">His own letter opener, seized in the moment</button>
+          <button class="accuse-opt" data-v="poison">Poison in the wine</button>
+        </div>
+      </div>
+      <div class="accuse-q" data-q="alibi">
+        <div class="accuse-q-label">4 · The fact that breaks the alibi?</div>
+        <div class="accuse-opts">
+          <button class="accuse-opt" data-v="lipstick">The claret lipstick on the wine glass</button>
+          <button class="accuse-opt" data-v="draft">A draft composed from the estate at 10:47 a.m. — after the murder she claims to have missed</button>
+          <button class="accuse-opt" data-v="portrait">The scratched-out name on the family portrait</button>
+        </div>
       </div>
       <div class="insp-action-area">
-        <input class="accuse-input" id="accuseInput" placeholder="Name the killer…" aria-label="Killer's name">
         <div class="insp-feedback" id="accuseFeedback"></div>
-        <button class="insp-btn" id="accuseBtn">Make the Accusation</button>
+        <button class="insp-btn" id="accuseBtn">Sign the Arrest Warrant</button>
       </div>`;
-    inspBody.querySelectorAll('.suspect-chip').forEach(c=>{ c.onclick=()=>{ document.getElementById('accuseInput').value=c.dataset.n; }; });
+    const ANSWERS={ who:'margaret', motive:'embezzle', weapon:'opener', alibi:'draft' };
+    const picked={};
+    inspBody.querySelectorAll('.accuse-q').forEach(q=>{
+      const key=q.dataset.q;
+      q.querySelectorAll('.accuse-opt').forEach(o=>{
+        o.onclick=()=>{
+          picked[key]=o.dataset.v;
+          q.querySelectorAll('.accuse-opt').forEach(x=>x.classList.remove('sel'));
+          o.classList.add('sel');
+        };
+      });
+    });
     const submit=()=>{
-      const raw=(document.getElementById('accuseInput').value||'').trim().toLowerCase();
       const fb=document.getElementById('accuseFeedback');
-      const ok = raw==='margaret calloway' || raw==='margaret' || raw==='calloway' || raw==='m. calloway' || raw==='miss calloway';
-      if(ok){
+      const keys=['who','motive','weapon','alibi'];
+      if(keys.some(k=>!picked[k])){
+        fb.textContent='Answer all four parts before you sign.'; fb.className='insp-feedback err'; return;
+      }
+      const wrong=keys.filter(k=>picked[k]!==ANSWERS[k]);
+      if(wrong.length===0){
         gainEvidence('ALIBI_BROKEN',[78,79]); completeStep(80);
-        fb.textContent='The arrest warrant is signed.'; fb.className='insp-feedback ok';
+        fb.textContent='Every element holds. The arrest warrant is signed.'; fb.className='insp-feedback ok';
         persist(); closeInsp(); setTimeout(triggerCompletion,300);
-      } else if(raw){
-        fb.textContent='The evidence does not support that. Re-read the emails and the security log.'; fb.className='insp-feedback err';
       } else {
-        fb.textContent='Enter a name.'; fb.className='insp-feedback err';
+        const n=wrong.length;
+        fb.textContent=n+' of your four conclusions '+(n===1?'does':'do')+" not hold against the evidence. Re-examine the case and try again.";
+        fb.className='insp-feedback err';
       }
     };
     document.getElementById('accuseBtn').onclick=submit;
-    document.getElementById('accuseInput').addEventListener('keydown',e=>{ if(e.key==='Enter')submit(); });
   }
 
   /* ── Room transition ────────────────────────────────────── */
