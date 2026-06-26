@@ -284,19 +284,19 @@
     /* — Ornate gilded crown cornice — */
     .lr-cornice {
       position:absolute; top:7.4%; left:0; right:0; height:2.8%; z-index:3;
-      background:linear-gradient(180deg, #f4dd8e 0%, #e2bf5e 34%, #caa64e 64%, #9a781e 100%);
-      box-shadow:0 5px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,250,214,0.7);
+      background:linear-gradient(180deg, #fff4b4 0%, #f0d47e 18%, #d8b252 50%, #b48a28 78%, #7e5e14 100%);
+      box-shadow:0 6px 14px rgba(0,0,0,0.58), inset 0 1px 0 rgba(255,254,228,0.85), inset 0 -1px 0 rgba(0,0,0,0.3);
     }
     .lr-cornice::before {     /* dentil + bead-and-reel run */
       content:''; position:absolute; left:0; right:0; bottom:6%; height:46%;
       background:
         repeating-linear-gradient(90deg,
-          rgba(80,56,12,0.5) 0 0.6%, rgba(255,248,200,0.5) 0.75% 1.4%,
-          rgba(120,90,24,0.4) 1.5% 2%, transparent 2.1% 3.1%);
+          rgba(80,56,12,0.55) 0 0.55%, rgba(255,250,210,0.60) 0.7% 1.3%,
+          rgba(110,82,20,0.45) 1.4% 1.85%, transparent 1.95% 3.0%);
     }
     .lr-cornice::after {      /* egg-and-dart highlight bead */
-      content:''; position:absolute; left:0; right:0; top:10%; height:18%;
-      background:linear-gradient(180deg, rgba(255,252,224,0.75), transparent);
+      content:''; position:absolute; left:0; right:0; top:6%; height:22%;
+      background:linear-gradient(180deg, rgba(255,254,232,0.90), rgba(255,248,210,0.30) 60%, transparent);
     }
 
     /* — Gold acanthus picture rail — */
@@ -310,32 +310,33 @@
     .lr-wallpaper {
       position:absolute; top:11.4%; left:0; right:0; bottom:48%; z-index:2;
       background:
-        /* soft top-down key light from the chandelier */
-        linear-gradient(180deg, rgba(255,248,214,0.26) 0%, transparent 24%, transparent 74%, rgba(50,34,6,0.4) 100%),
-        /* burnished sheen blooms where light catches the gilt */
-        radial-gradient(ellipse 15% 38% at 16% 44%, rgba(255,244,190,0.20) 0%, transparent 60%),
-        radial-gradient(ellipse 15% 38% at 50% 42%, rgba(255,246,196,0.22) 0%, transparent 60%),
-        radial-gradient(ellipse 15% 38% at 84% 44%, rgba(255,244,190,0.20) 0%, transparent 60%),
-        /* aged metallic gold field — warmer, less neon, graduated to tarnish */
-        linear-gradient(180deg, #c6a142 0%, #d6b251 26%, #c39c39 58%, #a37e29 84%, #7c5e1d 100%);
-      box-shadow:inset 0 16px 34px rgba(110,82,26,0.2), inset 0 -12px 30px rgba(56,38,8,0.36);
+        /* strong top-down key light — chandelier directly overhead */
+        linear-gradient(180deg, rgba(255,252,220,0.38) 0%, rgba(255,244,196,0.14) 18%, transparent 38%, transparent 68%, rgba(40,26,4,0.52) 100%),
+        /* three burnished sheen blooms where candle-light rakes the gilt */
+        radial-gradient(ellipse 18% 52% at 14% 40%, rgba(255,248,196,0.28) 0%, transparent 62%),
+        radial-gradient(ellipse 20% 58% at 50% 38%, rgba(255,250,204,0.32) 0%, transparent 64%),
+        radial-gradient(ellipse 18% 52% at 86% 40%, rgba(255,248,196,0.28) 0%, transparent 62%),
+        /* aged metallic gold field — richer, darker at base */
+        linear-gradient(180deg, #caa840 0%, #dbb84e 20%, #c8a03a 44%, #a87e26 72%, #7a5a18 100%);
+      box-shadow:inset 0 18px 40px rgba(120,90,28,0.22), inset 0 -16px 36px rgba(40,26,4,0.48);
     }
     /* brushed-gilt micro-grain + irregular tarnish to age the metal */
     .lr-wallpaper::before {
-      content:''; position:absolute; inset:0; pointer-events:none; mix-blend-mode:multiply; opacity:0.7;
+      content:''; position:absolute; inset:0; pointer-events:none; mix-blend-mode:multiply; opacity:0.82;
       background:
-        /* fine vertical brushed striations */
+        /* fine vertical brushed striations — slightly more contrast */
         repeating-linear-gradient(90deg,
-          rgba(255,244,200,0) 0 0.5%, rgba(255,248,210,0.06) 0.6% 0.85%,
-          rgba(70,50,14,0.07) 1% 1.35%, rgba(255,244,200,0) 1.5% 2.2%),
+          rgba(255,244,200,0) 0 0.4%, rgba(255,252,215,0.09) 0.5% 0.8%,
+          rgba(60,42,10,0.10) 0.9% 1.3%, rgba(255,244,200,0) 1.4% 2.1%),
         /* tarnish / oxidation patches gathering in the recesses */
-        radial-gradient(ellipse 26% 44% at 24% 72%, rgba(78,56,18,0.3), transparent 62%),
-        radial-gradient(ellipse 22% 36% at 66% 26%, rgba(78,56,18,0.22), transparent 62%),
-        radial-gradient(ellipse 30% 30% at 90% 80%, rgba(60,42,12,0.26), transparent 64%);
+        radial-gradient(ellipse 30% 50% at 22% 78%, rgba(72,50,14,0.40), transparent 60%),
+        radial-gradient(ellipse 24% 40% at 68% 22%, rgba(72,50,14,0.30), transparent 60%),
+        radial-gradient(ellipse 34% 34% at 92% 84%, rgba(55,38,10,0.36), transparent 62%),
+        radial-gradient(ellipse 20% 32% at 50% 60%, rgba(80,56,16,0.22), transparent 60%);
     }
-    .lr-wallpaper::after {     /* faint specular streak raking across the gilt */
-      content:''; position:absolute; inset:0; pointer-events:none; mix-blend-mode:screen; opacity:0.5;
-      background:linear-gradient(108deg, transparent 0 40%, rgba(255,250,220,0.12) 48%, transparent 56% 100%);
+    .lr-wallpaper::after {     /* warm specular streak raking at an angle across the gilt */
+      content:''; position:absolute; inset:0; pointer-events:none; mix-blend-mode:screen; opacity:0.62;
+      background:linear-gradient(112deg, transparent 0 34%, rgba(255,252,224,0.16) 44%, rgba(255,248,210,0.08) 52%, transparent 60% 100%);
     }
     /* gilded ornamental boiserie panels over the upper wall */
     .lr-boiserie {
@@ -355,7 +356,12 @@
     .lr-wainscot {
       position:absolute; top:53%; left:0; right:0; bottom:25%; z-index:2;
       background:
-        linear-gradient(180deg, #efe2c2 0%, #e2d2ac 56%, #cdb88c 100%);
+        /* marble veining suggestions */
+        radial-gradient(ellipse 30% 60% at 18% 40%, rgba(255,248,220,0.36), transparent 62%),
+        radial-gradient(ellipse 24% 50% at 72% 55%, rgba(200,184,140,0.28), transparent 58%),
+        radial-gradient(ellipse 20% 40% at 48% 22%, rgba(255,252,236,0.32), transparent 56%),
+        linear-gradient(180deg, #f2e6c8 0%, #e4d4ae 52%, #d0bc8e 100%);
+      box-shadow:inset 0 0 18px rgba(0,0,0,0.18);
     }
     .lr-wainscot::before {    /* gilt panel frames */
       content:''; position:absolute; inset:12% 1.2%;
@@ -389,23 +395,24 @@
     .room-floor-living {
       position:absolute; bottom:0; left:0; right:0; height:25%; z-index:2;
       background:
-        linear-gradient(180deg, rgba(0,0,0,0.28) 0%, transparent 14%, transparent 64%, rgba(0,0,0,0.5) 100%),
-        /* diagonal marble tile seams with gold lines */
+        linear-gradient(180deg, rgba(0,0,0,0.38) 0%, transparent 12%, transparent 60%, rgba(0,0,0,0.58) 100%),
+        /* diagonal marble tile seams with gold lines — crisper */
         repeating-linear-gradient(56deg,
-          transparent 0 7.4%, rgba(150,120,40,0.32) 7.5% 7.9%, rgba(255,244,200,0.18) 8% 8.3%, transparent 8.4% 15.8%),
+          transparent 0 7.2%, rgba(160,128,42,0.42) 7.3% 7.7%, rgba(255,248,210,0.26) 7.8% 8.1%, transparent 8.2% 15.4%),
         repeating-linear-gradient(-56deg,
-          transparent 0 7.4%, rgba(120,96,32,0.26) 7.5% 7.9%, rgba(255,244,200,0.12) 8% 8.3%, transparent 8.4% 15.8%),
+          transparent 0 7.2%, rgba(130,100,34,0.36) 7.3% 7.7%, rgba(255,248,210,0.18) 7.8% 8.1%, transparent 8.2% 15.4%),
         /* marble veining + warm cream body */
-        radial-gradient(ellipse 40% 30% at 30% 30%, rgba(255,252,236,0.5), transparent 60%),
-        radial-gradient(ellipse 50% 30% at 72% 60%, rgba(214,196,150,0.4), transparent 60%),
-        linear-gradient(180deg, #e8dcbe 0%, #d2c098 46%, #9a8456 100%);
-      box-shadow:inset 0 10px 28px rgba(0,0,0,0.46);
+        radial-gradient(ellipse 44% 36% at 28% 26%, rgba(255,254,240,0.58), transparent 58%),
+        radial-gradient(ellipse 56% 36% at 74% 64%, rgba(220,202,158,0.46), transparent 58%),
+        radial-gradient(ellipse 30% 24% at 52% 44%, rgba(255,250,224,0.30), transparent 54%),
+        linear-gradient(180deg, #ece0c0 0%, #d4c29a 42%, #9c8658 100%);
+      box-shadow:inset 0 12px 32px rgba(0,0,0,0.52);
     }
     /* mirror-polish reflection of the chandelier on the marble */
     .room-floor-living::after {
-      content:''; position:absolute; left:42%; right:42%; top:2%; bottom:10%;
-      background:linear-gradient(180deg, rgba(255,246,206,0.4), transparent 70%);
-      filter:blur(7px); pointer-events:none;
+      content:''; position:absolute; left:36%; right:36%; top:0%; bottom:8%;
+      background:linear-gradient(180deg, rgba(255,248,208,0.52) 0%, rgba(255,238,180,0.22) 40%, transparent 70%);
+      filter:blur(10px); pointer-events:none;
     }
 
     /* — Grand savonnerie rug — */
@@ -449,18 +456,24 @@
     .lr-chandelier svg { width:100%; height:100%; display:block; overflow:visible;
       filter:drop-shadow(0 12px 24px rgba(0,0,0,0.55)); }
     .lr-chandelier-glow {
-      position:absolute; left:50%; top:3%; width:76%; height:80%; z-index:5;
+      position:absolute; left:50%; top:2%; width:80%; height:82%; z-index:5;
       transform:translateX(-50%); pointer-events:none; mix-blend-mode:screen;
       background:
-        radial-gradient(ellipse 46% 42% at 50% 22%, rgba(255,244,196,0.72) 0%, rgba(255,232,150,0.28) 36%, transparent 66%),
-        radial-gradient(ellipse 70% 56% at 50% 30%, rgba(255,218,120,0.18) 0%, transparent 70%);
+        /* tight hot core at the chandelier */
+        radial-gradient(ellipse 22% 20% at 50% 18%, rgba(255,254,232,0.82) 0%, rgba(255,244,196,0.50) 30%, transparent 62%),
+        /* wide warm bloom filling the upper half */
+        radial-gradient(ellipse 54% 48% at 50% 24%, rgba(255,238,168,0.52) 0%, rgba(255,220,130,0.22) 44%, transparent 70%),
+        /* soft ambient fill reaching down */
+        radial-gradient(ellipse 78% 60% at 50% 34%, rgba(255,210,110,0.14) 0%, transparent 72%);
       animation:chandBreathe 6s ease-in-out infinite;
     }
     /* warm amber pool from chandelier onto the floor */
     .lr-floor-glow {
-      position:absolute; left:50%; bottom:0; width:54%; height:26%; z-index:6;
+      position:absolute; left:50%; bottom:0; width:60%; height:28%; z-index:6;
       transform:translateX(-50%); pointer-events:none; mix-blend-mode:screen;
-      background:radial-gradient(ellipse 60% 50% at 50% 20%, rgba(255,218,120,0.28) 0%, rgba(255,194,80,0.10) 50%, transparent 78%);
+      background:
+        radial-gradient(ellipse 50% 44% at 50% 14%, rgba(255,228,140,0.38) 0%, rgba(255,200,88,0.16) 48%, transparent 72%),
+        radial-gradient(ellipse 72% 58% at 50% 24%, rgba(255,200,100,0.12) 0%, transparent 70%);
     }
     @keyframes chandBreathe { 0%,100%{opacity:0.88} 50%{opacity:1.0} }
 
@@ -510,27 +523,32 @@
     .st-wall-panels {
       position:absolute; top:10.1%; left:0; right:0; bottom:23%; z-index:2;
       background:
+        /* panel groove shadows — left edge dark, right edge lighter reflection */
         repeating-linear-gradient(90deg,
-          rgba(0,0,0,0.0) 0 0.5%, rgba(0,0,0,0.6) 0.6% 1.1%,
-          rgba(120,78,36,0.22) 1.2% 1.8%, rgba(0,0,0,0.0) 1.9% 12.4%,
-          rgba(120,78,36,0.22) 12.5% 13%, rgba(0,0,0,0.6) 13.1% 13.6%),
-        linear-gradient(180deg, #34210e 0%, #24160a 58%, #170d05 100%);
-      box-shadow:inset 0 14px 28px rgba(0,0,0,0.5);
+          rgba(0,0,0,0.0) 0 0.4%, rgba(0,0,0,0.70) 0.5% 0.9%,
+          rgba(130,84,38,0.28) 1.0% 1.6%, rgba(0,0,0,0.0) 1.7% 12.2%,
+          rgba(130,84,38,0.28) 12.3% 12.8%, rgba(0,0,0,0.70) 12.9% 13.3%),
+        /* subtle lamp light warming the centre panels */
+        radial-gradient(ellipse 50% 60% at 46% 55%, rgba(100,66,28,0.22), transparent 66%),
+        linear-gradient(180deg, #382414 0%, #261808 52%, #160e04 100%);
+      box-shadow:inset 0 16px 32px rgba(0,0,0,0.62), inset 0 -8px 20px rgba(0,0,0,0.45);
     }
     .st-wall-panels::before {    /* fine mahogany wood grain + figure */
-      content:''; position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay; opacity:0.5;
+      content:''; position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay; opacity:0.65;
       background:
         repeating-linear-gradient(178deg,
-          rgba(120,78,36,0.0) 0 0.7%, rgba(150,100,46,0.14) 0.8% 1.1%,
-          rgba(20,12,6,0.16) 1.2% 1.5%, rgba(120,78,36,0.0) 1.6% 2.6%),
-        radial-gradient(ellipse 40% 18% at 30% 36%, rgba(150,100,46,0.18), transparent 60%),
-        radial-gradient(ellipse 36% 16% at 72% 64%, rgba(120,78,36,0.16), transparent 60%);
+          rgba(120,78,36,0.0) 0 0.6%, rgba(160,106,48,0.18) 0.7% 1.0%,
+          rgba(16,10,4,0.20) 1.1% 1.4%, rgba(120,78,36,0.0) 1.5% 2.4%),
+        /* figure / crotch grain patterns — irregular warm patches */
+        radial-gradient(ellipse 44% 22% at 28% 32%, rgba(160,108,48,0.24), transparent 58%),
+        radial-gradient(ellipse 36% 18% at 68% 62%, rgba(130,84,36,0.20), transparent 58%),
+        radial-gradient(ellipse 28% 14% at 50% 48%, rgba(150,100,44,0.16), transparent 56%);
     }
     .st-wall-panels::after {     /* top & bottom panel bevels catching lamp light */
       content:''; position:absolute; inset:8% 1%;
       background:
-        linear-gradient(180deg, rgba(150,100,46,0.16) 0 2%, transparent 3%),
-        linear-gradient(0deg,  rgba(0,0,0,0.5) 0 2%, transparent 3%);
+        linear-gradient(180deg, rgba(160,108,48,0.22) 0 1.8%, rgba(100,66,24,0.08) 2.4% 3%, transparent 4%),
+        linear-gradient(0deg,  rgba(0,0,0,0.62) 0 1.8%, rgba(0,0,0,0.20) 2.4% 3%, transparent 4%);
     }
     .st-skirting {
       position:absolute; bottom:22.4%; left:0; right:0; height:2%; z-index:5;
@@ -547,9 +565,10 @@
       box-shadow:inset 0 10px 24px rgba(0,0,0,0.78);
     }
     .room-floor-study::after {     /* warm lamp spill on the boards */
-      content:''; position:absolute; left:34%; right:34%; top:0; bottom:14%;
-      background:radial-gradient(ellipse 60% 90% at 50% 0%, rgba(120,220,150,0.12), transparent 70%);
-      filter:blur(5px); pointer-events:none;
+      content:''; position:absolute; left:28%; right:28%; top:0; bottom:10%;
+      background:
+        radial-gradient(ellipse 56% 86% at 50% 0%, rgba(100,200,130,0.22) 0%, rgba(60,140,90,0.10) 50%, transparent 72%);
+      filter:blur(8px); pointer-events:none;
     }
     .st-rug {
       position:absolute; bottom:4%; left:14%; width:64%; height:18%; z-index:3;
@@ -720,36 +739,51 @@
       box-shadow:0 3px 7px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,252,216,0.7), inset 0 -2px 4px rgba(0,0,0,0.3);
     }
     .lr-sconce::after {        /* candle-flame + wall-wash halo */
-      content:''; position:absolute; left:50%; top:-60%; width:320%; height:200%;
+      content:''; position:absolute; left:50%; top:-80%; width:380%; height:240%;
       transform:translateX(-50%);
       background:
-        radial-gradient(ellipse 40% 50% at 50% 30%, rgba(255,224,140,0.55), rgba(255,186,70,0.22) 44%, transparent 70%),
-        radial-gradient(ellipse 80% 80% at 50% 26%, rgba(255,196,100,0.12) 0%, transparent 68%);
+        /* hot flame core */
+        radial-gradient(ellipse 24% 32% at 50% 22%, rgba(255,248,200,0.70) 0%, rgba(255,220,130,0.36) 36%, transparent 62%),
+        /* warm amber wall-wash spreading laterally */
+        radial-gradient(ellipse 56% 58% at 50% 28%, rgba(255,200,100,0.28) 0%, rgba(255,174,60,0.12) 50%, transparent 72%),
+        /* wide soft ambient halo */
+        radial-gradient(ellipse 90% 90% at 50% 24%, rgba(255,190,80,0.08) 0%, transparent 68%);
       animation:sconceFlicker 3.4s ease-in-out infinite;
     }
-    @keyframes sconceFlicker { 0%,100%{opacity:0.74; transform:translateX(-50%) scale(1)} 45%{opacity:1; transform:translateX(-50%) scale(1.09)} 70%{opacity:0.86} }
+    @keyframes sconceFlicker { 0%,100%{opacity:0.72; transform:translateX(-50%) scale(1)} 40%{opacity:1; transform:translateX(-50%) scale(1.11)} 68%{opacity:0.84; transform:translateX(-50%) scale(1.04)} }
 
     /* corner ambient occlusion + warm centre key-light */
     .room-vignette {
       position:absolute; inset:0; pointer-events:none; z-index:55;
       background:
-        radial-gradient(ellipse 108% 78% at 50% 44%, transparent 30%, rgba(0,0,0,0.38) 68%, rgba(0,0,0,0.72) 100%),
-        /* top-corner shadow deepening */
-        radial-gradient(ellipse 40% 30% at 0% 0%, rgba(0,0,0,0.52), transparent 70%),
-        radial-gradient(ellipse 40% 30% at 100% 0%, rgba(0,0,0,0.52), transparent 70%),
-        /* warm chandelier key on the scene */
-        radial-gradient(ellipse 44% 38% at 50% 56%, rgba(255,232,164,0.09), transparent 68%);
+        /* main elliptical frame — tighter centre opening, darker edges */
+        radial-gradient(ellipse 100% 72% at 50% 46%, transparent 26%, rgba(0,0,0,0.30) 54%, rgba(0,0,0,0.68) 82%, rgba(0,0,0,0.88) 100%),
+        /* upper-left corner deep shadow */
+        radial-gradient(ellipse 44% 34% at 0% 0%, rgba(0,0,0,0.62), transparent 68%),
+        /* upper-right corner deep shadow */
+        radial-gradient(ellipse 44% 34% at 100% 0%, rgba(0,0,0,0.62), transparent 68%),
+        /* lower-left corner */
+        radial-gradient(ellipse 36% 28% at 0% 100%, rgba(0,0,0,0.50), transparent 65%),
+        /* lower-right corner */
+        radial-gradient(ellipse 36% 28% at 100% 100%, rgba(0,0,0,0.50), transparent 65%),
+        /* warm chandelier glow tinting the centre of the scene */
+        radial-gradient(ellipse 50% 42% at 50% 52%, rgba(255,232,164,0.13), transparent 66%);
     }
 
     /* green banker's-lamp pool for the study */
     .study-lamp-glow {
-      position:absolute; left:38%; top:24%; width:28%; height:52%; z-index:7; pointer-events:none;
+      position:absolute; left:36%; top:20%; width:32%; height:58%; z-index:7; pointer-events:none;
       background:
-        radial-gradient(ellipse 50% 60% at 50% 30%, var(--st-lamp-core) 0%, var(--st-lamp) 40%, transparent 76%);
+        /* tight hot core under the shade */
+        radial-gradient(ellipse 30% 28% at 50% 26%, rgba(180,255,190,0.55) 0%, var(--st-lamp-core) 28%, transparent 56%),
+        /* main conical spill downward */
+        radial-gradient(ellipse 58% 66% at 50% 32%, var(--st-lamp) 0%, rgba(60,120,80,0.26) 48%, transparent 78%),
+        /* wide soft ambient fill */
+        radial-gradient(ellipse 80% 80% at 50% 40%, rgba(40,90,60,0.12) 0%, transparent 72%);
       mix-blend-mode:screen;
       animation:lampHum 6s ease-in-out infinite;
     }
-    @keyframes lampHum { 0%,100%{opacity:0.9} 50%{opacity:1} }
+    @keyframes lampHum { 0%,100%{opacity:0.88} 50%{opacity:1} }
 
     /* ───────────────────────────────────────────────────────────────────
        08 · INSPECTION PANEL
