@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hunt 04: The Whitmore Affair — Impossible Hunt</title>
+  <meta name="description" content="A murder mystery. A dead millionaire, a locked study, a 4-digit passcode, and an email that proves the killer lied.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { overflow-x:hidden; }
+
+    /* ── Small-screen blocker ───────────────────────────────── */
+    .small-screen-block { display:none; }
+    @media (max-width: 720px) {
+      .small-screen-block {
+        display:flex; position:fixed; inset:0; z-index:99999;
+        flex-direction:column; align-items:center; justify-content:center;
+        text-align:center; padding:2rem 1.6rem;
+        background:radial-gradient(ellipse 70% 60% at 50% 30%, rgba(201,162,39,0.10) 0%, transparent 70%), var(--ink-deep);
+      }
+      body { overflow:hidden; }
+      .hunt-wrap, .letter-overlay { display:none !important; }
+      .ssb-seal { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.7rem;
+        background:radial-gradient(circle at 35% 35%, #c9a227, #8b6a10 60%, #5a4408); box-shadow:0 2px 12px rgba(0,0,0,0.6), 0 0 18px rgba(201,162,39,0.3); margin-bottom:1.6rem; }
+      .ssb-eyebrow { font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--gold); opacity:0.8; margin-bottom:1rem; }
+      .ssb-title { font-family:var(--font-display); font-size:1.6rem; font-weight:700; color:var(--parchment); line-height:1.25; margin-bottom:1rem; max-width:22ch; }
+      .ssb-text { font-family:var(--font-body); font-size:1rem; font-style:italic; color:var(--parchment-dim); line-height:1.65; max-width:34ch; margin-bottom:1.8rem; }
+      .ssb-text strong { color:var(--gold); font-style:normal; }
+      .ssb-back { font-family:var(--font-display); font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; padding:0.8rem 1.6rem; border:1px solid var(--gold-dim); border-radius:var(--radius-seal); color:var(--gold); text-decoration:none; transition:all var(--transition); }
+      .ssb-back:hover { background:var(--gold-glow); border-color:var(--gold); color:var(--parchment); }
+    }
+
+    /* ── Hunt wrap / meta ───────────────────────────────────── */
+    .hunt-wrap { min-height:100vh; display:flex; flex-direction:column; }
+    .hunt-progress-rail { height:3px; background:rgba(201,162,39,0.10); position:relative; }
+    .hunt-progress-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--ember),var(--gold)); transition:width 0.6s ease; box-shadow:0 0 8px rgba(201,162,39,0.5); }
+    .hunt-meta { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; padding:0.75rem clamp(1rem,4vw,2.5rem); background:var(--ink-mid); border-bottom:1px solid rgba(201,162,39,0.12); }
+    .hunt-title-block { display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; }
+    .hunt-number { font-family:var(--font-mono); font-size:0.62rem; color:var(--gold); opacity:0.7; letter-spacing:0.16em; text-transform:uppercase; }
+    .hunt-name { font-family:var(--font-display); font-size:clamp(0.85rem,2.5vw,1.05rem); font-weight:600; color:var(--parchment); letter-spacing:0.04em; }
+    .hunt-controls { display:flex; align-items:center; gap:0.8rem; flex-wrap:wrap; }
+    .timer-display { font-family:var(--font-mono); font-size:1rem; color:var(--gold); letter-spacing:0.1em; background:rgba(14,11,18,0.8); padding:0.28rem 0.7rem; border:1px solid rgba(201,162,39,0.2); border-radius:3px; min-width:72px; text-align:center; }
+    .clue-btn { font-family:var(--font-mono); font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.38rem 0.9rem; border:1px solid rgba(226,87,43,0.4); border-radius:var(--radius-seal); background:transparent; color:var(--ember); cursor:pointer; transition:all var(--transition); }
+    .clue-btn:hover { background:rgba(226,87,43,0.1); border-color:var(--ember); }
+    .restart-btn { font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.38rem 0.9rem; border:1px solid rgba(120,80,30,0.4); border-radius:var(--radius-seal); background:transparent; color:var(--parchment-faint); cursor:pointer; transition:all var(--transition); opacity:0.65; }
+    .restart-btn:hover { opacity:1; color:var(--ember); border-color:var(--ember); background:rgba(226,87,43,0.06); }
+    .step-counter { font-family:var(--font-mono); font-size:0.62rem; color:var(--parchment-faint); opacity:0.55; letter-spacing:0.12em; white-space:nowrap; }
+    .area-tag { font-family:var(--font-mono); font-size:0.56rem; color:var(--ember); letter-spacing:0.14em; text-transform:uppercase; padding:0.18rem 0.5rem; border:1px solid rgba(226,87,43,0.3); border-radius:3px; }
+
+    /* ── Room stage ─────────────────────────────────────────── */
+    .room-stage-wrap { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:clamp(1rem,3vw,2rem) clamp(1rem,4vw,2.5rem) 8rem; }
+    .room-label { font-family:var(--font-mono); font-size:0.58rem; color:var(--mist); opacity:0.5; letter-spacing:0.14em; text-transform:uppercase; margin-bottom:0.8rem; }
+    .room-stage { position:relative; width:100%; max-width:1280px; aspect-ratio:16/9; background:#120d05; border:1px solid rgba(201,162,39,0.16); border-radius:6px; overflow:hidden; box-shadow:0 0 50px rgba(0,0,0,0.9); }
+
+    /* Living room — sunny gold mansion */
+    .room-bg-living {
+      position:absolute; inset:0;
+      background:
+        radial-gradient(ellipse 50% 70% at 78% 8%, rgba(255,236,180,0.30) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 50% 95%, rgba(180,140,60,0.10) 0%, transparent 65%),
+        repeating-linear-gradient(90deg, transparent 0, transparent 11.5%, rgba(120,90,30,0.18) 11.6%, rgba(255,240,200,0.10) 11.8%, transparent 12%, transparent 23%),
+        linear-gradient(180deg, #6b5a2e 0%, #8a7438 16%, #b89a4e 34%, #e9d49a 50%, #f5e6c0 62%, #d9c184 100%);
+    }
+    .room-floor-living {
+      position:absolute; bottom:0; left:0; right:0; height:26%;
+      background:
+        repeating-linear-gradient(90deg, transparent 0, transparent 7.5%, rgba(0,0,0,0.4) 7.7%, rgba(180,130,60,0.14) 7.9%, transparent 8.1%, transparent 15.6%),
+        linear-gradient(180deg,#6a4a22 0%,#4a3214 60%,#2e1f0c 100%);
+      border-top:2px solid rgba(40,26,8,0.7);
+      box-shadow:inset 0 6px 18px rgba(0,0,0,0.45);
+    }
+    /* tall windows letting in light */
+    .lr-window-light { position:absolute; top:5%; left:62%; width:30%; height:54%;
+      background:linear-gradient(180deg, rgba(255,248,220,0.55), rgba(255,240,190,0.18) 70%, transparent);
+      clip-path:polygon(0 0,100% 0,100% 100%,0 100%);
+      filter:blur(2px); pointer-events:none; }
+    .room-vignette { position:absolute; inset:0; pointer-events:none;
+      background:radial-gradient(ellipse 110% 85% at 50% 50%, transparent 45%, rgba(40,26,8,0.40) 100%); z-index:50; }
+
+    /* Study — dark mahogany */
+    .room-bg-study {
+      position:absolute; inset:0;
+      background:
+        radial-gradient(ellipse 30% 40% at 50% 60%, rgba(70,200,120,0.10) 0%, transparent 55%),
+        repeating-linear-gradient(90deg, transparent 0, transparent 10.5%, rgba(0,0,0,0.40) 10.7%, rgba(150,90,40,0.10) 10.9%, transparent 11.1%, transparent 21%),
+        linear-gradient(180deg,#2a1c0c 0%,#1f1408 40%,#160f06 70%,#0e0904 100%);
+    }
+    .room-floor-study {
+      position:absolute; bottom:0; left:0; right:0; height:24%;
+      background:linear-gradient(180deg,#3a260f 0%,#241608 60%,#120b04 100%);
+      border-top:2px solid rgba(0,0,0,0.7); box-shadow:inset 0 6px 16px rgba(0,0,0,0.7);
+    }
+    .study-lamp-glow { position:absolute; left:42%; top:30%; width:22%; height:40%;
+      background:radial-gradient(ellipse 60% 60% at 50% 40%, rgba(90,220,140,0.16), transparent 70%);
+      pointer-events:none; z-index:1; }
+
+    /* ── Room objects ───────────────────────────────────────── */
+    .room-obj {
+      position:absolute; background:transparent; border:none; cursor:pointer; padding:0;
+      display:flex; align-items:center; justify-content:center;
+      transition:filter 0.2s, transform 0.15s; transform:translate(-50%,-50%);
+    }
+    .room-obj:hover { filter:brightness(1.15) contrast(1.04); }
+    .room-obj:focus-visible { outline:2px solid rgba(201,162,39,0.7); outline-offset:3px; }
+    .room-obj.obj-solved { filter:brightness(1.06) saturate(1.05); }
+    .room-obj.obj-solved::after { content:'✓'; position:absolute; top:-0.4rem; right:-0.4rem; width:1.1rem; height:1.1rem; border-radius:50%; background:var(--gold); color:var(--ink-deep); font-family:var(--font-mono); font-size:0.6rem; display:flex; align-items:center; justify-content:center; font-weight:700; box-shadow:0 0 8px rgba(201,162,39,0.6); }
+    .obj-label { position:absolute; bottom:-1.5em; left:50%; transform:translateX(-50%); font-family:var(--font-mono); font-size:0.52rem; color:var(--gold); opacity:0; white-space:nowrap; letter-spacing:0.1em; transition:opacity 0.2s; pointer-events:none; text-shadow:0 1px 3px rgba(0,0,0,0.9); }
+    .room-obj:hover .obj-label, .room-obj:focus-visible .obj-label { opacity:0.9; }
+    .obj-icon { font-size:clamp(1.3rem,2.8vw,2.4rem); line-height:1; filter:drop-shadow(0 3px 6px rgba(0,0,0,0.8)); }
+
+    /* Simple, readable CSS props */
+    .prop { position:relative; filter:drop-shadow(0 5px 9px rgba(0,0,0,0.7)); display:flex; align-items:center; justify-content:center; }
+    .prop-body { width:clamp(60px,9vw,120px); height:clamp(40px,6vw,72px);
+      background:linear-gradient(180deg,#3a3a44 0%,#23232b 100%); border-radius:40% 40% 30% 30%/60% 60% 40% 40%;
+      border:1px solid #14141a; position:relative; }
+    .prop-body::after { content:''; position:absolute; left:-22%; bottom:-14%; width:60%; height:38%;
+      background:radial-gradient(ellipse at 40% 40%, #8b1a1a, #5a0e0e 60%, transparent 80%); border-radius:50%; filter:blur(1px); }
+    .prop-opener { width:clamp(30px,4vw,54px); height:clamp(7px,1.1vw,12px);
+      background:linear-gradient(180deg,#e8d49a,#a07a28); border-radius:2px; border:1px solid #4a3410; transform:rotate(-18deg);
+      box-shadow:0 1px 3px rgba(0,0,0,0.7); }
+    .prop-opener::after { content:''; position:absolute; right:-30%; top:50%; transform:translateY(-50%); width:50%; height:60%; background:#c9a227; border-radius:1px; }
+    .prop-trail { width:clamp(40px,6vw,80px); height:clamp(12px,2vw,26px);
+      background:radial-gradient(ellipse at 20% 50%, rgba(139,26,26,0.8), rgba(90,14,14,0.5) 55%, transparent 80%); border-radius:50%; }
+    .prop-glass { width:clamp(20px,3vw,38px); height:clamp(28px,4vw,52px);
+      background:linear-gradient(180deg, rgba(220,230,255,0.35), rgba(160,180,210,0.18)); border:1px solid rgba(255,255,255,0.4);
+      border-radius:4px 4px 50% 50%/4px 4px 30% 30%; box-shadow:inset 0 0 6px rgba(255,255,255,0.3); }
+    .prop-clock { width:clamp(40px,6vw,72px); aspect-ratio:1; border-radius:50%;
+      background:radial-gradient(circle at 35% 30%, #ffe79a, #c9a227 40%, #6a4a14 100%); border:2px solid #3a2810; position:relative; }
+    .prop-clock::before { content:''; position:absolute; inset:18%; border-radius:50%; background:radial-gradient(circle at 40% 35%, #fcf3dc, #d4c08a); border:1px solid #4a3410; }
+    .prop-clock::after { content:''; position:absolute; left:50%; top:50%; width:2px; height:30%; background:#2a1808; transform-origin:50% 100%; transform:translate(-50%,-100%) rotate(186deg); }
+    .prop-fireplace { width:clamp(70px,11vw,150px); height:clamp(60px,10vw,128px);
+      background:linear-gradient(180deg,#5a4426 0%,#3a2a14 100%); border:2px solid #1a1006; border-radius:4px; position:relative; }
+    .prop-fireplace::before { content:''; position:absolute; inset:22% 18% 8%; background:radial-gradient(ellipse at 50% 90%, rgba(40,28,14,0.95), #100a04); border-radius:3px; box-shadow:inset 0 0 14px rgba(0,0,0,0.9); }
+    .prop-fireplace::after { content:''; position:absolute; left:8%; right:8%; top:0; height:14%; background:linear-gradient(180deg,#7a5e34,#4a3414); border-radius:3px 3px 0 0; }
+    .prop-sofa { width:clamp(80px,12vw,160px); height:clamp(38px,5vw,68px);
+      background:linear-gradient(180deg,#8a6a3a 0%,#5a4220 100%); border-radius:10px 10px 4px 4px; border:1px solid #2a1c0a; position:relative; }
+    .prop-sofa::before { content:''; position:absolute; left:6%; right:6%; top:-22%; height:46%; background:linear-gradient(180deg,#9a7842,#6a4e26); border-radius:8px; }
+    .prop-table { width:clamp(56px,8vw,108px); height:clamp(20px,3vw,40px);
+      background:linear-gradient(180deg,#6a4a22,#3a2610); border-radius:4px; border:1px solid #1e1206; }
+    .prop-portrait { width:clamp(46px,7vw,90px); height:clamp(56px,9vw,112px);
+      background:linear-gradient(135deg,#d4a040,#8a6018 50%,#d4a040); border:1px solid #2a1a06; border-radius:3px; padding:9%; }
+    .prop-portrait::before { content:''; position:absolute; inset:9%; background:radial-gradient(ellipse 60% 45% at 50% 35%, #c8a070, #4a3018 60%, #20140a); }
+    .prop-phone { width:clamp(28px,4vw,52px); height:clamp(20px,3vw,38px);
+      background:linear-gradient(180deg,#2a2a30,#16161a); border-radius:5px; border:1px solid #0a0a0e; position:relative; }
+    .prop-phone::before { content:''; position:absolute; left:14%; right:14%; top:-30%; height:34%; background:#1a1a20; border-radius:6px 6px 2px 2px; }
+    .prop-panel { width:clamp(30px,4vw,54px); height:clamp(40px,6vw,72px);
+      background:linear-gradient(180deg,#23262c,#121418); border:1px solid #080a0c; border-radius:4px; position:relative; }
+    .prop-panel::before { content:''; position:absolute; left:18%; right:18%; top:14%; height:30%; background:rgba(90,220,140,0.5); border-radius:2px; box-shadow:0 0 8px rgba(90,220,140,0.4); }
+    .prop-door { width:clamp(46px,7vw,88px); height:clamp(80px,13vw,150px);
+      background:linear-gradient(90deg,#3a2410,#5a3a18 50%,#3a2410); border:2px solid #1a1006; border-radius:3px 3px 0 0; position:relative; }
+    .prop-door::before { content:''; position:absolute; inset:12% 16%; border:1px solid rgba(0,0,0,0.4); border-radius:2px; }
+    .prop-door::after { content:''; position:absolute; right:14%; top:50%; width:9%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 30% 30%,#ffe79a,#8a5818); }
+    .prop-desk { width:clamp(70px,11vw,150px); height:clamp(36px,5vw,64px);
+      background:linear-gradient(180deg,#5a3818,#2e1c0a); border:1px solid #120a04; border-radius:3px; position:relative; }
+    .prop-desk::before { content:''; position:absolute; top:8%; left:6%; right:6%; height:24%; background:radial-gradient(ellipse at 40% 30%,#5a2418,#2a1206); border:1px solid #c9a22755; }
+    .prop-computer { width:clamp(40px,6vw,72px); height:clamp(30px,4.5vw,54px);
+      background:linear-gradient(180deg,#1a1a22,#0c0c12); border:1px solid #060608; border-radius:4px; position:relative; }
+    .prop-computer::before { content:''; position:absolute; inset:10% 10% 26%; background:linear-gradient(180deg,#0a2a1a,#06140c); box-shadow:inset 0 0 8px rgba(90,220,140,0.3); }
+    .prop-computer::after { content:''; position:absolute; bottom:0; left:30%; right:30%; height:16%; background:#23232a; }
+    .prop-bookshelf { width:clamp(56px,8vw,108px); height:clamp(76px,12vw,140px);
+      background:linear-gradient(180deg,#3a1e0a,#1e0e04); border:1px solid #0a0402; border-radius:2px;
+      display:flex; flex-direction:column; gap:6%; padding:6% 5%; }
+    .prop-bookshelf .sh { flex:1; display:flex; gap:5%; align-items:flex-end; border-bottom:2px solid #2a1808; }
+    .prop-bookshelf .sh i { flex:1; height:90%; border-radius:1px; }
+    .prop-painting { width:clamp(46px,7vw,86px); height:clamp(40px,6vw,76px);
+      background:linear-gradient(135deg,#c9a227,#7a5414 50%,#c9a227); border:1px solid #2a1a06; border-radius:3px; padding:10%; }
+    .prop-painting::before { content:''; position:absolute; inset:10%; background:radial-gradient(ellipse 60% 50% at 45% 40%, #6a5a3a, #2a2014 70%); }
+    .prop-cabinet { width:clamp(40px,6vw,72px); height:clamp(64px,10vw,118px);
+      background:linear-gradient(180deg,#4a3e30,#1a160e); border:1px solid #060402; border-radius:2px;
+      display:flex; flex-direction:column; gap:4%; padding:6%; }
+    .prop-cabinet i { flex:1; background:linear-gradient(180deg,#322a1f,#1a160e); border:1px solid #060402; border-radius:1px; position:relative; }
+    .prop-cabinet i::after { content:''; position:absolute; left:35%; right:35%; top:42%; height:14%; background:#c9a227; border-radius:2px; }
+    .prop-letter { width:clamp(40px,6vw,76px); height:clamp(30px,4.5vw,56px);
+      background:linear-gradient(160deg,#f4e8cc,#c8b488); border:1px solid #5e4a28; border-radius:2px; position:relative; transform:rotate(-6deg); }
+    .prop-letter::before { content:''; position:absolute; left:8%; right:55%; top:0; bottom:0; border-right:1px dashed rgba(90,60,20,0.5); }
+    .prop-letter::after { content:''; position:absolute; left:55%; top:0; bottom:0; border-left:1px dashed rgba(90,60,20,0.5); }
+    .prop-armchair { width:clamp(50px,8vw,100px); height:clamp(44px,7vw,82px);
+      background:linear-gradient(180deg,#6a2418,#3a1208); border-radius:12px 12px 4px 4px; border:1px solid #1a0804; position:relative; }
+    .prop-armchair::before { content:''; position:absolute; left:-8%; top:18%; width:18%; height:70%; background:#5a1e14; border-radius:8px; }
+    .prop-armchair::after { content:''; position:absolute; right:-8%; top:18%; width:18%; height:70%; background:#5a1e14; border-radius:8px; }
+    .prop-window { width:clamp(46px,7vw,84px); height:clamp(56px,9vw,108px);
+      background:linear-gradient(180deg, rgba(120,200,160,0.18), rgba(40,80,60,0.2)); border:3px solid #3a2810; border-radius:3px; position:relative; }
+    .prop-window::before { content:''; position:absolute; left:50%; top:0; bottom:0; width:3px; background:#3a2810; transform:translateX(-50%); }
+    .prop-window::after { content:''; position:absolute; top:50%; left:0; right:0; height:3px; background:#3a2810; transform:translateY(-50%); }
+
+    /* ── Inspection panel ───────────────────────────────────── */
+    .insp-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.78); z-index:200; opacity:0; pointer-events:none; transition:opacity 0.3s ease; backdrop-filter:blur(4px); }
+    .insp-backdrop.open { opacity:1; pointer-events:auto; }
+    .insp-panel { position:fixed; top:50%; left:50%; transform:translate(-50%,-48%) scale(0.94); width:min(760px,94vw); max-height:86vh; background:var(--ink-mid); border:1px solid rgba(201,162,39,0.28); border-radius:var(--radius-card); z-index:201; opacity:0; pointer-events:none; transition:all 0.3s cubic-bezier(0.175,0.885,0.32,1.275); overflow:hidden; display:flex; flex-direction:column; box-shadow:0 0 40px rgba(0,0,0,0.9); }
+    .insp-panel.open { opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+    .insp-header { display:flex; align-items:center; justify-content:space-between; padding:1rem 1.4rem 0.8rem; border-bottom:1px solid rgba(201,162,39,0.14); background:linear-gradient(90deg,rgba(201,162,39,0.04),transparent); flex-shrink:0; }
+    .insp-title { font-family:var(--font-display); font-size:clamp(0.9rem,2vw,1.1rem); color:var(--parchment); letter-spacing:0.06em; }
+    .insp-close { background:transparent; border:1px solid rgba(201,162,39,0.2); color:var(--gold); cursor:pointer; width:2rem; height:2rem; border-radius:50%; font-size:1rem; line-height:1; display:flex; align-items:center; justify-content:center; transition:all 0.2s; flex-shrink:0; }
+    .insp-close:hover { background:rgba(201,162,39,0.1); border-color:var(--gold); }
+    .insp-body { padding:1.4rem; overflow-y:auto; flex:1; }
+    .insp-desc { font-style:italic; color:var(--parchment-dim); line-height:1.7; margin-bottom:1.1rem; font-family:var(--font-body); }
+    .insp-desc b { color:var(--parchment); font-style:normal; }
+    .insp-vis { width:100%; max-width:340px; margin:0 auto 1.2rem; min-height:120px; border:1px solid rgba(201,162,39,0.2); border-radius:5px; display:flex; align-items:center; justify-content:center; font-size:3.2rem; background:linear-gradient(160deg,#221708,#150f06); }
+    .insp-action-area { display:flex; flex-direction:column; align-items:center; gap:0.8rem; }
+    .insp-btn { font-family:var(--font-display); font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.55rem 1.4rem; background:transparent; border:1px solid rgba(201,162,39,0.4); color:var(--gold); border-radius:var(--radius-seal); cursor:pointer; transition:all var(--transition); }
+    .insp-btn:hover { background:rgba(201,162,39,0.12); border-color:var(--gold); }
+    .insp-btn:disabled { opacity:0.3; cursor:not-allowed; }
+    .insp-feedback { font-family:var(--font-mono); font-size:0.78rem; letter-spacing:0.05em; text-align:center; min-height:1.4em; }
+    .insp-feedback.ok { color:var(--gold); }
+    .insp-feedback.err { color:var(--ember); }
+    .evidence-tag { display:inline-block; font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.08em; color:var(--gold); background:rgba(201,162,39,0.1); border:1px solid rgba(201,162,39,0.3); border-radius:3px; padding:0.3rem 0.6rem; margin:0.3rem 0.2rem 0; }
+    .insp-clue-strip { margin-top:1rem; padding:0.7rem 1rem; background:rgba(226,87,43,0.06); border:1px solid rgba(226,87,43,0.18); border-radius:4px; font-family:var(--font-mono); font-size:0.72rem; color:var(--ember); letter-spacing:0.04em; line-height:1.6; display:none; }
+    .insp-clue-strip.visible { display:block; }
+    .insp-note { background:linear-gradient(160deg,#1e1a0e,#16120a); border:1px solid rgba(201,162,39,0.2); border-radius:4px; padding:1rem 1.2rem; font-family:var(--font-body); color:var(--parchment); line-height:1.7; margin:0.4rem 0 1rem; }
+    .insp-note .mono { font-family:var(--font-mono); color:var(--gold); letter-spacing:0.1em; }
+
+    /* digit slots */
+    .bottom-hud { position:fixed; bottom:0; left:0; right:0; background:rgba(10,8,12,0.97); border-top:1px solid rgba(201,162,39,0.22); backdrop-filter:blur(12px); z-index:50; padding:0.6rem clamp(1rem,4vw,2.5rem); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.8rem; }
+    .digit-tracker { display:flex; align-items:center; gap:0.5rem; }
+    .digit-label { font-family:var(--font-mono); font-size:0.55rem; color:var(--parchment-faint); opacity:0.55; letter-spacing:0.12em; text-transform:uppercase; margin-right:0.3rem; }
+    .digit-slot { width:2.4rem; height:3rem; border:1px solid rgba(201,162,39,0.2); border-radius:4px; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:1.4rem; color:rgba(201,162,39,0.2); background:rgba(14,11,18,0.8); transition:all 0.4s ease; }
+    .digit-slot::after { content:'?'; }
+    .digit-slot.revealed { color:var(--gold); border-color:rgba(201,162,39,0.7); box-shadow:0 0 14px rgba(201,162,39,0.3), inset 0 0 8px rgba(201,162,39,0.08); background:rgba(201,162,39,0.04); }
+    .digit-slot.revealed::after { content:attr(data-digit); }
+    .evidence-counter { font-family:var(--font-mono); font-size:0.6rem; color:var(--parchment-faint); letter-spacing:0.1em; opacity:0.7; }
+    .evidence-counter b { color:var(--gold); }
+
+    /* passcode */
+    .passcode-inputs { display:flex; gap:0.5rem; justify-content:center; }
+    .passcode-input { width:3rem; height:3.8rem; background:rgba(14,11,18,0.9); border:1px solid rgba(201,162,39,0.3); border-radius:4px; text-align:center; font-family:var(--font-mono); font-size:1.6rem; color:var(--gold); -moz-appearance:textfield; }
+    .passcode-input::-webkit-outer-spin-button, .passcode-input::-webkit-inner-spin-button { -webkit-appearance:none; }
+    .passcode-input:focus { outline:none; border-color:var(--gold); box-shadow:0 0 12px rgba(201,162,39,0.3); }
+
+    /* email client */
+    .email-client { display:grid; grid-template-columns:200px 1fr; gap:0; border:1px solid rgba(201,162,39,0.2); border-radius:5px; overflow:hidden; min-height:340px; }
+    @media (max-width:560px){ .email-client { grid-template-columns:1fr; } .email-list { max-height:160px; } }
+    .email-sidebar { background:rgba(10,8,12,0.7); border-right:1px solid rgba(201,162,39,0.12); }
+    .email-folder { font-family:var(--font-mono); font-size:0.64rem; letter-spacing:0.08em; text-transform:uppercase; padding:0.6rem 0.9rem; color:var(--parchment-faint); cursor:pointer; border-bottom:1px solid rgba(201,162,39,0.06); }
+    .email-folder.active { color:var(--gold); background:rgba(201,162,39,0.08); }
+    .email-list { overflow-y:auto; }
+    .email-row { padding:0.6rem 0.9rem; border-bottom:1px solid rgba(201,162,39,0.08); cursor:pointer; transition:background 0.15s; }
+    .email-row:hover { background:rgba(201,162,39,0.06); }
+    .email-row.active { background:rgba(201,162,39,0.1); }
+    .email-row.deleted { color:var(--ember); }
+    .email-from { font-family:var(--font-mono); font-size:0.6rem; color:var(--gold); letter-spacing:0.03em; }
+    .email-subj { font-family:var(--font-body); font-size:0.82rem; color:var(--parchment); margin-top:0.15rem; }
+    .email-date { font-family:var(--font-mono); font-size:0.54rem; color:var(--parchment-faint); opacity:0.7; margin-top:0.15rem; }
+    .email-reading { padding:1rem 1.2rem; }
+    .email-reading .eh { font-family:var(--font-mono); font-size:0.62rem; color:var(--parchment-faint); line-height:1.7; border-bottom:1px solid rgba(201,162,39,0.12); padding-bottom:0.6rem; margin-bottom:0.8rem; }
+    .email-reading .eh b { color:var(--gold); }
+    .email-reading .eb { font-family:var(--font-body); font-size:0.92rem; color:var(--parchment); line-height:1.8; white-space:pre-line; }
+    .email-flag { display:inline-block; font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.1em; color:var(--ember); border:1px solid rgba(226,87,43,0.4); border-radius:3px; padding:0.15rem 0.45rem; margin-bottom:0.6rem; }
+
+    /* accusation */
+    .accuse-input { width:100%; max-width:320px; background:rgba(14,11,18,0.9); border:1px solid rgba(201,162,39,0.3); border-radius:4px; padding:0.7rem 1rem; font-family:var(--font-mono); font-size:0.95rem; color:var(--gold); text-align:center; letter-spacing:0.05em; }
+    .accuse-input:focus { outline:none; border-color:var(--gold); box-shadow:0 0 12px rgba(201,162,39,0.3); }
+    .suspect-grid { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:1rem; }
+    .suspect-chip { font-family:var(--font-mono); font-size:0.66rem; padding:0.45rem 0.9rem; border:1px solid rgba(201,162,39,0.25); border-radius:20px; background:transparent; color:var(--parchment-dim); cursor:pointer; transition:all 0.2s; }
+    .suspect-chip:hover { border-color:var(--gold); color:var(--gold); background:rgba(201,162,39,0.08); }
+
+    /* flash + transition */
+    .solved-flash { position:fixed; inset:0; background:rgba(201,162,39,0.06); border:2px solid rgba(201,162,39,0.3); pointer-events:none; opacity:0; z-index:400; transition:opacity 0.3s ease; }
+    .solved-flash.show { opacity:1; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+    .shake { animation:shake 0.4s ease; }
+    .room-transition { position:fixed; inset:0; z-index:650; background:#0a0805; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.5s ease; }
+    .room-transition.show { opacity:1; pointer-events:auto; }
+    .rt-key { font-size:4rem; animation:rtKeyTurn 1.4s ease forwards; }
+    @keyframes rtKeyTurn { 0%{transform:rotate(0) scale(0.8); opacity:0.4} 40%{transform:rotate(95deg) scale(1)} 100%{transform:rotate(90deg) scale(1.05); opacity:1} }
+    .rt-text { position:absolute; bottom:34%; font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold); opacity:0.8; }
+
+    /* modals (clue / no-credits / restart) */
+    .modal-back { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:500; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+    .modal-back.open { display:flex; }
+    .modal-card { background:var(--ink-mid); border:1px solid rgba(201,162,39,0.22); border-radius:var(--radius-card); padding:2rem; max-width:min(480px,90vw); width:100%; position:relative; }
+    .modal-title { font-family:var(--font-display); font-size:1rem; color:var(--gold); letter-spacing:0.08em; margin-bottom:0.8rem; }
+    .modal-body { font-style:italic; color:var(--parchment-dim); line-height:1.7; font-size:0.95rem; }
+    .modal-credits { font-family:var(--font-mono); font-size:0.68rem; color:var(--ember); margin-top:0.8rem; opacity:0.85; }
+    .modal-actions { display:flex; gap:0.7rem; margin-top:1.4rem; flex-wrap:wrap; }
+    .modal-btn { font-family:var(--font-display); font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.55rem 1.2rem; border:1px solid rgba(201,162,39,0.4); border-radius:var(--radius-seal); background:transparent; color:var(--gold); cursor:pointer; transition:all var(--transition); }
+    .modal-btn:hover { background:rgba(201,162,39,0.1); }
+    .modal-btn.primary { background:var(--gold); color:var(--ink-deep); font-weight:700; border-color:var(--gold); }
+    .modal-btn.primary:hover { background:var(--parchment); }
+    .modal-close { position:absolute; top:0.8rem; right:0.8rem; background:transparent; border:none; color:var(--parchment-faint); font-size:1.2rem; cursor:pointer; opacity:0.5; transition:opacity 0.2s; line-height:1; padding:0.2rem; }
+    .modal-close:hover { opacity:1; }
+
+    /* completion */
+    .completion-panel { position:fixed; inset:0; background:rgba(10,8,12,0.97); z-index:600; display:none; align-items:center; justify-content:center; backdrop-filter:blur(8px); }
+    .completion-panel.open { display:flex; }
+    .completion-card { text-align:center; max-width:560px; padding:3rem 2rem; }
+    .completion-eyebrow { font-family:var(--font-mono); font-size:0.6rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--gold); opacity:0.7; display:block; margin-bottom:1rem; }
+    .completion-title { font-size:clamp(2rem,6vw,3.2rem); color:var(--gold); margin-bottom:0.5rem; }
+    .completion-sub { font-style:italic; color:var(--parchment-dim); margin-bottom:2rem; line-height:1.65; }
+    .completion-stats { display:flex; gap:1.5rem; justify-content:center; flex-wrap:wrap; margin-bottom:2rem; }
+    .stat-block { display:flex; flex-direction:column; gap:0.2rem; }
+    .stat-val { font-family:var(--font-mono); font-size:1.4rem; color:var(--gold); }
+    .stat-key { font-family:var(--font-mono); font-size:0.55rem; color:var(--parchment-faint); opacity:0.6; letter-spacing:0.14em; text-transform:uppercase; }
+    .completion-actions { display:flex; gap:0.8rem; justify-content:center; flex-wrap:wrap; }
+    .completion-btn { font-family:var(--font-display); font-size:0.75rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.65rem 1.6rem; border:1px solid rgba(201,162,39,0.4); border-radius:var(--radius-seal); background:transparent; color:var(--gold); cursor:pointer; transition:all var(--transition); text-decoration:none; display:inline-flex; align-items:center; justify-content:center; }
+    .completion-btn.primary { background:var(--gold); color:var(--ink-deep); font-weight:700; border-color:var(--gold); }
+    .completion-btn:hover { background:rgba(201,162,39,0.1); }
+    .completion-btn.primary:hover { background:var(--parchment); }
+
+    /* opening letter */
+    .letter-overlay { position:fixed; inset:0; background:rgba(10,8,12,0.98); z-index:700; display:flex; align-items:center; justify-content:center; padding:2rem; }
+    .letter-overlay.hidden { display:none; }
+    .letter-paper { max-width:580px; width:100%; background:linear-gradient(160deg,#221c0e,#1a160a); border:1px solid rgba(201,162,39,0.25); border-radius:6px; padding:clamp(1.5rem,4vw,3rem); box-shadow:0 0 60px rgba(0,0,0,0.8); }
+    .letter-seal { text-align:center; margin-bottom:1.5rem; }
+    .letter-seal-mark { font-size:2.5rem; display:block; margin-bottom:0.3rem; }
+    .letter-seal-text { font-family:var(--font-mono); font-size:0.58rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--gold); opacity:0.65; }
+    .letter-body { font-family:'EB Garamond',serif; font-size:clamp(0.88rem,2vw,1rem); color:var(--parchment); line-height:1.85; font-style:italic; }
+    .letter-body p { margin-bottom:1em; }
+    .letter-sign { text-align:right; font-family:'EB Garamond',serif; font-style:italic; color:var(--parchment-dim); margin-top:1.5rem; font-size:0.95rem; }
+    .letter-enter { margin-top:1.8rem; text-align:center; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
+      .rt-key { animation:none; transform:rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Small-screen blocker ───────────────────────────────── -->
+<div class="small-screen-block" role="alertdialog" aria-modal="true" aria-labelledby="ssbTitle">
+  <div class="ssb-seal" aria-hidden="true">🔍</div>
+  <div class="ssb-eyebrow">The Whitmore Affair</div>
+  <h1 class="ssb-title" id="ssbTitle">This hunt needs a larger screen</h1>
+  <p class="ssb-text">The Whitmore Affair is a full crime-scene investigation with twenty interactive objects and an email-deduction puzzle. Please return on a <strong>tablet, laptop, or desktop</strong> (wider than 720px) to begin.</p>
+  <p class="ssb-text" style="font-size:0.85rem; opacity:0.75; margin-bottom:1.8rem;">Hunts 01 and 02 play perfectly on any device.</p>
+  <a href="hunts.html" class="ssb-back">← Back to all hunts</a>
+</div>
+
+<!-- ── Opening letter ─────────────────────────────────────── -->
+<div id="letterOverlay" class="letter-overlay" role="dialog" aria-modal="true" aria-labelledby="letterTitle">
+  <div class="letter-paper">
+    <div class="letter-seal">
+      <span class="letter-seal-mark" aria-hidden="true">🕵️</span>
+      <span class="letter-seal-text">Confidential — Hunt 04</span>
+    </div>
+    <div class="letter-body" id="letterTitle">
+      <p>At 8:12 this morning, the housekeeper found Sir Arthur Pembroke dead on the floor of his drawing room — a letter opener at his side, the windows still letting in the June light.</p>
+      <p>The household insists no stranger came or went. His nephew was at the races. His former business partner was in the city with his lawyers. His secretary, Miss Margaret Calloway, swears she spent the whole morning shopping in town.</p>
+      <p>One of them is lying. The crime scene knows it, the clock knows it, and — once you find the key to his private study and unlock the computer on his desk — his own correspondence will say so plainly.</p>
+      <p>Examine everything. Trust the timestamps. When you are certain, name the killer.</p>
+    </div>
+    <div class="letter-sign">— Chief Inspector's Office</div>
+    <div class="letter-enter">
+      <button class="insp-btn" id="btnEnterScene" style="padding:0.7rem 2rem;font-size:0.8rem;">Enter the Crime Scene</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Hunt wrap ──────────────────────────────────────────── -->
+<div class="hunt-wrap" id="huntWrap" style="display:none;">
+  <div class="hunt-progress-rail"><div class="hunt-progress-fill" id="progressFill"></div></div>
+  <div class="hunt-meta">
+    <div class="hunt-title-block">
+      <span class="hunt-number">Hunt 04</span>
+      <span class="hunt-name">The Whitmore Affair</span>
+      <span class="area-tag" id="areaTag">Drawing Room</span>
+    </div>
+    <div class="hunt-controls">
+      <div class="timer-display" id="timerDisplay">00:00</div>
+      <button class="clue-btn" id="clueBtn" aria-label="Request a clue">Clue</button>
+      <button class="restart-btn" id="restartBtn" aria-label="Restart hunt">Restart</button>
+      <span class="step-counter" id="stepCounter">0 / 80</span>
+    </div>
+  </div>
+
+  <div class="room-stage-wrap">
+    <div class="room-label" id="roomLabel">The Drawing Room — Pembroke Estate</div>
+
+    <!-- LIVING ROOM -->
+    <div class="room-stage" id="stageLiving" role="main" aria-label="Drawing room crime scene">
+      <div class="room-bg-living"></div>
+      <div class="lr-window-light"></div>
+      <div class="room-floor-living"></div>
+      <div class="room-vignette"></div>
+
+      <button class="room-obj" id="obj-fireplace" style="left:9%;top:50%" aria-label="Inspect the fireplace"><div class="prop prop-fireplace"></div><span class="obj-label">Fireplace</span></button>
+      <button class="room-obj" id="obj-wall_clock" style="left:21%;top:22%" aria-label="Inspect the wall clock"><div class="prop prop-clock"></div><span class="obj-label">Wall Clock</span></button>
+      <button class="room-obj" id="obj-sofa" style="left:34%;top:52%" aria-label="Inspect the sofa"><div class="prop prop-sofa"></div><span class="obj-label">Sofa</span></button>
+      <button class="room-obj" id="obj-wine_glass" style="left:38%;top:42%" aria-label="Inspect the wine glasses"><div class="prop prop-glass"></div><span class="obj-label">Wine Glasses</span></button>
+      <button class="room-obj" id="obj-coffee_table" style="left:40%;top:64%" aria-label="Inspect the coffee table"><div class="prop prop-table"></div><span class="obj-label">Coffee Table</span></button>
+      <button class="room-obj" id="obj-body" style="left:48%;top:74%" aria-label="Inspect the body"><div class="prop prop-body"></div><span class="obj-label">The Body</span></button>
+      <button class="room-obj" id="obj-letter_opener" style="left:58%;top:80%" aria-label="Inspect the letter opener"><div class="prop prop-opener"></div><span class="obj-label">Letter Opener</span></button>
+      <button class="room-obj" id="obj-blood_trail" style="left:30%;top:78%" aria-label="Inspect the blood trail"><div class="prop prop-trail"></div><span class="obj-label">Blood Trail</span></button>
+      <button class="room-obj" id="obj-family_portrait" style="left:70%;top:24%" aria-label="Inspect the family portrait"><div class="prop prop-portrait"></div><span class="obj-label">Family Portrait</span></button>
+      <button class="room-obj" id="obj-phone" style="left:80%;top:60%" aria-label="Inspect the telephone"><div class="prop prop-phone"></div><span class="obj-label">Telephone</span></button>
+      <button class="room-obj" id="obj-security_panel" style="left:88%;top:36%" aria-label="Inspect the security panel"><div class="prop prop-panel"></div><span class="obj-label">Security Panel</span></button>
+      <button class="room-obj" id="obj-door_to_study" style="left:93%;top:64%" aria-label="The study door"><div class="prop prop-door"></div><span class="obj-label">Study Door</span></button>
+    </div>
+
+    <!-- STUDY -->
+    <div class="room-stage" id="stageStudy" role="main" aria-label="Private study" style="display:none;">
+      <div class="room-bg-study"></div>
+      <div class="study-lamp-glow"></div>
+      <div class="room-floor-study"></div>
+      <div class="room-vignette"></div>
+
+      <button class="room-obj" id="obj-bookshelf" style="left:15%;top:34%" aria-label="Inspect the bookshelf"><div class="prop prop-bookshelf"><div class="sh"><i style="background:#8a2818"></i><i style="background:#1e4a5a"></i><i style="background:#2a5a1a"></i></div><div class="sh"><i style="background:#5a4218"></i><i style="background:#4a1e5a"></i><i style="background:#7a2410"></i></div></div><span class="obj-label">Bookshelf</span></button>
+      <button class="room-obj" id="obj-armchair" style="left:20%;top:64%" aria-label="Inspect the armchair"><div class="prop prop-armchair"></div><span class="obj-label">Armchair</span></button>
+      <button class="room-obj" id="obj-torn_letter" style="left:35%;top:78%" aria-label="Inspect the torn letter"><div class="prop prop-letter"></div><span class="obj-label">Torn Letter</span></button>
+      <button class="room-obj" id="obj-desk" style="left:46%;top:58%" aria-label="Inspect the desk"><div class="prop prop-desk"></div><span class="obj-label">Desk</span></button>
+      <button class="room-obj" id="obj-computer" style="left:52%;top:44%" aria-label="Inspect the computer"><div class="prop prop-computer"></div><span class="obj-label">Computer</span></button>
+      <button class="room-obj" id="obj-study_window" style="left:62%;top:18%" aria-label="Inspect the study window"><div class="prop prop-window"></div><span class="obj-label">Window</span></button>
+      <button class="room-obj" id="obj-painting" style="left:74%;top:26%" aria-label="Inspect the painting"><div class="prop prop-painting"></div><span class="obj-label">Painting</span></button>
+      <button class="room-obj" id="obj-filing_cabinet" style="left:84%;top:52%" aria-label="Inspect the filing cabinet"><div class="prop prop-cabinet"><i></i><i></i><i></i></div><span class="obj-label">Filing Cabinet</span></button>
+    </div>
+  </div>
+</div><!-- /hunt-wrap -->
+
+<!-- ── Bottom HUD ─────────────────────────────────────────── -->
+<div class="bottom-hud" id="bottomHud" style="display:none;">
+  <div class="digit-tracker">
+    <span class="digit-label">Study Passcode</span>
+    <div class="digit-slot" id="dv1" data-digit="?" aria-label="Passcode digit 1"></div>
+    <div class="digit-slot" id="dv2" data-digit="?" aria-label="Passcode digit 2"></div>
+    <div class="digit-slot" id="dv3" data-digit="?" aria-label="Passcode digit 3"></div>
+    <div class="digit-slot" id="dv4" data-digit="?" aria-label="Passcode digit 4"></div>
+  </div>
+  <div class="evidence-counter">Evidence gathered: <b id="evCount">0</b> / 22 &nbsp;·&nbsp; Key: <b id="keyState">not found</b></div>
+</div>
+
+<!-- ── Inspection panel ───────────────────────────────────── -->
+<div class="insp-backdrop" id="inspBackdrop" aria-hidden="true"></div>
+<div class="insp-panel" id="inspPanel" role="dialog" aria-modal="true" aria-labelledby="inspTitle">
+  <div class="insp-header">
+    <h2 class="insp-title" id="inspTitle">Inspection</h2>
+    <button class="insp-close" id="inspClose" aria-label="Close inspection">✕</button>
+  </div>
+  <div class="insp-body" id="inspBody"></div>
+</div>
+
+<!-- ── Clue modal ─────────────────────────────────────────── -->
+<div class="modal-back" id="clueModal" role="dialog" aria-modal="true" aria-labelledby="clueModalTitle">
+  <div class="modal-card">
+    <button class="modal-close" id="clueModalClose" aria-label="Close">✕</button>
+    <div class="modal-title" id="clueModalTitle">Request a Clue</div>
+    <div class="modal-body">Each clue costs one credit. You have <span id="clueCreditCount">—</span> remaining.</div>
+    <div class="modal-credits" id="clueModalSub"></div>
+    <div class="modal-actions">
+      <button class="modal-btn" id="clueModalCancel">Cancel</button>
+      <button class="modal-btn primary" id="clueModalConfirm">Use a Credit</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── No-credits modal ───────────────────────────────────── -->
+<div class="modal-back" id="noCreditsModal" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <button class="modal-close" id="noCreditsClose" aria-label="Close">✕</button>
+    <div class="modal-title">No Clue Credits</div>
+    <div class="modal-body">You've used all your clue credits. Return to your account to earn more, or continue without assistance.</div>
+    <div class="modal-actions">
+      <button class="modal-btn" id="noCreditsCancel">Continue Investigating</button>
+      <a href="account.html" class="modal-btn primary" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;">Go to Account</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── Restart modal ──────────────────────────────────────── -->
+<div class="modal-back" id="restartModal" role="dialog" aria-modal="true" aria-labelledby="restartModalTitle">
+  <div class="modal-card">
+    <button class="modal-close" id="restartModalClose" aria-label="Close">✕</button>
+    <div class="modal-title" id="restartModalTitle">Restart the Investigation?</div>
+    <div class="modal-body">All evidence, the key, and the passcode digits will be cleared. Your best score is kept.</div>
+    <div class="modal-actions">
+      <button class="modal-btn" id="restartModalCancel">Cancel</button>
+      <button class="modal-btn primary" id="restartModalConfirm">Restart</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Room transition ────────────────────────────────────── -->
+<div class="room-transition" id="roomTransition" aria-hidden="true">
+  <div class="rt-key">🗝️</div>
+  <div class="rt-text">The study door opens…</div>
+</div>
+
+<!-- ── Flash ──────────────────────────────────────────────── -->
+<div class="solved-flash" id="solvedFlash" aria-hidden="true"></div>
+
+<!-- ── Completion ─────────────────────────────────────────── -->
+<div class="completion-panel" id="completionPanel" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
+  <div class="completion-card">
+    <span class="completion-eyebrow">Hunt 04 Solved</span>
+    <h1 class="completion-title" id="completionTitle">Case Closed</h1>
+    <p class="completion-sub" id="completionSub">Margaret Calloway is arrested at the station before noon. The draft email she never sent — composed from the estate at 10:47, sixteen minutes after the clock stopped — undoes her alibi entirely.</p>
+    <div class="completion-stats">
+      <div class="stat-block"><span class="stat-val" id="statTime">—</span><span class="stat-key">Time</span></div>
+      <div class="stat-block"><span class="stat-val" id="statClues">—</span><span class="stat-key">Clues Used</span></div>
+      <div class="stat-block"><span class="stat-val" id="statScore">—</span><span class="stat-key">This Run</span></div>
+      <div class="stat-block"><span class="stat-val" id="statBest">—</span><span class="stat-key">Best Score</span></div>
+    </div>
+    <div class="completion-actions">
+      <a href="account.html" class="completion-btn primary">View Dossier</a>
+      <button class="completion-btn" id="playAgainBtn">Play Again</button>
+      <a href="index.html" class="completion-btn">All Hunts</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── Firebase module ────────────────────────────────────── -->
+<script type="module">
+  import { initializeApp }            from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js';
+  import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, serverTimestamp }
+    from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
+
+  const app = initializeApp({
+    apiKey:            'AIzaSyAfd15maH07AH9P-dRehUkACx48VofFq-I',
+    authDomain:        'impossible-9ac8d.firebaseapp.com',
+    projectId:         'impossible-9ac8d',
+    storageBucket:     'impossible-9ac8d.firebasestorage.app',
+    messagingSenderId: '93504469684',
+    appId:             '1:93504469684:web:d0c3ef054df765d5fd35e1',
+    measurementId:     'G-YYC9HPYBDC',
+  });
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  const HUNT_ID = 'hunt-4';
+
+  async function loadProgress(uid) {
+    const snap = await getDoc(doc(db, 'users', uid, 'progress', HUNT_ID));
+    return snap.exists() ? snap.data() : null;
+  }
+  async function saveProgress(uid, data) {
+    await setDoc(doc(db, 'users', uid, 'progress', HUNT_ID), data, { merge: true });
+  }
+  async function loadCredits(uid) {
+    const snap = await getDoc(doc(db, 'users', uid));
+    return snap.exists() ? (snap.data().clueCredits ?? 3) : 3;
+  }
+  async function spendCredit(uid) {
+    await updateDoc(doc(db, 'users', uid), { clueCredits: increment(-1) });
+  }
+  async function submitLeaderboard(uid, displayName, score, secs, clues) {
+    const entry = { uid, name: displayName || 'Anonymous', score, time: secs, cluesUsed: clues, completedAt: serverTimestamp() };
+    await setDoc(doc(db, 'leaderboard', HUNT_ID, 'entries', uid), entry, { merge: true });
+  }
+
+  onAuthStateChanged(auth, async user => {
+    window._ihUser = user || null;
+    if (user) {
+      const credits = await loadCredits(user.uid);
+      window._ihSetClueCredits && window._ihSetClueCredits(credits);
+      const progress = await loadProgress(user.uid);
+      if (progress) {
+        if (window._ihApplyRestore) window._ihApplyRestore(progress);
+        else window._ihPendingRestore = progress;
+      }
+    }
+  });
+
+  const _origSave = async (data) => {
+    if (!window._ihUser) return;
+    await saveProgress(window._ihUser.uid, data);
+  };
+  window._ihSave = async (data) => {
+    try { await _origSave(data); }
+    catch (err) { console.warn('Progress save skipped:', err && err.code ? err.code : err); }
+  };
+
+  window._ihUseClue = async () => {
+    if (!window._ihUser) return false;
+    const credits = await loadCredits(window._ihUser.uid);
+    if (credits <= 0) return false;
+    await spendCredit(window._ihUser.uid);
+    const newCredits = credits - 1;
+    window._ihSetClueCredits && window._ihSetClueCredits(newCredits);
+    return true;
+  };
+
+  window._ihSubmitLeaderboard = async (score, secs, clues) => {
+    if (!window._ihUser) return;
+    const name = window._ihUser.displayName || window._ihUser.email || 'Anonymous';
+    try { await submitLeaderboard(window._ihUser.uid, name, score, secs, clues); }
+    catch (err) { console.warn('Leaderboard submit skipped:', err && err.code ? err.code : err); }
+  };
+
+  window._ihClearProgress = async () => {
+    if (!window._ihUser) return;
+    const ref = doc(db, 'users', window._ihUser.uid, 'progress', HUNT_ID);
+    const snap = await getDoc(ref);
+    const best = snap.exists() ? (snap.data().bestScore ?? null) : null;
+    await setDoc(ref, { restarted: true, bestScore: best }, { merge: false });
+  };
+</script>
+
+<!-- ── Game script ────────────────────────────────────────── -->
+<script>
+(function() {
+  'use strict';
+
+  const HUNT_ID  = 'hunt-4';
+  const LS_KEY   = 'ih_progress_hunt-4';
+  const PASSCODE = [3, 8, 4, 7];
+  const TOTAL_STEPS = 80;
+
+  /* Evidence keys -> the "step" weight they contribute toward 80 */
+  const EVIDENCE = [
+    'MC_INITIALS','LETTER_OPENER_INK','BLOOD_TRAIL_DIRECTION','TWO_GUESTS','LIPSTICK_SHADE',
+    'TIME_OF_DEATH_1031','HOTEL_RECEIPT','HOTEL_PEN','SCRATCHED_NAME','PHONE_CALL_1028',
+    'SECURITY_LOG','KEY_FOUND','DESK_NOTE','DIGIT_1_3','DIGIT_2_8','DIGIT_4_7','DIGIT_3_4',
+    'SAFE_OPEN','EMBEZZLEMENT_PROOF','TERMINATION_LETTER','TORN_NOTE_AP','NOTEBOOK_ENTRIES',
+    'STUDY_WINDOW_LOCKED','COMPUTER_UNLOCKED','EMAILS_READ','ALIBI_BROKEN'
+  ];
+
+  /* ── State ──────────────────────────────────────────────── */
+  let G;
+  function freshState() {
+    return {
+      sceneEntered:  false,
+      area:          'living',
+      hasKey:        false,
+      computerUnlocked: false,
+      digits:        [null, null, null, null],
+      discoveredEvidence: {},   // key -> true
+      objStep:       {},        // multi-step object progress
+      solvedObjects: {},        // objectId -> true (fully done)
+      readEmails:    {},        // index -> true
+      completedSteps:new Set(), // weighted step ids for progress bar
+      clueCount:     0,
+      clueCredits:   3,
+      unlockedClues: new Set(),
+      timerSecs:     0,
+      timerRunning:  false,
+      startTs:       null,
+      completed:     false,
+      bestScoreSaved:null,
+    };
+  }
+  G = freshState();
+
+  /* ── Clue hints (one per major object) ──────────────────── */
+  const CLUES = {
+    body:           'The monogram on the cloth is not his. Note the initials carefully.',
+    letter_opener:  'The mark on the handle is not blood — it is ink, from correspondence. Who handles correspondence?',
+    blood_trail:    'The blood does not lead to the door. It leads inward, toward the hearth. Something was hidden — or someone fled that way.',
+    wine_glass:     'Two glasses suggest two people. Only one is broken. The surviving glass holds a detail about who drank from it.',
+    wall_clock:     'The clock did not stop by accident. The time it shows is the time everything changed.',
+    fireplace:      'The blood leads here for a reason. Something was hidden quickly, in a moment of panic. Look below the obvious — but you must understand the timing first.',
+    sofa:           'The receipt tells you someone was nearby the night before. Check the establishment and the hour.',
+    coffee_table:   'Not every white powder is sinister. But the branding on a stray pen is worth noting.',
+    family_portrait:'An old family had more than one child. One label was scratched out for a reason.',
+    phone:          'The last call was placed at 10:28 — minutes before everything stopped. Who answered?',
+    security_panel: 'The log never lies. Compare what the panel records against what people claim about their morning.',
+    door_to_study:  'You cannot force it. Find the key the killer hid in her hurry.',
+    desk:           'The desk has more layers than it shows. A scratched surface hides a drawer; the drawer hides three of four digits.',
+    computer:       'Four digits. Three are written on a smudged note; the fourth is circled in a law book on the shelf.',
+    bookshelf:      'One book is not shelved like the others. Its chapter number matters more than its contents.',
+    painting:       'Paintings are rarely crooked by accident in a house like this. Move it.',
+    filing_cabinet: 'The paperwork here is the real crime scene. Follow the money, and read the letter he never signed.',
+    torn_letter:    'Assemble the four pieces. The final line is the reason he had to die before Monday.',
+    armchair:       'Reading chairs collect what falls from pockets. Lift the cushion.',
+    study_window:   'If the killer did not leave by the window, how did she leave? And when?',
+  };
+
+  /* Map each object to the step ids it completes (for the 80-step bar) */
+  const OBJ_STEPS = {
+    body:[1,2,3], letter_opener:[4,5], blood_trail:[6], wine_glass:[7,8], wall_clock:[9],
+    sofa:[10,11], coffee_table:[12], family_portrait:[13,14], phone:[15,16], security_panel:[17,18],
+    fireplace:[28,29,30], door_to_study:[31],
+    desk:[34,35,36,37], bookshelf:[40], painting:[42], filing_cabinet:[46,47,48,49],
+    torn_letter:[52], armchair:[54], study_window:[56], computer:[60,61],
+    // email reading + deduction fill the rest progressively (62..80)
+  };
+
+  /* ── Utility ────────────────────────────────────────────── */
+  function fmtTime(s){ const m=Math.floor(s/60),sec=s%60; return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'); }
+  function flash(){ const el=document.getElementById('solvedFlash'); el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),700); }
+  function completeStep(n){ if(G.completedSteps.has(n))return; G.completedSteps.add(n); updateProgress(); }
+  function completeSteps(arr){ (arr||[]).forEach(n=>{ if(!G.completedSteps.has(n)){ G.completedSteps.add(n);} }); updateProgress(); }
+  function updateProgress(){
+    const pct=Math.min(100,(G.completedSteps.size/TOTAL_STEPS)*100);
+    document.getElementById('progressFill').style.width=pct+'%';
+    document.getElementById('stepCounter').textContent=Math.min(G.completedSteps.size,TOTAL_STEPS)+' / '+TOTAL_STEPS;
+  }
+  function updateHud(){
+    document.getElementById('evCount').textContent=Object.keys(G.discoveredEvidence).length;
+    document.getElementById('keyState').textContent=G.hasKey?'found':'not found';
+  }
+  function gainEvidence(key, stepArr){
+    let isNew=false;
+    if(!G.discoveredEvidence[key]){ G.discoveredEvidence[key]=true; isNew=true; }
+    if(stepArr) completeSteps(stepArr);
+    updateHud();
+    if(isNew){ flash(); persist(); }
+    return isNew;
+  }
+  function markSolved(id){ G.solvedObjects[id]=true; const el=document.getElementById('obj-'+id); if(el)el.classList.add('obj-solved'); }
+
+  /* ── Timer ──────────────────────────────────────────────── */
+  let timerInterval=null;
+  function startTimer(){
+    if(G.timerRunning||G.completed)return;
+    G.timerRunning=true; G.startTs=G.startTs||Date.now();
+    timerInterval=setInterval(()=>{ G.timerSecs++; document.getElementById('timerDisplay').textContent=fmtTime(G.timerSecs); },1000);
+  }
+  function stopTimer(){ clearInterval(timerInterval); G.timerRunning=false; }
+
+  /* ── Digit reveal ───────────────────────────────────────── */
+  function revealDigit(idx,val){
+    if(G.digits[idx]!==null)return;
+    G.digits[idx]=val;
+    const slot=document.getElementById('dv'+(idx+1));
+    slot.setAttribute('data-digit',val); slot.classList.add('revealed');
+    persist();
+  }
+
+  /* ── Inspection panel plumbing ──────────────────────────── */
+  let currentObjId=null;
+  const inspPanel=document.getElementById('inspPanel');
+  const inspBackdrop=document.getElementById('inspBackdrop');
+  const inspBody=document.getElementById('inspBody');
+  const inspTitle=document.getElementById('inspTitle');
+  let lastFocused=null;
+
+  function openInsp(title){
+    inspTitle.textContent=title;
+    inspBackdrop.classList.add('open');
+    inspPanel.classList.add('open');
+    setTimeout(()=>{ const f=inspPanel.querySelector('button,input,select,[tabindex]'); if(f)f.focus(); },60);
+  }
+  function closeInsp(){
+    inspBackdrop.classList.remove('open');
+    inspPanel.classList.remove('open');
+    currentObjId=null;
+    if(lastFocused&&lastFocused.focus){ lastFocused.focus(); }
+  }
+  document.getElementById('inspClose').onclick=closeInsp;
+  inspBackdrop.onclick=closeInsp;
+
+  function clueStripHtml(objId){
+    const c=CLUES[objId];
+    if(!c)return '';
+    const open=G.unlockedClues.has(objId);
+    return '<div class="insp-clue-strip'+(open?' visible':'')+'" id="clueStrip">'+(open?('Clue — '+c):'')+'</div>';
+  }
+  function ev(label){ return '<span class="evidence-tag">✓ Evidence: '+label+'</span>'; }
+
+  /* ── Object handlers ────────────────────────────────────── */
+  function handle(id){
+    lastFocused=document.getElementById('obj-'+id);
+    currentObjId=id;
+    const fn=HANDLERS[id];
+    if(fn)fn();
+  }
+
+  function render(title, html){ openInsp(title); inspBody.innerHTML=html+clueStripHtml(currentObjId); }
+
+  const HANDLERS = {
+    /* ── LIVING ROOM ── */
+    body(){
+      const s=G.objStep.body||0;
+      if(s===0){
+        render('Sir Arthur Pembroke', `
+          <div class="insp-vis" aria-hidden="true">🧍</div>
+          <p class="insp-desc">He lies on the oak floor, a single wound to the side. The weapon is gone from the body — and it is no kitchen knife. The slim shape of the entry suggests a <b>letter opener</b>, not a blade.</p>
+          <div class="insp-action-area"><button class="insp-btn" id="bStep">Examine the hands</button></div>`);
+        document.getElementById('bStep').onclick=()=>{ G.objStep.body=1; persist(); HANDLERS.body(); };
+      } else if(s===1){
+        render('Sir Arthur Pembroke', `
+          <p class="insp-desc">His hands are clean. <b>No defensive wounds</b> — no scratches, no bruising. He never raised an arm. Whoever did this, he did not see as a threat. Someone he trusted, standing close, striking from the side.</p>
+          <div class="insp-action-area"><button class="insp-btn" id="bStep">Search his pockets</button></div>`);
+        document.getElementById('bStep').onclick=()=>{ G.objStep.body=2; persist(); HANDLERS.body(); };
+      } else {
+        const isNew=gainEvidence('MC_INITIALS',[1,2,3]);
+        markSolved('body'); persist();
+        render('Sir Arthur Pembroke', `
+          <p class="insp-desc">Tucked into his breast pocket, half pulled free in the struggle, is a <b>pocket square</b> — fine silk, not his usual monogram. Embroidered in the corner, two initials: <b>"M.C."</b></p>
+          <div class="insp-note">A man does not carry a woman's monogrammed handkerchief by accident. <span class="mono">M.C.</span> ${isNew?ev('MC_INITIALS'):''}</div>`);
+      }
+    },
+
+    letter_opener(){
+      const s=G.objStep.letter_opener||0;
+      if(s===0){
+        render('The Letter Opener', `
+          <div class="insp-vis" aria-hidden="true">🗡️</div>
+          <p class="insp-desc">The murder weapon lies a few feet from the body. It is monogrammed <b>"A.P." — Arthur Pembroke</b>. His own letter opener, taken from his own desk, turned against him. This was not planned with a smuggled blade; it was seized in the moment.</p>
+          <div class="insp-action-area"><button class="insp-btn" id="loStep">Examine the handle</button></div>`);
+        document.getElementById('loStep').onclick=()=>{ G.objStep.letter_opener=1; persist(); HANDLERS.letter_opener(); };
+      } else {
+        const isNew=gainEvidence('LETTER_OPENER_INK',[4,5]);
+        markSolved('letter_opener'); persist();
+        render('The Letter Opener', `
+          <p class="insp-desc">There is a dark smear on the handle — and it is not blood. It is <b>ink</b>, the blue-black of fountain-pen correspondence, ground into the grip. Whoever held this last had been handling letters. Who in this house handles Sir Arthur's correspondence?</p>
+          <div class="insp-note">Ink on the grip. The killer had been at his papers. ${isNew?ev('LETTER_OPENER_INK'):''}</div>`);
+      }
+    },
+
+    blood_trail(){
+      const isNew=gainEvidence('BLOOD_TRAIL_DIRECTION',[6]);
+      markSolved('blood_trail'); persist();
+      render('The Blood Trail', `
+        <div class="insp-vis" aria-hidden="true">🩸</div>
+        <p class="insp-desc">The pooling beneath the body is one thing; the <b>trail</b> is another. Smeared droplets lead away from the body — <b>not toward the door</b>, but inward, toward the <b>fireplace</b> on the far wall. Someone crossed to the hearth after the blow, then left another way.</p>
+        <div class="insp-note">The blood points at the fireplace, not the exit. ${isNew?ev('BLOOD_TRAIL_DIRECTION'):''}</div>`);
+    },
+
+    wine_glass(){
+      const isNew1=gainEvidence('TWO_GUESTS',[7]);
+      const isNew2=gainEvidence('LIPSTICK_SHADE',[8]);
+      markSolved('wine_glass'); persist();
+      render('The Wine Glasses', `
+        <div class="insp-vis" aria-hidden="true">🍷</div>
+        <p class="insp-desc">Two glasses were poured. One lies shattered against the coffee table's edge; the other stands intact. On the rim of the surviving glass: a print of <b>lipstick</b>, a deep claret shade. Sir Arthur did not drink with a man this morning — he drank with a <b>woman</b>.</p>
+        <div class="insp-note">Two glasses, one woman, one quarrel. ${(isNew1||isNew2)?(ev('TWO_GUESTS')+ev('LIPSTICK_SHADE')):''}</div>`);
+    },
+
+    wall_clock(){
+      const isNew=gainEvidence('TIME_OF_DEATH_1031',[9]);
+      markSolved('wall_clock'); persist();
+      render('The Wall Clock', `
+        <div class="insp-vis" aria-hidden="true">🕥</div>
+        <p class="insp-desc">A heavy ormolu clock, knocked in the struggle and now silent. Its hands are frozen at <b>10:31</b>. A clock does not stop itself — it stopped when it fell, at the moment of the attack. <b>Time of death: 10:31 a.m.</b></p>
+        <div class="insp-note">The hands rest at <span class="mono">10:31</span>. Remember that number. ${isNew?ev('TIME_OF_DEATH_1031'):''}</div>`);
+    },
+
+    sofa(){
+      const isNew=gainEvidence('HOTEL_RECEIPT',[10,11]);
+      markSolved('sofa'); persist();
+      render('The Sofa', `
+        <div class="insp-vis" aria-hidden="true">🛋️</div>
+        <p class="insp-desc">A cushion sits askew. Beneath it, a slip of paper: a <b>receipt from Claridge's Hotel</b>, dated <b>June 13th, 11:45 p.m.</b> — dinner for one, the night before the murder. Someone in this circle dined late at Claridge's.</p>
+        <div class="insp-note">Claridge's. June 13, 11:45 p.m. ${isNew?ev('HOTEL_RECEIPT'):''}</div>`);
+    },
+
+    coffee_table(){
+      const isNew=gainEvidence('HOTEL_PEN',[12]);
+      markSolved('coffee_table'); persist();
+      render('The Coffee Table', `
+        <div class="insp-vis" aria-hidden="true">☕</div>
+        <p class="insp-desc">A dusting of white powder near a plate — only powdered sugar from a half-eaten pastry; a red herring. More useful is the <b>pen</b> resting beside it, branded with a hotel crest: <b>Claridge's</b>. The same establishment as the receipt.</p>
+        <div class="insp-note">A Claridge's pen. The night before is connected to this room. ${isNew?ev('HOTEL_PEN'):''}</div>`);
+    },
+
+    family_portrait(){
+      const s=G.objStep.family_portrait||0;
+      if(s===0){
+        render('The Family Portrait', `
+          <div class="insp-vis" aria-hidden="true">🖼️</div>
+          <p class="insp-desc">A large oil portrait: the Pembroke family, three children in stiff Sunday clothes. Arthur as a boy stands at the left. He had siblings, then — an old, large family.</p>
+          <div class="insp-action-area"><button class="insp-btn" id="fpStep">Read the nameplate</button></div>`);
+        document.getElementById('fpStep').onclick=()=>{ G.objStep.family_portrait=1; persist(); HANDLERS.family_portrait(); };
+      } else {
+        const isNew=gainEvidence('SCRATCHED_NAME',[13,14]);
+        markSolved('family_portrait'); persist();
+        render('The Family Portrait', `
+          <p class="insp-desc">The brass nameplate reads <b>"The Pembrokes, 1978."</b> Three names are engraved beneath — but one has been <b>scratched out</b>, deliberately, leaving only a gouged blank. A family rift, perhaps. It tells you the household has old wounds, but it does not point to this morning.</p>
+          <div class="insp-note">An erased name. Background, not the killer. ${isNew?ev('SCRATCHED_NAME'):''}</div>`);
+      }
+    },
+
+    phone(){
+      const isNew=gainEvidence('PHONE_CALL_1028',[15,16]);
+      markSolved('phone'); persist();
+      render('The Telephone', `
+        <div class="insp-vis" aria-hidden="true">☎️</div>
+        <p class="insp-desc">The landline's call log glows on its little screen. The last dialled contact is saved as <b>"MARGARET"</b>. An outgoing call was placed to her at <b>10:28 a.m.</b> — just <b>three minutes</b> before the clock stopped at 10:31. He rang his secretary moments before he died.</p>
+        <div class="insp-note">10:28 a.m. — Arthur calls Margaret. 10:31 — he is dead. ${isNew?ev('PHONE_CALL_1028'):''}</div>`);
+    },
+
+    security_panel(){
+      const isNew=gainEvidence('SECURITY_LOG',[17,18]);
+      markSolved('security_panel'); persist();
+      render('The Security Panel', `
+        <div class="insp-vis" aria-hidden="true">🔓</div>
+        <p class="insp-desc">The access panel beside the door keeps a log:</p>
+        <div class="insp-note" style="font-family:var(--font-mono);font-size:0.8rem;line-height:2;">
+          FRONT DOOR — opened <span class="mono">10:26</span><br>
+          FRONT DOOR — closed <span class="mono">10:28</span><br>
+          STUDY DOOR — opened <span class="mono">10:31</span>
+        </div>
+        <p class="insp-desc">Someone entered the house at 10:26 and the study door was opened at 10:31 — <b>the very moment the clock stopped</b>. Whoever opened that study door is your killer. Note: this contradicts anyone who claims to have been elsewhere all morning.</p>
+        ${isNew?('<div class="insp-note">'+ev('SECURITY_LOG')+'</div>'):''}`);
+    },
+
+    fireplace(){
+      const haveBlood=!!G.discoveredEvidence['BLOOD_TRAIL_DIRECTION'];
+      const haveTime=!!G.discoveredEvidence['TIME_OF_DEATH_1031'];
+      const s=G.objStep.fireplace||0;
+      if(G.hasKey){
+        render('The Fireplace', `<div class="insp-vis" aria-hidden="true">🔥</div><p class="insp-desc">The ash box stands open and empty now — you have already recovered the study key from beneath its false bottom.</p>`);
+        return;
+      }
+      if(!haveBlood || !haveTime){
+        const need=[]; if(!haveBlood)need.push('where the blood trail leads'); if(!haveTime)need.push('exactly when the attack happened');
+        render('The Fireplace', `
+          <div class="insp-vis" aria-hidden="true">🔥</div>
+          <p class="insp-desc">A grand marble fireplace, cold this morning. You sense it matters — but you have no reason yet to disturb it. First understand <b>${need.join('</b> and <b>')}</b>, then return.</p>`);
+        return;
+      }
+      if(s===0){
+        render('The Fireplace', `
+          <div class="insp-vis" aria-hidden="true">🔥</div>
+          <p class="insp-desc">The blood led <b>here</b>, and the study door was forced open at <b>10:31</b>. After the blow, the killer crossed to this hearth in a panic. You test the <b>ash box</b> — it slides oddly, heavier than ash alone should be.</p>
+          <div class="insp-action-area"><button class="insp-btn" id="fpStep">Lift the ash box</button></div>`);
+        document.getElementById('fpStep').onclick=()=>{ G.objStep.fireplace=1; persist(); HANDLERS.fireplace(); };
+      } else {
+        const isNew=gainEvidence('KEY_FOUND',[28,29,30]);
+        G.hasKey=true; markSolved('fireplace'); updateHud(); persist();
+        render('The Fireplace', `
+          <p class="insp-desc">Beneath the ash box is a <b>false bottom</b>. Pry it up, and there it is — pushed in hurriedly, dusted grey: a small brass <b>key</b>, labelled "Study." The killer hid it here on her way out, meaning to retrieve it later.</p>
+          <div class="insp-note">🗝️ <b>Study key recovered.</b> The private study can now be unlocked. ${isNew?ev('KEY_FOUND'):''}</div>`);
+      }
+    },
+
+    door_to_study(){
+      if(!G.hasKey){
+        render('The Study Door', `
+          <div class="insp-vis" aria-hidden="true">🚪</div>
+          <p class="insp-desc">A solid oak door to Sir Arthur's private study, firmly <b>locked</b>. The answers — his computer, his correspondence — are behind it. You need the key. The blood trail suggested where it might have been hidden.</p>`);
+        return;
+      }
+      render('The Study Door', `
+        <div class="insp-vis" aria-hidden="true">🗝️</div>
+        <p class="insp-desc">You fit the brass key into the lock. It turns with a heavy, satisfying click. The private study opens before you.</p>
+        <div class="insp-action-area"><button class="insp-btn" id="enterStudy">Enter the study</button></div>`);
+      document.getElementById('enterStudy').onclick=()=>{ closeInsp(); transitionToStudy(); };
+    },
+
+    /* ── STUDY ── */
+    desk(){
+      const s=G.objStep.desk||0;
+      if(s===0){
+        render('The Mahogany Desk', `
+          <div class="insp-vis" aria-hidden="true">🪑</div>
+          <p class="insp-desc">Sir Arthur's desk. Financial statements are fanned across the leather top — columns of figures, several circled in red. Along the right edge, the wood is <b>scratched</b>, as if a hidden drawer is opened often.</p>
+          <div class="insp-action-area"><button class="insp-btn" id="dStep">Press the scratched panel</button></div>`);
+        document.getElementById('dStep').onclick=()=>{ G.objStep.desk=1; persist(); HANDLERS.desk(); };
+      } else {
+        revealDigit(0,3); revealDigit(1,8); revealDigit(3,7);
+        const isNew=gainEvidence('DESK_NOTE',[34,35]);
+        gainEvidence('DIGIT_1_3',[36]); gainEvidence('DIGIT_2_8',[]); gainEvidence('DIGIT_4_7',[37]);
+        markSolved('desk'); persist();
+        render('The Mahogany Desk', `
+          <p class="insp-desc">A concealed drawer springs open. Inside, a folded note in Arthur's hand — the start of his computer passcode, jotted as a reminder: <b>"3 – 8 – ? – 7"</b>. The third digit is smudged into illegibility.</p>
+          <div class="insp-note">Passcode so far: <span class="mono">3 8 _ 7</span> — three of four digits. The third is missing. ${isNew?(ev('DIGIT_1_3')+ev('DIGIT_2_8')+ev('DIGIT_4_7')):''}</div>`);
+      }
+    },
+
+    bookshelf(){
+      revealDigit(2,4);
+      const isNew=gainEvidence('DIGIT_3_4',[40]);
+      markSolved('bookshelf'); persist();
+      render('The Bookshelf', `
+        <div class="insp-vis" aria-hidden="true">📚</div>
+        <p class="insp-desc">One volume juts out from the rest: <b>"The Laws of Property, Vol. IV."</b> You draw it down. Inside the cover, in Arthur's hand, <b>"Chapter 4"</b> is circled again and again. The Roman numeral on the spine, the circled chapter — the digit he chose was <b>4</b>. That is the missing third digit.</p>
+        <div class="insp-note">Third digit: <span class="mono">4</span>. The passcode is complete: <span class="mono">3 8 4 7</span>. ${isNew?ev('DIGIT_3_4'):''}</div>`);
+    },
+
+    painting(){
+      const isNew=gainEvidence('SAFE_OPEN',[42]);
+      gainEvidence('SAFE_LOCATION',[]);
+      markSolved('painting'); persist();
+      render('The Painting', `
+        <div class="insp-vis" aria-hidden="true">🖼️</div>
+        <p class="insp-desc">A small landscape hangs slightly askew — wrong, in so careful a room. You swing it aside on its hinge. Behind it: a wall <b>safe, already open and empty</b>. The killer cleared it before fleeing. The combination dial is still set, frozen at <b>38</b> — echoing the first two passcode digits.</p>
+        <div class="insp-note">An empty, pre-opened safe. Dial reads <span class="mono">38</span>. She took whatever was inside. ${isNew?ev('SAFE_OPEN'):''}</div>`);
+    },
+
+    filing_cabinet(){
+      const s=G.objStep.filing_cabinet||0;
+      if(s===0){
+        render('The Filing Cabinet', `
+          <div class="insp-vis" aria-hidden="true">🗄️</div>
+          <p class="insp-desc">A steel cabinet, top drawer ajar. A folder is labelled in Arthur's hand: <b>"CALLOWAY — PRIVATE."</b></p>
+          <div class="insp-action-area"><button class="insp-btn" id="fcStep">Open the Calloway folder</button></div>`);
+        document.getElementById('fcStep').onclick=()=>{ G.objStep.filing_cabinet=1; persist(); HANDLERS.filing_cabinet(); };
+      } else if(s===1){
+        const isNew=gainEvidence('EMBEZZLEMENT_PROOF',[46,47]);
+        persist();
+        render('The Filing Cabinet', `
+          <p class="insp-desc">Inside: printed bank records. Over eighteen months, a series of transfers totalling <b>£180,000</b> moved from the estate accounts to <b>Cayman Trust Holdings</b> — an offshore account whose signatory is <b>Margaret Calloway</b>. Embezzlement, meticulously hidden, and now proven on paper.</p>
+          <div class="insp-note">£180,000 siphoned to an account she controls. ${isNew?ev('EMBEZZLEMENT_PROOF'):''}</div>
+          <div class="insp-action-area"><button class="insp-btn" id="fcStep">Read the second document</button></div>`);
+        document.getElementById('fcStep').onclick=()=>{ G.objStep.filing_cabinet=2; persist(); HANDLERS.filing_cabinet(); };
+      } else {
+        const isNew=gainEvidence('TERMINATION_LETTER',[48,49]);
+        markSolved('filing_cabinet'); persist();
+        render('The Filing Cabinet', `
+          <p class="insp-desc">Beneath the records, a handwritten draft in Arthur's own hand — unsigned, unsent:</p>
+          <div class="insp-note" style="font-style:italic;">"Dear Miss Calloway, it is with regret, but no longer any doubt, that I must terminate your employment. Your conduct regarding the estate finances leaves me no alternative. The relevant authorities will be informed of the matter in full…"</div>
+          <p class="insp-desc">He was about to fire her — and report her. Motive, in his own writing. ${isNew?ev('TERMINATION_LETTER'):''}</p>`);
+      }
+    },
+
+    torn_letter(){
+      const isNew=gainEvidence('TORN_NOTE_AP',[52]);
+      markSolved('torn_letter'); persist();
+      render('The Torn Letter', `
+        <div class="insp-vis" aria-hidden="true">📄</div>
+        <p class="insp-desc">Four torn scraps on the study floor. You fit them together:</p>
+        <div class="insp-note" style="font-style:italic;">"I know what you've done. The authorities will be contacted Monday.<br>— A.P."</div>
+        <p class="insp-desc">He confronted her in writing. She had until Monday before the police were told. The murder happened on the <b>14th</b> — she could not let Monday come. ${isNew?ev('TORN_NOTE_AP'):''}</p>`);
+    },
+
+    armchair(){
+      const isNew=gainEvidence('NOTEBOOK_ENTRIES',[54]);
+      markSolved('armchair'); persist();
+      render('The Reading Armchair', `
+        <div class="insp-vis" aria-hidden="true">🪑</div>
+        <p class="insp-desc">A worn leather reading chair by the window. Beneath the cushion, a small <b>notebook</b> in Arthur's hand — dated entries tracking discrepancies in the accounts, each one followed by a single underlined initial: <b>"M.C."</b> He had been building his case for weeks.</p>
+        <div class="insp-note">His private ledger of her thefts. Every entry signed M.C. ${isNew?ev('NOTEBOOK_ENTRIES'):''}</div>`);
+    },
+
+    study_window(){
+      const isNew=gainEvidence('STUDY_WINDOW_LOCKED',[56]);
+      markSolved('study_window'); persist();
+      render('The Study Window', `
+        <div class="insp-vis" aria-hidden="true">🪟</div>
+        <p class="insp-desc">The study window is <b>latched from the inside</b> and undisturbed — no one climbed out here. The killer left the way she came: through the house, in the gap the security log records. There was no outside intruder.</p>
+        <div class="insp-note">Window locked from within. No stranger entered or escaped. ${isNew?ev('STUDY_WINDOW_LOCKED'):''}</div>`);
+    },
+
+    computer(){
+      if(G.computerUnlocked){ openEmailClient(); return; }
+      render('The Computer', `
+        <div class="insp-vis" aria-hidden="true">💻</div>
+        <p class="insp-desc">Sir Arthur's desktop. The screen demands a <b>four-digit passcode</b>. ${G.digits.every(d=>d!==null)?'You have all four digits.':'You have not found every digit yet — search the desk and the bookshelf.'}</p>
+        <div class="insp-action-area">
+          <div class="passcode-inputs">
+            <input class="passcode-input" id="pc1" inputmode="numeric" maxlength="1" aria-label="Digit 1">
+            <input class="passcode-input" id="pc2" inputmode="numeric" maxlength="1" aria-label="Digit 2">
+            <input class="passcode-input" id="pc3" inputmode="numeric" maxlength="1" aria-label="Digit 3">
+            <input class="passcode-input" id="pc4" inputmode="numeric" maxlength="1" aria-label="Digit 4">
+          </div>
+          <div class="insp-feedback" id="pcFeedback"></div>
+          <button class="insp-btn" id="pcUnlock">Unlock</button>
+        </div>`);
+      const inputs=['pc1','pc2','pc3','pc4'].map(id=>document.getElementById(id));
+      inputs.forEach((el,i)=>{ el.addEventListener('input',()=>{ el.value=el.value.replace(/[^0-9]/g,''); if(el.value&&i<3)inputs[i+1].focus(); }); });
+      document.getElementById('pcUnlock').onclick=()=>{
+        const entered=inputs.map(el=>parseInt(el.value,10));
+        const ok=entered.every((d,i)=>d===PASSCODE[i]);
+        const fb=document.getElementById('pcFeedback');
+        if(ok){
+          G.computerUnlocked=true;
+          gainEvidence('COMPUTER_UNLOCKED',[60,61]);
+          markSolved('computer'); persist();
+          fb.textContent='Access granted.'; fb.className='insp-feedback ok';
+          setTimeout(openEmailClient,500);
+        } else {
+          fb.textContent='Incorrect passcode.'; fb.className='insp-feedback err';
+          document.querySelector('.passcode-inputs').classList.add('shake');
+          setTimeout(()=>document.querySelector('.passcode-inputs').classList.remove('shake'),500);
+        }
+      };
+    },
+  };
+
+  /* ── Email client ───────────────────────────────────────── */
+  const EMAILS = [
+    { folder:'inbox', from:'margaret.calloway@pembroke-estate.co.uk', to:'a.pembroke@pembroke-estate.co.uk', subj:'Re: June Schedule', date:'June 13, 11:02 pm',
+      body:`Arthur, I've confirmed your appointments for Monday. I'll be in town until noon on the 14th — if anything urgent comes up, please ring.\n— M` },
+    { folder:'inbox', from:'victor.pembroke@gmail.com', to:'a.pembroke@pembroke-estate.co.uk', subj:'Re: The Will', date:'June 12, 3:45 pm',
+      body:`Uncle, I appreciate your transparency about the estate. I understand you have decided not to change the terms. I am disappointed but I respect your decision. I will be attending the Ascot races this weekend — I shan't be troubling you.\nVictor` },
+    { folder:'inbox', from:'r.ashby@ashby-capital.com', to:'a.pembroke@pembroke-estate.co.uk', subj:'Partnership Dissolution', date:'June 11, 9:00 am',
+      body:`Arthur, I received your formal notice yesterday. I won't pretend I'm not furious. You've cost me significant contracts by pulling out now. But I'm a businessman, not a murderer. My lawyers will be in touch.\n— Roland` },
+    { folder:'sent', from:'a.pembroke@pembroke-estate.co.uk', to:'solicitor@whitfield-law.co.uk', subj:'URGENT — Fraud Investigation', date:'June 13, 6:15 pm',
+      body:`James, I need you to file the formal report on Monday morning. I have documented evidence of embezzlement totalling £180,000 from the estate accounts over 18 months. The culprit is known to me. I will deliver the documents personally Monday morning. Do not call the office — she may intercept.\n— Arthur`, key:true },
+    { folder:'inbox', from:'margaret.calloway@pembroke-estate.co.uk', to:'a.pembroke@pembroke-estate.co.uk', subj:'Correspondence from the study', date:'June 12, 8:30 am',
+      body:`Good morning Sir Arthur, I noticed some correspondence has accumulated on your study desk — shall I retrieve it for you this morning? I have the key.\n— Margaret` },
+    { folder:'trash', deleted:true, from:'margaret.calloway@pembroke-estate.co.uk', to:'[DRAFT — never sent]', subj:'(no subject)', date:'June 14, 10:47 am',
+      body:`He knows. He has already written to Whitfield. I cannot let Monday come. The documents are in his study. If I can reach them before—`, smoking:true },
+    { folder:'inbox', from:'estate.bank@lloydspembroke.co.uk', to:'margaret.calloway@pembroke-estate.co.uk', subj:'Transfer Confirmed — Ref #88241', date:'June 8, 2:14 pm',
+      body:`Dear Miss Calloway, this confirms transfer of £45,000 to account ending 7734 (Cayman Trust Holdings) as per your instruction. Running total: £180,000.\nRegards, Estate Banking Services`, key:true },
+    { folder:'inbox', from:'dr.henley@pembrokenorth-gp.co.uk', to:'a.pembroke@pembroke-estate.co.uk', subj:'Re: Your enquiry', date:'June 10, 4:55 pm',
+      body:`Arthur, your blood pressure results are fine. You are in good health. I would not worry about the dizzy spells — likely stress-related. Do try to rest. I note you mentioned conflict with a staff member — if this is causing significant distress, do consider the matter urgently.\nBest, Dr. Henley` },
+  ];
+
+  let emailFolder='inbox', emailSel=null;
+  function openEmailClient(){
+    openInsp('Sir Arthur\'s Computer');
+    inspBody.innerHTML=`
+      <p class="insp-desc">His email client opens. Read everything — especially the timestamps. One message contradicts a story you were told. When you are certain who killed him, name the killer.</p>
+      <div class="email-client">
+        <div class="email-sidebar" id="emailSidebar"></div>
+        <div id="emailMain"></div>
+      </div>
+      <div class="insp-action-area" style="margin-top:1.4rem;">
+        <button class="insp-btn" id="toAccuse">I'm ready to name the killer</button>
+      </div>`;
+    document.getElementById('toAccuse').onclick=openAccuse;
+    renderEmailSidebar(); renderEmailList();
+  }
+  function renderEmailSidebar(){
+    const counts={ inbox:0,sent:0,trash:0 };
+    EMAILS.forEach(e=>counts[e.folder]++);
+    const side=document.getElementById('emailSidebar');
+    side.innerHTML=['inbox','sent','trash'].map(f=>
+      `<div class="email-folder ${f===emailFolder?'active':''}" data-folder="${f}" role="button" tabindex="0">${f} (${counts[f]})</div>`).join('');
+    side.querySelectorAll('.email-folder').forEach(el=>{
+      const go=()=>{ emailFolder=el.dataset.folder; emailSel=null; renderEmailSidebar(); renderEmailList(); };
+      el.onclick=go; el.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } };
+    });
+  }
+  function renderEmailList(){
+    const main=document.getElementById('emailMain');
+    if(emailSel===null){
+      const rows=EMAILS.map((e,i)=>({e,i})).filter(x=>x.e.folder===emailFolder);
+      main.innerHTML='<div class="email-list">'+rows.map(({e,i})=>
+        `<div class="email-row ${e.deleted?'deleted':''}" data-i="${i}" role="button" tabindex="0">
+           <div class="email-from">${e.deleted?'[DELETED DRAFT] ':''}${e.from}</div>
+           <div class="email-subj">${e.subj}</div>
+           <div class="email-date">${e.date}</div>
+         </div>`).join('')+'</div>';
+      main.querySelectorAll('.email-row').forEach(el=>{
+        const open=()=>{ emailSel=parseInt(el.dataset.i,10); renderEmailReading(); };
+        el.onclick=open; el.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } };
+      });
+    } else { renderEmailReading(); }
+  }
+  function renderEmailReading(){
+    const e=EMAILS[emailSel];
+    if(!G.readEmails[emailSel]){
+      G.readEmails[emailSel]=true;
+      // reading emails fills steps 62..75 progressively
+      const filled=62+Object.keys(G.readEmails).length-1;
+      completeStep(Math.min(filled,75));
+      if(Object.keys(G.readEmails).length>=EMAILS.length){ gainEvidence('EMAILS_READ',[76,77]); }
+      if(e.smoking){ gainEvidence('ALIBI_BROKEN',[78,79]); }
+      persist();
+    }
+    const main=document.getElementById('emailMain');
+    main.innerHTML=`<div class="email-reading">
+      <button class="insp-btn" id="emailBack" style="margin-bottom:0.8rem;">← Back to ${e.folder}</button>
+      ${e.deleted?'<div class="email-flag">Recovered deleted draft</div>':''}
+      ${e.smoking?'<div class="email-flag">Timestamp 10:47 a.m. — composed from the estate</div>':''}
+      <div class="eh"><b>From:</b> ${e.from}<br><b>To:</b> ${e.to}<br><b>Subject:</b> ${e.subj}<br><b>Date:</b> ${e.date}</div>
+      <div class="eb">${e.body}</div>
+    </div>`;
+    document.getElementById('emailBack').onclick=()=>{ emailSel=null; renderEmailList(); };
+  }
+
+  /* ── Accusation ─────────────────────────────────────────── */
+  function openAccuse(){
+    openInsp('Name the Killer');
+    inspBody.innerHTML=`
+      <p class="insp-desc">You have the motive (embezzlement and a looming exposure), the means (his own letter opener, ink on the grip), and the lie that breaks the case: she swore she was in town until noon, yet she composed a draft from the estate at <b>10:47 a.m.</b> — sixteen minutes after the clock stopped at 10:31. Victor was at Ascot; Roland fought him through lawyers, not blades. Type the killer's name.</p>
+      <div class="suspect-grid">
+        <button class="suspect-chip" data-n="Margaret Calloway">Margaret Calloway</button>
+        <button class="suspect-chip" data-n="Victor Pembroke">Victor Pembroke</button>
+        <button class="suspect-chip" data-n="Roland Ashby">Roland Ashby</button>
+      </div>
+      <div class="insp-action-area">
+        <input class="accuse-input" id="accuseInput" placeholder="Name the killer…" aria-label="Killer's name">
+        <div class="insp-feedback" id="accuseFeedback"></div>
+        <button class="insp-btn" id="accuseBtn">Make the Accusation</button>
+      </div>`;
+    inspBody.querySelectorAll('.suspect-chip').forEach(c=>{ c.onclick=()=>{ document.getElementById('accuseInput').value=c.dataset.n; }; });
+    const submit=()=>{
+      const raw=(document.getElementById('accuseInput').value||'').trim().toLowerCase();
+      const fb=document.getElementById('accuseFeedback');
+      const ok = raw==='margaret calloway' || raw==='margaret' || raw==='calloway' || raw==='m. calloway' || raw==='miss calloway';
+      if(ok){
+        gainEvidence('ALIBI_BROKEN',[78,79]); completeStep(80);
+        fb.textContent='The arrest warrant is signed.'; fb.className='insp-feedback ok';
+        persist(); closeInsp(); setTimeout(triggerCompletion,300);
+      } else if(raw){
+        fb.textContent='The evidence does not support that. Re-read the emails and the security log.'; fb.className='insp-feedback err';
+      } else {
+        fb.textContent='Enter a name.'; fb.className='insp-feedback err';
+      }
+    };
+    document.getElementById('accuseBtn').onclick=submit;
+    document.getElementById('accuseInput').addEventListener('keydown',e=>{ if(e.key==='Enter')submit(); });
+  }
+
+  /* ── Room transition ────────────────────────────────────── */
+  function showArea(area){
+    G.area=area;
+    document.getElementById('stageLiving').style.display = area==='living'?'block':'none';
+    document.getElementById('stageStudy').style.display  = area==='study'?'block':'none';
+    document.getElementById('areaTag').textContent = area==='living'?'Drawing Room':'Private Study';
+    document.getElementById('roomLabel').textContent = area==='living'?'The Drawing Room — Pembroke Estate':'The Private Study — Pembroke Estate';
+  }
+  function transitionToStudy(){
+    const rt=document.getElementById('roomTransition');
+    rt.classList.add('show');
+    completeStep(31);
+    setTimeout(()=>{ showArea('study'); persist(); }, 700);
+    setTimeout(()=>{ rt.classList.remove('show'); }, 1600);
+  }
+
+  /* ── Completion ─────────────────────────────────────────── */
+  function scoreFor(){ return Math.max(0, 10000 - Math.floor(G.timerSecs/10) - G.clueCount*600); }
+  function triggerCompletion(){
+    if(G.completed)return;
+    G.completed=true; stopTimer();
+    completeStep(80); updateProgress();
+    const runScore=scoreFor();
+    const prevBest=G.bestScoreSaved||0;
+    const isNewBest=runScore>prevBest;
+    G.bestScoreSaved=Math.max(runScore,prevBest);
+    document.getElementById('statTime').textContent=fmtTime(G.timerSecs);
+    document.getElementById('statClues').textContent=G.clueCount;
+    document.getElementById('statScore').textContent=runScore.toLocaleString();
+    const bestEl=document.getElementById('statBest'); if(bestEl)bestEl.textContent=G.bestScoreSaved.toLocaleString();
+    document.getElementById('completionPanel').classList.add('open');
+    if(isNewBest && window._ihSubmitLeaderboard){ window._ihSubmitLeaderboard(runScore,G.timerSecs,G.clueCount); }
+    persist();
+  }
+
+  /* ── Clue system ────────────────────────────────────────── */
+  window._ihSetClueCredits=function(n){ G.clueCredits=n; document.getElementById('clueCreditCount').textContent=n; };
+  function openClueModal(){
+    if(G.clueCredits<=0){ document.getElementById('noCreditsModal').classList.add('open'); return; }
+    const focused=currentObjId;
+    document.getElementById('clueCreditCount').textContent=G.clueCredits;
+    document.getElementById('clueModalSub').textContent=focused?('Clue for: '+focused.replace(/_/g,' ')):'Open an object first for a targeted clue.';
+    document.getElementById('clueModal').setAttribute('data-obj',focused||'');
+    document.getElementById('clueModal').classList.add('open');
+  }
+  document.getElementById('clueBtn').onclick=openClueModal;
+  document.getElementById('clueModalClose').onclick=document.getElementById('clueModalCancel').onclick=()=>document.getElementById('clueModal').classList.remove('open');
+  document.getElementById('noCreditsClose').onclick=document.getElementById('noCreditsCancel').onclick=()=>document.getElementById('noCreditsModal').classList.remove('open');
+  document.getElementById('clueModalConfirm').onclick=async()=>{
+    const objId=document.getElementById('clueModal').getAttribute('data-obj')||currentObjId;
+    if(!objId || !CLUES[objId]){
+      document.getElementById('clueModal').classList.remove('open');
+      return;
+    }
+    if(G.clueCredits<=0){ document.getElementById('clueModal').classList.remove('open'); document.getElementById('noCreditsModal').classList.add('open'); return; }
+    if(window._ihUseClue){
+      const ok=await window._ihUseClue().catch(()=>false);
+      if(!ok){ document.getElementById('clueModal').classList.remove('open'); document.getElementById('noCreditsModal').classList.add('open'); return; }
+    } else {
+      G.clueCredits=Math.max(0,G.clueCredits-1); document.getElementById('clueCreditCount').textContent=G.clueCredits;
+    }
+    G.clueCount++; G.unlockedClues.add(objId);
+    document.getElementById('clueModal').classList.remove('open');
+    persist();
+    // refresh the clue strip if the object panel is open
+    if(currentObjId===objId){ const strip=document.getElementById('clueStrip'); if(strip){ strip.classList.add('visible'); strip.textContent='Clue — '+CLUES[objId]; } }
+  };
+
+  /* ── Persist & Restore ──────────────────────────────────── */
+  function serializeState(){
+    return {
+      sceneEntered:G.sceneEntered, area:G.area, hasKey:G.hasKey,
+      computerUnlocked:G.computerUnlocked, digits:G.digits,
+      discoveredEvidence:G.discoveredEvidence, objStep:G.objStep,
+      solvedObjects:G.solvedObjects, readEmails:G.readEmails,
+      completedSteps:[...G.completedSteps], clueCount:G.clueCount,
+      unlockedClues:[...G.unlockedClues], timerSecs:G.timerSecs, completed:G.completed,
+      // account.html compatibility
+      currentSlide:G.completedSteps.size, totalSlides:TOTAL_STEPS,
+      solvedSlides:[...G.completedSteps], slideSolved:[...G.completedSteps],
+      elapsedSeconds:G.timerSecs, cluesUsed:G.clueCount,
+      bestScore:G.bestScoreSaved ?? (G.completed?scoreFor():null),
+      restarted:false,
+    };
+  }
+  function persist(){ const data=serializeState(); try{ localStorage.setItem(LS_KEY,JSON.stringify(data)); }catch(_){}; window._ihSave&&window._ihSave(data); }
+
+  function applyRestore(data){
+    if(!data)return;
+    if(data.bestScore!=null)G.bestScoreSaved=data.bestScore;
+    if(data.restarted)return;
+    G.sceneEntered=data.sceneEntered??false;
+    G.area=data.area||'living';
+    G.hasKey=data.hasKey??false;
+    G.computerUnlocked=data.computerUnlocked??false;
+    G.digits=data.digits||[null,null,null,null];
+    G.discoveredEvidence=data.discoveredEvidence||{};
+    G.objStep=data.objStep||{};
+    G.solvedObjects=data.solvedObjects||{};
+    G.readEmails=data.readEmails||{};
+    G.completedSteps=new Set(data.completedSteps||[]);
+    G.clueCount=data.clueCount||0;
+    G.unlockedClues=new Set(data.unlockedClues||[]);
+    G.timerSecs=data.timerSecs||0;
+    G.completed=data.completed??false;
+
+    document.getElementById('timerDisplay').textContent=fmtTime(G.timerSecs);
+    updateProgress(); updateHud();
+    // digits
+    G.digits.forEach((d,i)=>{ if(d!==null){ const slot=document.getElementById('dv'+(i+1)); slot.setAttribute('data-digit',d); slot.classList.add('revealed'); } });
+    // solved markers
+    Object.keys(G.solvedObjects).forEach(id=>markSolved(id));
+    showArea(G.area);
+
+    if(G.sceneEntered){
+      document.getElementById('letterOverlay').classList.add('hidden');
+      document.getElementById('huntWrap').style.display='flex';
+      document.getElementById('bottomHud').style.display='flex';
+      if(!G.completed)startTimer();
+    }
+    if(G.completed)triggerCompletion();
+  }
+  window._ihApplyRestore=applyRestore;
+
+  /* ── Enter scene ────────────────────────────────────────── */
+  document.getElementById('btnEnterScene').onclick=()=>{
+    G.sceneEntered=true;
+    document.getElementById('letterOverlay').classList.add('hidden');
+    document.getElementById('huntWrap').style.display='flex';
+    document.getElementById('bottomHud').style.display='flex';
+    startTimer(); persist();
+  };
+
+  /* ── Bind objects ───────────────────────────────────────── */
+  const ALL_OBJS=['fireplace','wall_clock','sofa','wine_glass','coffee_table','body','letter_opener','blood_trail','family_portrait','phone','security_panel','door_to_study','bookshelf','armchair','torn_letter','desk','computer','study_window','painting','filing_cabinet'];
+  ALL_OBJS.forEach(id=>{
+    const el=document.getElementById('obj-'+id);
+    if(el){
+      el.onclick=()=>handle(id);
+      el.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); handle(id); } };
+    }
+  });
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){
+      closeInsp();
+      document.getElementById('clueModal').classList.remove('open');
+      document.getElementById('noCreditsModal').classList.remove('open');
+      document.getElementById('restartModal').classList.remove('open');
+    }
+  });
+
+  /* ── Restart ────────────────────────────────────────────── */
+  function doRestart(){
+    stopTimer();
+    const keepBest=G.bestScoreSaved, keepCredits=G.clueCredits;
+    G=freshState(); G.bestScoreSaved=keepBest; G.clueCredits=keepCredits;
+    document.getElementById('timerDisplay').textContent='00:00';
+    updateProgress(); updateHud();
+    document.querySelectorAll('.room-obj.obj-solved').forEach(el=>el.classList.remove('obj-solved'));
+    document.querySelectorAll('.digit-slot.revealed').forEach(el=>{ el.classList.remove('revealed'); el.setAttribute('data-digit','?'); });
+    document.getElementById('clueCreditCount').textContent=keepCredits;
+    showArea('living');
+    document.getElementById('completionPanel').classList.remove('open');
+    document.getElementById('letterOverlay').classList.remove('hidden');
+    document.getElementById('huntWrap').style.display='none';
+    document.getElementById('bottomHud').style.display='none';
+    try{ localStorage.removeItem(LS_KEY); }catch(_){}
+    if(window._ihClearProgress)window._ihClearProgress();
+  }
+  document.getElementById('restartBtn').onclick=()=>document.getElementById('restartModal').classList.add('open');
+  document.getElementById('restartModalClose').onclick=document.getElementById('restartModalCancel').onclick=()=>document.getElementById('restartModal').classList.remove('open');
+  document.getElementById('restartModalConfirm').onclick=()=>{ document.getElementById('restartModal').classList.remove('open'); doRestart(); };
+  document.getElementById('playAgainBtn').onclick=doRestart;
+
+  /* ── Boot ───────────────────────────────────────────────── */
+  (function boot(){
+    try{
+      const saved=localStorage.getItem(LS_KEY);
+      if(saved){ const data=JSON.parse(saved); if(!data.restarted)applyRestore(data); }
+    }catch(_){}
+    if(window._ihPendingRestore){ applyRestore(window._ihPendingRestore); window._ihPendingRestore=null; }
+    updateProgress(); updateHud();
+  })();
+
+})();
+</script>
+
+</body>
+</html>
