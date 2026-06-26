@@ -971,6 +971,71 @@
     .accuse-opt:hover { border-color:var(--gold); background:rgba(201,162,39,0.06); }
     .accuse-opt.sel { border-color:var(--gold); background:rgba(201,162,39,0.16); color:var(--gold); box-shadow:0 0 10px rgba(201,162,39,0.18); }
 
+    /* ── Interactive forensic-puzzle primitives ───────────────── */
+    .mini-stage { display:flex; flex-direction:column; align-items:center; gap:0.7rem; margin:0.5rem 0; }
+    .mini-meter { width:240px; height:7px; background:rgba(14,11,18,0.85); border:1px solid rgba(201,162,39,0.3); border-radius:4px; overflow:hidden; }
+    .mini-meter-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--ember),var(--gold)); transition:width 0.15s linear; }
+    .mini-hint { font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.04em; color:var(--parchment-dim); text-align:center; }
+
+    /* Magnifier scan — drag a lens across an evidence plate to reveal hotspots */
+    .scan-stage { position:relative; width:100%; max-width:360px; aspect-ratio:3/2; margin:0 auto;
+      border:1px solid rgba(201,162,39,0.25); border-radius:6px; overflow:hidden; cursor:crosshair; touch-action:none;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 60%, rgba(40,30,22,0.6), transparent 70%),
+        repeating-linear-gradient(115deg, rgba(255,255,255,0.012) 0 3px, transparent 3px 7px),
+        linear-gradient(160deg, #211913 0%, #14100b 60%, #0c0907 100%);
+      box-shadow:inset 0 0 40px rgba(0,0,0,0.8);
+    }
+    .scan-lens { position:absolute; width:120px; height:120px; border-radius:50%; left:-200px; top:-200px;
+      transform:translate(-50%,-50%); pointer-events:none;
+      border:3px solid rgba(201,162,39,0.7);
+      box-shadow:0 0 0 2px rgba(0,0,0,0.6), 0 6px 16px rgba(0,0,0,0.8), inset 0 0 30px rgba(255,240,200,0.12);
+      background:radial-gradient(circle, rgba(255,248,220,0.10) 0%, rgba(255,248,220,0.04) 55%, transparent 72%);
+      backdrop-filter:brightness(1.5) contrast(1.25) saturate(1.1);
+    }
+    .scan-hotspot { position:absolute; transform:translate(-50%,-50%);
+      font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.03em; text-align:center;
+      color:var(--gold); opacity:0; transition:opacity 0.45s ease; pointer-events:none; max-width:120px; line-height:1.35;
+      text-shadow:0 0 6px rgba(0,0,0,0.9); }
+    .scan-hotspot::before { content:''; display:block; width:14px; height:14px; margin:0 auto 0.25rem; border-radius:50%;
+      background:radial-gradient(circle, var(--ember), transparent 70%); box-shadow:0 0 10px rgba(226,87,43,0.8); }
+    .scan-hotspot.found { opacity:1; }
+
+    /* Wipe / scrub canvas — clean a surface to reveal what's underneath */
+    .wipe-wrap { position:relative; width:100%; max-width:320px; margin:0 auto; }
+    .wipe-under { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center;
+      font-family:var(--font-body); color:var(--gold); font-size:0.92rem; line-height:1.5; padding:1rem; }
+    .wipe-canvas { position:relative; display:block; width:100%; touch-action:none; cursor:crosshair; border-radius:6px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.7); }
+
+    /* Rotary combination dials — drag each to its target number */
+    .combo-wrap { display:flex; gap:0.8rem; justify-content:center; align-items:flex-end; margin:0.4rem 0 1.2rem; }
+    .combo-unit { display:flex; flex-direction:column; align-items:center; gap:0.5rem; }
+    .combo-dial { width:62px; height:62px; border-radius:50%; position:relative; cursor:grab; touch-action:none; user-select:none;
+      background:repeating-conic-gradient(rgba(0,0,0,0.22) 0deg 3deg, transparent 3deg 36deg),
+        radial-gradient(circle at 32% 28%, #ffe6a4 0%, #d4a746 30%, #6a4e1a 72%, #221606 100%);
+      border:2px solid #14100a;
+      box-shadow:0 3px 7px rgba(0,0,0,0.7), inset 0 0 0 2px rgba(255,232,170,0.35), inset 0 -3px 5px rgba(0,0,0,0.5); }
+    .combo-dial.dragging { cursor:grabbing; }
+    .combo-dial::after { content:''; position:absolute; left:50%; top:7%; transform:translateX(-50%); width:4px; height:34%;
+      background:linear-gradient(180deg,#14100a,#5a3e14); border-radius:2px; }
+    .combo-num { font-family:var(--font-mono); font-size:1.3rem; color:var(--gold); width:1.4em; text-align:center;
+      border-bottom:1px solid rgba(201,162,39,0.3); }
+    .combo-num.locked { color:#7ad08a; }
+
+    /* Drag-to-assemble fragments into target slots */
+    .assemble-stage { display:flex; flex-direction:column; gap:1rem; align-items:center; margin:0.4rem 0; }
+    .assemble-slots { position:relative; width:200px; height:150px; border:1px dashed rgba(201,162,39,0.35); border-radius:4px;
+      background:rgba(14,11,18,0.5); }
+    .assemble-slot { position:absolute; width:96px; height:72px; border:1px dashed rgba(201,162,39,0.2); border-radius:2px; }
+    .assemble-tray { display:flex; gap:0.5rem; flex-wrap:wrap; justify-content:center; }
+    .frag-piece { width:96px; height:72px; cursor:grab; touch-action:none; user-select:none; position:relative;
+      background:linear-gradient(160deg,#ece0c2 0%,#d8c79c 70%,#bfa977 100%); color:#2a1d0c;
+      border:1px solid #8a6a30; border-radius:2px; box-shadow:0 2px 5px rgba(0,0,0,0.6);
+      font-family:'EB Garamond',var(--font-body),serif; font-style:italic; font-size:0.62rem; line-height:1.25; padding:0.3rem; overflow:hidden; }
+    .frag-piece.placed { box-shadow:0 0 0 2px var(--gold), 0 0 10px rgba(201,162,39,0.4); cursor:default; }
+    .frag-piece.dragging { z-index:50; box-shadow:0 6px 16px rgba(0,0,0,0.8); }
+
     /* ───────────────────────────────────────────────────────────────────
        14 · FLASH, SHAKE & ROOM TRANSITION
        ─────────────────────────────────────────────────────────────────── */
@@ -2698,42 +2763,58 @@
   const HANDLERS = {
     /* ── LIVING ROOM ── */
     body(){
-      const s=G.objStep.body||0;
-      if(s===0){
+      if(G.solvedObjects['body']){
         render('Sir Arthur Pembroke', `
           ${ivis('body')}
-          <p class="insp-desc">He lies sprawled on his back, a single wound to the side. The weapon still rests across his chest — and it is no kitchen knife. The slim blade and ornate handle mark it a <b>letter opener</b>, not a butcher's blade.</p>
-          <div class="insp-action-area"><button class="insp-btn" id="bStep">Examine the hands</button></div>`);
-        document.getElementById('bStep').onclick=()=>{ G.objStep.body=1; persist(); HANDLERS.body(); };
-      } else if(s===1){
-        render('Sir Arthur Pembroke', `
-          <p class="insp-desc">His hands are clean. <b>No defensive wounds</b> — no scratches, no bruising. He never raised an arm. Whoever did this, he did not see as a threat. Someone he trusted, standing close, striking from the side.</p>
-          <div class="insp-action-area"><button class="insp-btn" id="bStep">Search his pockets</button></div>`);
-        document.getElementById('bStep').onclick=()=>{ G.objStep.body=2; persist(); HANDLERS.body(); };
-      } else {
-        const isNew=gainEvidence('MC_INITIALS',[1,2,3]);
-        markSolved('body'); persist();
-        render('Sir Arthur Pembroke', `
-          <p class="insp-desc">Tucked into his breast pocket, half pulled free in the struggle, is a <b>pocket square</b> — fine silk, not his usual monogram. Embroidered in the corner, two initials: <b>"M.C."</b></p>
-          <div class="insp-note">A man does not carry a woman's monogrammed handkerchief by accident. <span class="mono">M.C.</span> ${isNew?ev('MC_INITIALS'):''}</div>`);
+          <p class="insp-desc">The body has been examined in full: no defensive wounds, his own letter opener as the weapon, and a woman's <b>"M.C."</b> pocket square half-pulled from his breast.</p>
+          <div class="insp-note">A man does not carry a woman's monogrammed handkerchief by accident. <span class="mono">M.C.</span> ${ev('MC_INITIALS')}</div>`);
+        return;
       }
+      render('Sir Arthur Pembroke', `
+        <p class="insp-desc">He lies sprawled on his back. Don't take the scene at a glance — <b>go over the body with the lens</b> and record every detail. Drag the magnifier across him.</p>
+        <div class="mini-stage">
+          <div class="scan-stage" id="scanStage">
+            <div class="scan-hotspot" data-x="50" data-y="26" style="left:50%;top:26%">Wound to the left side — a single thrust, no hesitation</div>
+            <div class="scan-hotspot" data-x="20" data-y="64" style="left:20%;top:64%">Hands clean — no defensive cuts. He never raised an arm</div>
+            <div class="scan-hotspot" data-x="70" data-y="44" style="left:70%;top:44%">Silk pocket square, monogram <b>"M.C."</b> — not his initials</div>
+          </div>
+          <div class="scan-lens" id="scanLens"></div>
+          <div class="mini-hint" id="scanHint">Sweep the lens slowly — three details to find.</div>
+        </div>`);
+      setTimeout(()=>initMagScan(()=>{
+        gainEvidence('MC_INITIALS',[1,2,3]);
+        markSolved('body'); persist();
+        HANDLERS.body();
+      }),50);
     },
 
     letter_opener(){
-      const s=G.objStep.letter_opener||0;
-      if(s===0){
+      if(G.solvedObjects['letter_opener']){
         render('The Letter Opener', `
           ${ivis('opener')}
-          <p class="insp-desc">The murder weapon lies across the dead man's chest, slick with blood. It is monogrammed <b>"A.P." — Arthur Pembroke</b>. His own letter opener, taken from his own desk, turned against him. This was not planned with a smuggled blade; it was seized in the moment.</p>
-          <div class="insp-action-area"><button class="insp-btn" id="loStep">Examine the handle</button></div>`);
-        document.getElementById('loStep').onclick=()=>{ G.objStep.letter_opener=1; persist(); HANDLERS.letter_opener(); };
-      } else {
-        const isNew=gainEvidence('LETTER_OPENER_INK',[4,5]);
-        markSolved('letter_opener'); persist();
-        render('The Letter Opener', `
-          <p class="insp-desc">There is a dark smear on the handle — and it is not blood. It is <b>ink</b>, the blue-black of fountain-pen correspondence, ground into the grip. Whoever held this last had been handling letters. Who in this house handles Sir Arthur's correspondence?</p>
-          <div class="insp-note">Ink on the grip. The killer had been at his papers. ${isNew?ev('LETTER_OPENER_INK'):''}</div>`);
+          <p class="insp-desc">His own monogrammed opener, <b>"A.P."</b>, seized in the moment. Under the blood, the grip carried a smear of blue-black <b>ink</b> — the killer had been handling his correspondence.</p>
+          <div class="insp-note">Ink on the grip. The killer had been at his papers. ${ev('LETTER_OPENER_INK')}</div>`);
+        return;
       }
+      render('The Letter Opener', `
+        <p class="insp-desc">The murder weapon — his own opener, monogrammed <b>"A.P."</b>, seized in the moment. The grip is slick with blood, but something dark shows beneath it. <b>Swab the blood away</b> to see what is really on the handle.</p>
+        <div class="mini-stage">
+          <div class="wipe-wrap" style="aspect-ratio:5/2;">
+            <div class="wipe-under">A smear of blue-black <b>ink</b>,<br>ground deep into the grip</div>
+            <canvas class="wipe-canvas" id="wipeCanvas" width="300" height="120"></canvas>
+          </div>
+          <div class="mini-hint" id="wipeHint">Drag across the handle to swab it clean.</div>
+        </div>`);
+      setTimeout(()=>initWipeCanvas((ctx,c)=>{
+        ctx.fillStyle='#6e0d0d'; ctx.fillRect(0,0,c.width,c.height);
+        for(let i=0;i<900;i++){ const r=Math.random();
+          ctx.fillStyle='rgba('+(90+r*70)+','+(8+r*16)+','+(8+r*16)+','+(0.4+Math.random()*0.5)+')';
+          ctx.fillRect(Math.random()*c.width,Math.random()*c.height,2+Math.random()*4,2+Math.random()*4); }
+      },()=>{
+        gainEvidence('LETTER_OPENER_INK',[4,5]);
+        markSolved('letter_opener'); persist();
+        HANDLERS.letter_opener();
+      }),50);
     },
 
     blood_trail(){
@@ -2898,19 +2979,27 @@
           <p class="insp-desc">A grand marble fireplace, cold this morning. You sense it matters — but you have no reason yet to disturb it. First understand <b>${need.join('</b> and <b>')}</b>, then return.</p>`);
         return;
       }
-      if(s===0){
-        render('The Fireplace', `
-          ${ivis('fire')}
-          <p class="insp-desc">The blood led <b>here</b>, and the study door was forced open at <b>10:31</b>. After the blow, the killer crossed to this hearth in a panic. You test the <b>ash box</b> — it slides oddly, heavier than ash alone should be.</p>
-          <div class="insp-action-area"><button class="insp-btn" id="fpStep">Lift the ash box</button></div>`);
-        document.getElementById('fpStep').onclick=()=>{ G.objStep.fireplace=1; persist(); HANDLERS.fireplace(); };
-      } else {
-        const isNew=gainEvidence('KEY_FOUND',[28,29,30]);
+      render('The Fireplace', `
+        <p class="insp-desc">The blood led <b>here</b>, and the study door was opened at <b>10:31</b>. After the blow the killer crossed to this hearth in a panic. The grate is buried in cold grey ash — and something hard lies under it. <b>Rake the ashes away.</b></p>
+        <div class="mini-stage">
+          <div class="wipe-wrap" style="aspect-ratio:3/2;">
+            <div class="wipe-under" style="font-size:2.4rem;">🗝️</div>
+            <canvas class="wipe-canvas" id="wipeCanvas" width="300" height="200" style="background:radial-gradient(ellipse at 50% 60%,#2a1208,#0a0402);"></canvas>
+          </div>
+          <div class="mini-hint" id="wipeHint">Drag through the ash to clear the grate.</div>
+        </div>`);
+      setTimeout(()=>initWipeCanvas((ctx,c)=>{
+        ctx.fillStyle='#5a5048'; ctx.fillRect(0,0,c.width,c.height);
+        for(let i=0;i<1100;i++){ const r=Math.random();
+          ctx.fillStyle='rgba('+(70+r*60)+','+(64+r*50)+','+(56+r*44)+','+(0.4+Math.random()*0.45)+')';
+          ctx.fillRect(Math.random()*c.width,Math.random()*c.height,2+Math.random()*3,2+Math.random()*3); }
+      },()=>{
+        gainEvidence('KEY_FOUND',[28,29,30]);
         G.hasKey=true; markSolved('fireplace'); updateHud(); persist();
         render('The Fireplace', `
-          <p class="insp-desc">Beneath the ash box is a <b>false bottom</b>. Pry it up, and there it is — pushed in hurriedly, dusted grey: a small brass <b>key</b>, labelled "Study." The killer hid it here on her way out, meaning to retrieve it later.</p>
-          <div class="insp-note">🗝️ <b>Study key recovered.</b> The private study can now be unlocked. ${isNew?ev('KEY_FOUND'):''}</div>`);
-      }
+          <p class="insp-desc">The ash falls away and there it is — pushed in hurriedly, dusted grey: a small brass <b>key</b>, labelled "Study." The killer hid it here on her way out, meaning to retrieve it later.</p>
+          <div class="insp-note">🗝️ <b>Study key recovered.</b> The private study can now be unlocked. ${ev('KEY_FOUND')}</div>`);
+      }),50);
     },
 
     door_to_study(){
@@ -2968,35 +3057,25 @@
       const sawYear=!!G.discoveredEvidence['SCRATCHED_NAME'];
       render('The Painting', `
         ${ivis('safe')}
-        <p class="insp-desc">A small landscape hangs slightly askew — wrong, in so careful a room. You swing it aside on its hinge. Behind it: a <b>wall safe</b>, firmly shut, with a <b>four-digit dial</b>. The killer never got it open — she ran out of time.</p>
-        <p class="insp-desc">A man like Arthur would not choose a random combination. ${sawYear?'You recall a <b>year</b> engraved somewhere in this house.':'You have nothing to go on yet — perhaps something <b>engraved</b> elsewhere in the house gives the number. Find it first.'}</p>
-        <div class="insp-action-area">
-          <div class="passcode-inputs">
-            <input class="passcode-input" id="sf1" inputmode="numeric" maxlength="1" aria-label="Dial 1">
-            <input class="passcode-input" id="sf2" inputmode="numeric" maxlength="1" aria-label="Dial 2">
-            <input class="passcode-input" id="sf3" inputmode="numeric" maxlength="1" aria-label="Dial 3">
-            <input class="passcode-input" id="sf4" inputmode="numeric" maxlength="1" aria-label="Dial 4">
+        <p class="insp-desc">A small landscape hangs slightly askew — wrong, in so careful a room. You swing it aside on its hinge. Behind it: a <b>wall safe</b> with <b>four brass dials</b>. The killer never got it open — she ran out of time.</p>
+        <p class="insp-desc">A man like Arthur would not choose a random combination. ${sawYear?'You recall a <b>year</b> engraved on the family portrait.':'You have nothing to go on yet — something <b>engraved</b> elsewhere in the house gives the number. Find it first.'}</p>
+        <div class="mini-stage">
+          <div class="combo-wrap">
+            <div class="combo-unit"><div class="combo-dial" data-i="0" data-val="0" aria-label="Dial 1"></div><div class="combo-num" data-i="0">0</div></div>
+            <div class="combo-unit"><div class="combo-dial" data-i="1" data-val="0" aria-label="Dial 2"></div><div class="combo-num" data-i="1">0</div></div>
+            <div class="combo-unit"><div class="combo-dial" data-i="2" data-val="0" aria-label="Dial 3"></div><div class="combo-num" data-i="2">0</div></div>
+            <div class="combo-unit"><div class="combo-dial" data-i="3" data-val="0" aria-label="Dial 4"></div><div class="combo-num" data-i="3">0</div></div>
           </div>
-          <div class="insp-feedback" id="sfFeedback"></div>
-          <button class="insp-btn" id="sfOpen">Turn the dial</button>
+          <div class="mini-hint" id="comboHint">Drag each dial to set the four digits.</div>
         </div>`);
-      const inputs=['sf1','sf2','sf3','sf4'].map(id=>document.getElementById(id));
-      inputs.forEach((el,i)=>{ el.addEventListener('input',()=>{ el.value=el.value.replace(/[^0-9]/g,''); if(el.value&&i<3)inputs[i+1].focus(); }); });
-      document.getElementById('sfOpen').onclick=()=>{
-        const entered=inputs.map(el=>el.value).join('');
-        const fb=document.getElementById('sfFeedback');
-        if(entered==='1978'){
-          gainEvidence('SAFE_OPEN',[42]);
-          gainEvidence('SAFE_ORIGINALS',[]);
-          markSolved('painting'); persist();
-          HANDLERS.painting();
-        } else {
-          fb.textContent='The dial does not give. That is not the number.';
-          fb.className='insp-feedback err';
-          const box=document.querySelector('.passcode-inputs');
-          if(box){ box.classList.add('shake'); setTimeout(()=>box.classList.remove('shake'),500); }
-        }
-      };
+      setTimeout(()=>initComboDials([1,9,7,8],()=>{
+        const hint=document.getElementById('comboHint');
+        if(hint){ hint.textContent='✓ The bolts draw back.'; hint.className='mini-hint insp-feedback ok'; }
+        gainEvidence('SAFE_OPEN',[42]);
+        gainEvidence('SAFE_ORIGINALS',[]);
+        markSolved('painting');
+        setTimeout(()=>{ persist(); HANDLERS.painting(); },650);
+      }),50);
     },
 
     filing_cabinet(){
@@ -3026,13 +3105,37 @@
     },
 
     torn_letter(){
-      const isNew=gainEvidence('TORN_NOTE_AP',[52]);
-      markSolved('torn_letter'); persist();
+      if(G.solvedObjects['torn_letter']){
+        render('The Torn Letter', `
+          ${ivis('torn')}
+          <p class="insp-desc">Reassembled, the note reads: <i>"I know what you've done. The authorities will be contacted Monday. — A.P."</i> He gave her until Monday. The murder was on the 14th — she could not let Monday come.</p>
+          <div class="insp-note">${ev('TORN_NOTE_AP')}</div>`);
+        return;
+      }
       render('The Torn Letter', `
-        ${ivis('torn')}
-        <p class="insp-desc">Four torn scraps on the study floor. You fit them together:</p>
-        <div class="insp-note" style="font-style:italic;">"I know what you've done. The authorities will be contacted Monday.<br>— A.P."</div>
-        <p class="insp-desc">He confronted her in writing. She had until Monday before the police were told. The murder happened on the <b>14th</b> — she could not let Monday come. ${isNew?ev('TORN_NOTE_AP'):''}</p>`);
+        <p class="insp-desc">Four torn scraps lie scattered on the study floor. <b>Drag each scrap into the frame</b> to reconstruct the note.</p>
+        <div class="assemble-stage">
+          <div class="assemble-slots">
+            <div class="assemble-slot" data-slot="a" style="left:2px;top:2px;"></div>
+            <div class="assemble-slot" data-slot="b" style="left:100px;top:2px;"></div>
+            <div class="assemble-slot" data-slot="c" style="left:2px;top:76px;"></div>
+            <div class="assemble-slot" data-slot="d" style="left:100px;top:76px;"></div>
+          </div>
+          <div class="assemble-tray">
+            <div class="frag-piece" data-slot="c">…what you've<br>done.</div>
+            <div class="frag-piece" data-slot="a">I know</div>
+            <div class="frag-piece" data-slot="d">contacted<br>Monday. — A.P.</div>
+            <div class="frag-piece" data-slot="b">The authorities<br>will be…</div>
+          </div>
+          <div class="mini-hint" id="asmHint">Drag all four scraps into the frame.</div>
+        </div>`);
+      setTimeout(()=>initAssemble(()=>{
+        const hint=document.getElementById('asmHint');
+        if(hint){ hint.textContent='✓ The note is whole again.'; hint.className='mini-hint insp-feedback ok'; }
+        gainEvidence('TORN_NOTE_AP',[52]);
+        markSolved('torn_letter');
+        setTimeout(()=>{ persist(); HANDLERS.torn_letter(); },1100);
+      }),50);
     },
 
     armchair(){
@@ -3088,6 +3191,165 @@
       };
     },
   };
+
+  /* ───────────────────────────────────────────────────────────
+     INTERACTIVE FORENSIC-PUZZLE TOOLKIT
+     Reusable drag/scan/scrub primitives. Each calls onDone() when
+     the player completes the physical interaction; the caller then
+     grants evidence and advances. Listeners live on the stage
+     element, so replacing inspBody.innerHTML disposes of them.
+     ─────────────────────────────────────────────────────────── */
+
+  // Magnifier scan: drag a lens across .scan-stage; reveal every
+  // .scan-hotspot (by left/top %) within radius, then onDone().
+  function initMagScan(onDone){
+    const stage=document.getElementById('scanStage');
+    const lens=document.getElementById('scanLens');
+    const hint=document.getElementById('scanHint');
+    if(!stage||!lens)return;
+    const spots=[...stage.querySelectorAll('.scan-hotspot')];
+    let found=0; const total=spots.length; let done=false;
+    const move=(e)=>{
+      const r=stage.getBoundingClientRect();
+      const pt=e.touches?e.touches[0]:e;
+      const x=pt.clientX-r.left, y=pt.clientY-r.top;
+      if(x<0||y<0||x>r.width||y>r.height)return;
+      lens.style.left=x+'px'; lens.style.top=y+'px';
+      spots.forEach(s=>{
+        if(s.classList.contains('found'))return;
+        const sx=parseFloat(s.dataset.x)/100*r.width;
+        const sy=parseFloat(s.dataset.y)/100*r.height;
+        if(Math.hypot(x-sx,y-sy)<58){
+          s.classList.add('found'); found++;
+          if(hint)hint.textContent=found<total?(found+' of '+total+' details found — keep scanning'):'';
+          if(found>=total&&!done){ done=true;
+            if(hint){ hint.textContent='✓ Every detail recorded.'; hint.className='mini-hint insp-feedback ok'; }
+            setTimeout(onDone,700);
+          }
+        }
+      });
+    };
+    stage.addEventListener('mousemove',move);
+    stage.addEventListener('touchmove',e=>{ e.preventDefault(); move(e); },{passive:false});
+  }
+
+  // Scrub canvas: paint an obscuring layer over a hidden message,
+  // let the player erase it; once >55% cleared, onDone().
+  function initWipeCanvas(paintLayer, onDone){
+    const canvas=document.getElementById('wipeCanvas');
+    const hint=document.getElementById('wipeHint');
+    if(!canvas)return;
+    const ctx=canvas.getContext('2d');
+    paintLayer(ctx,canvas);
+    ctx.globalCompositeOperation='destination-out';
+    let drawing=false, strokes=0, done=false;
+    const check=()=>{
+      const img=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+      let clear=0, n=0;
+      for(let i=3;i<img.length;i+=32){ n++; if(img[i]<60)clear++; }
+      const pct=clear/n;
+      if(hint&&!done)hint.textContent='Cleared '+Math.round(pct*100)+'%';
+      if(pct>0.55&&!done){ done=true;
+        if(hint){ hint.textContent='✓ The surface is clean.'; hint.className='mini-hint insp-feedback ok'; }
+        setTimeout(onDone,650);
+      }
+    };
+    const draw=(e)=>{
+      if(!drawing)return;
+      const r=canvas.getBoundingClientRect();
+      const pt=e.touches?e.touches[0]:e;
+      const x=(pt.clientX-r.left)*canvas.width/r.width;
+      const y=(pt.clientY-r.top)*canvas.height/r.height;
+      ctx.beginPath(); ctx.arc(x,y,24,0,Math.PI*2); ctx.fill();
+      if(++strokes%8===0)check();
+    };
+    canvas.addEventListener('mousedown',e=>{ drawing=true; draw(e); });
+    canvas.addEventListener('mousemove',draw);
+    canvas.addEventListener('mouseup',()=>{ drawing=false; check(); });
+    canvas.addEventListener('mouseleave',()=>{ drawing=false; });
+    canvas.addEventListener('touchstart',e=>{ e.preventDefault(); drawing=true; draw(e); },{passive:false});
+    canvas.addEventListener('touchmove',e=>{ e.preventDefault(); draw(e); },{passive:false});
+    canvas.addEventListener('touchend',()=>{ drawing=false; check(); });
+  }
+
+  // Rotary combination: each .combo-dial drag-rotates 0–9; the value
+  // under the marker shows in its .combo-num. When all match target, onDone().
+  function initComboDials(target, onDone){
+    const dials=[...document.querySelectorAll('.combo-dial')];
+    let done=false;
+    const checkAll=()=>{
+      if(done)return;
+      if(dials.every(d=>parseInt(d.dataset.val,10)===target[+d.dataset.i])){
+        done=true;
+        dials.forEach(d=>{ const num=document.querySelector('.combo-num[data-i="'+d.dataset.i+'"]'); if(num)num.classList.add('locked'); });
+        setTimeout(onDone,500);
+      }
+    };
+    dials.forEach(dial=>{
+      dial.dataset.val=dial.dataset.val||'0';
+      let dragging=false, lastA=0, acc=0;
+      const num=document.querySelector('.combo-num[data-i="'+dial.dataset.i+'"]');
+      const setVal=(v)=>{ dial.dataset.val=String(v); if(num&&!num.classList.contains('locked'))num.textContent=v; };
+      const ang=(e)=>{ const r=dial.getBoundingClientRect(); const pt=e.touches?e.touches[0]:e;
+        return Math.atan2(pt.clientY-(r.top+r.height/2),pt.clientX-(r.left+r.width/2))*180/Math.PI; };
+      const onMove=(e)=>{
+        if(!dragging)return;
+        const a=ang(e); let d=a-lastA; if(d>180)d-=360; if(d<-180)d+=360;
+        acc+=d; lastA=a;
+        dial.style.transform='rotate('+acc+'deg)';
+        const v=((Math.round(acc/36)%10)+10)%10;
+        if(v!==parseInt(dial.dataset.val,10)){ setVal(v); checkAll(); }
+      };
+      dial.addEventListener('mousedown',e=>{ dragging=true; dial.classList.add('dragging'); lastA=ang(e); });
+      window.addEventListener('mousemove',onMove);
+      window.addEventListener('mouseup',()=>{ dragging=false; dial.classList.remove('dragging'); });
+      dial.addEventListener('touchstart',e=>{ e.preventDefault(); dragging=true; dial.classList.add('dragging'); lastA=ang(e); },{passive:false});
+      dial.addEventListener('touchmove',e=>{ e.preventDefault(); onMove(e); },{passive:false});
+      dial.addEventListener('touchend',()=>{ dragging=false; dial.classList.remove('dragging'); });
+    });
+  }
+
+  // Drag-to-assemble: drag each .frag-piece from the tray onto its
+  // matching .assemble-slot (data-slot). When all placed, onDone().
+  function initAssemble(onDone){
+    const slots=[...document.querySelectorAll('.assemble-slot')];
+    const pieces=[...document.querySelectorAll('.frag-piece')];
+    let placed=0, done=false;
+    pieces.forEach(p=>{
+      let dragging=false, ox=0, oy=0;
+      const down=(e)=>{
+        if(p.classList.contains('placed'))return;
+        dragging=true; p.classList.add('dragging');
+        const pt=e.touches?e.touches[0]:e; const r=p.getBoundingClientRect();
+        ox=pt.clientX-r.left; oy=pt.clientY-r.top;
+        p.style.position='fixed'; p.style.zIndex=60;
+        moveTo(pt.clientX,pt.clientY);
+      };
+      const moveTo=(cx,cy)=>{ p.style.left=(cx-ox)+'px'; p.style.top=(cy-oy)+'px'; };
+      const move=(e)=>{ if(!dragging)return; const pt=e.touches?e.touches[0]:e; moveTo(pt.clientX,pt.clientY); };
+      const up=(e)=>{
+        if(!dragging)return; dragging=false; p.classList.remove('dragging');
+        const pt=e.changedTouches?e.changedTouches[0]:e;
+        const target=slots.find(s=>s.dataset.slot===p.dataset.slot);
+        const r=target.getBoundingClientRect();
+        if(pt.clientX>r.left-30&&pt.clientX<r.right+30&&pt.clientY>r.top-30&&pt.clientY<r.bottom+30){
+          // snap into slot
+          p.style.position='absolute'; p.style.left=target.offsetLeft+'px'; p.style.top=target.offsetTop+'px';
+          target.appendChild(p); p.classList.add('placed'); p.style.left='0'; p.style.top='0';
+          if(!p.dataset.counted){ p.dataset.counted='1'; placed++; }
+          if(placed>=pieces.length&&!done){ done=true; setTimeout(onDone,550); }
+        } else {
+          p.style.position='static'; p.style.left=''; p.style.top=''; p.style.zIndex='';
+        }
+      };
+      p.addEventListener('mousedown',down);
+      window.addEventListener('mousemove',move);
+      window.addEventListener('mouseup',up);
+      p.addEventListener('touchstart',e=>{ e.preventDefault(); down(e); },{passive:false});
+      window.addEventListener('touchmove',e=>{ if(dragging){ e.preventDefault(); move(e); } },{passive:false});
+      window.addEventListener('touchend',up);
+    });
+  }
 
   /* ── Email client ───────────────────────────────────────── */
   const EMAILS = [
