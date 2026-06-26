@@ -579,7 +579,7 @@
     .prop-sofa      { width:clamp(120px,18vw,250px); height:clamp(74px,11vw,150px); }
     .prop-glass     { width:clamp(26px,3.4vw,46px);  height:clamp(34px,4.6vw,64px); }
     .prop-table     { width:clamp(82px,12vw,168px);  height:clamp(46px,6.5vw,92px); }
-    .prop-body      { width:clamp(150px,22vw,300px); height:clamp(78px,11vw,150px); }
+    .prop-body      { width:clamp(168px,24vw,332px); height:clamp(94px,13.4vw,185px); }
     .prop-opener    { width:clamp(48px,6.5vw,92px);  height:clamp(20px,2.6vw,38px); }
     .prop-trail     { width:clamp(70px,10vw,140px);  height:clamp(26px,3.6vw,52px); }
     .prop-portrait  { width:clamp(64px,9vw,124px);   height:clamp(80px,11.5vw,158px); }
@@ -1297,54 +1297,110 @@
 
       <!-- THE BODY — Sir Arthur Pembroke, lying on the floor -->
       <button class="room-obj lying" id="obj-body" style="left:55%;top:88%" aria-label="Inspect the body">
-        <div class="prop prop-body"><svg viewBox="0 0 300 150" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
+        <div class="prop prop-body"><svg viewBox="0 0 320 178" preserveAspectRatio="xMidYMax meet" role="img" aria-hidden="true">
           <defs>
-            <radialGradient id="bdBlood" cx="0.4" cy="0.5" r="0.6">
-              <stop offset="0" stop-color="#9a1414"/><stop offset="0.55" stop-color="#6a0e0e"/><stop offset="1" stop-color="rgba(40,4,4,0)"/>
+            <radialGradient id="bdShadow" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" stop-color="rgba(0,0,0,0.5)"/><stop offset="70%" stop-color="rgba(0,0,0,0.28)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/>
             </radialGradient>
-            <linearGradient id="bdJacket" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#3a3a44"/><stop offset="1" stop-color="#1e1e28"/>
+            <radialGradient id="bdBlood" cx="0.42" cy="0.46" r="0.62">
+              <stop offset="0" stop-color="#5a0808"/><stop offset="0.4" stop-color="#7a0f0f"/><stop offset="0.7" stop-color="#5a0a0a"/><stop offset="1" stop-color="rgba(40,4,4,0)"/>
+            </radialGradient>
+            <linearGradient id="bdJacket" x1="0.2" y1="0" x2="0.7" y2="1">
+              <stop offset="0" stop-color="#41414e"/><stop offset="0.5" stop-color="#2c2c38"/><stop offset="1" stop-color="#17171f"/>
+            </linearGradient>
+            <linearGradient id="bdSleeve" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#3a3a46"/><stop offset="1" stop-color="#1c1c24"/>
             </linearGradient>
             <linearGradient id="bdTrouser" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#43434e"/><stop offset="1" stop-color="#26262f"/>
+              <stop offset="0" stop-color="#3e3e48"/><stop offset="0.6" stop-color="#2a2a32"/><stop offset="1" stop-color="#191920"/>
             </linearGradient>
-            <radialGradient id="bdSkin" cx="0.4" cy="0.35" r="0.8">
-              <stop offset="0" stop-color="#e9c4a2"/><stop offset="1" stop-color="#c79a76"/>
+            <linearGradient id="bdVest" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#5a4a30"/><stop offset="1" stop-color="#3a2e1c"/>
+            </linearGradient>
+            <radialGradient id="bdSkin" cx="0.42" cy="0.36" r="0.85">
+              <stop offset="0" stop-color="#dcc0a4"/><stop offset="0.7" stop-color="#c2a182"/><stop offset="1" stop-color="#9c7d62"/>
             </radialGradient>
+            <linearGradient id="bdShoe" x1="0" y1="0" x2="1" y2="0.4">
+              <stop offset="0" stop-color="#2a2018"/><stop offset="0.5" stop-color="#120c08"/><stop offset="1" stop-color="#070504"/>
+            </linearGradient>
           </defs>
-          <!-- blood pool -->
-          <path d="M30 118 C10 100 18 78 50 74 C92 68 120 78 132 92 C150 78 150 110 120 120 C150 128 96 142 70 138 C44 134 40 130 30 118 Z" fill="url(#bdBlood)"/>
-          <!-- left arm flung up -->
-          <path d="M120 70 C100 58 80 46 64 44 C56 43 52 50 60 54 C78 60 100 74 116 84 Z" fill="url(#bdJacket)"/>
-          <ellipse cx="60" cy="48" rx="9" ry="7" fill="url(#bdSkin)"/>
-          <!-- legs (trousers) -->
-          <path d="M176 70 C212 64 244 66 262 74 C268 77 268 88 260 90 C236 86 206 90 184 96 Z" fill="url(#bdTrouser)"/>
-          <path d="M176 92 C210 92 240 96 258 104 C264 107 262 118 254 118 C232 112 200 112 180 108 Z" fill="url(#bdTrouser)"/>
-          <!-- shoes -->
-          <path d="M258 70 C276 68 288 74 286 84 C284 90 270 90 260 88 Z" fill="#120a06"/>
-          <path d="M254 104 C272 104 284 110 282 120 C280 126 266 124 256 120 Z" fill="#120a06"/>
-          <!-- torso: jacket -->
-          <path d="M104 60 C104 44 120 40 140 40 L176 42 C190 44 192 64 188 86 C184 104 168 108 146 106 C122 104 104 96 104 78 Z" fill="url(#bdJacket)"/>
-          <!-- waistcoat + shirt V -->
-          <path d="M126 50 L160 50 C168 66 166 86 150 96 C134 88 124 70 126 50 Z" fill="#5a4632"/>
-          <path d="M138 50 L150 50 L150 92 L142 92 Z" fill="#e6ddc8"/>
-          <!-- buttons + watch chain -->
-          <g fill="#caa64e"><circle cx="144" cy="60" r="1.8"/><circle cx="145" cy="70" r="1.8"/><circle cx="146" cy="80" r="1.8"/></g>
-          <path d="M150 58 Q160 64 158 76" fill="none" stroke="#caa64e" stroke-width="1.2"/>
+
+          <!-- floor contact shadow -->
+          <ellipse cx="172" cy="150" rx="150" ry="28" fill="url(#bdShadow)"/>
+
+          <!-- blood pool spreading from beneath the torso -->
+          <path d="M64 156 C24 152 22 120 56 110 C66 90 104 88 120 104 C150 90 184 100 188 124 C210 122 214 156 176 164 C150 176 92 174 64 156 Z" fill="url(#bdBlood)"/>
+          <path d="M44 160 C36 156 38 150 46 150 C52 150 54 158 48 160 Z" fill="#6a0c0c" opacity="0.8"/>
+          <circle cx="206" cy="150" r="4" fill="#6a0c0c" opacity="0.7"/>
+          <circle cx="40" cy="138" r="3" fill="#6a0c0c" opacity="0.6"/>
+          <!-- wet sheen on the blood -->
+          <path d="M78 120 C100 110 134 114 150 128 C128 122 104 124 90 134 Z" fill="#b03030" opacity="0.22"/>
+
+          <!-- FAR (upper) leg, straighter -->
+          <path d="M182 96 C214 84 248 82 280 88 C292 90 294 102 282 104 C250 100 216 104 188 116 Z" fill="url(#bdTrouser)"/>
+          <path d="M196 98 C224 90 252 90 278 94" fill="none" stroke="#15151c" stroke-width="2" opacity="0.45"/>
+          <!-- NEAR (lower) leg, knee bent outward -->
+          <path d="M180 118 C206 116 232 124 250 140 C260 149 252 160 242 154 C228 142 206 134 184 132 Z" fill="url(#bdTrouser)"/>
+          <path d="M188 122 C208 122 228 130 244 142" fill="none" stroke="#15151c" stroke-width="2" opacity="0.4"/>
+          <!-- shoes with soles -->
+          <g>
+            <path d="M278 80 C298 76 312 82 312 92 C312 100 296 102 282 100 C276 99 274 88 278 80 Z" fill="url(#bdShoe)"/>
+            <path d="M300 96 C306 96 312 94 312 92 C312 99 302 101 296 100 Z" fill="#2a2018"/>
+            <ellipse cx="288" cy="84" rx="7" ry="4" fill="#4a4038" opacity="0.5"/>
+            <path d="M240 146 C258 150 270 160 266 170 C262 176 250 174 242 166 C236 160 234 150 240 146 Z" fill="url(#bdShoe)"/>
+            <path d="M258 166 C262 169 266 170 268 168 C264 174 254 173 248 168 Z" fill="#2a2018"/>
+            <ellipse cx="250" cy="152" rx="6" ry="4" fill="#4a4038" opacity="0.5"/>
+          </g>
+
+          <!-- TORSO: dark wool jacket -->
+          <path d="M96 78 C92 58 112 50 134 50 C156 50 184 54 190 78 C196 100 190 122 168 128 C146 134 116 130 102 116 C92 106 98 92 96 78 Z" fill="url(#bdJacket)"/>
+          <!-- jacket sheen + fold shadows -->
+          <path d="M110 58 C130 52 156 56 178 70" fill="none" stroke="#54545f" stroke-width="3" opacity="0.5"/>
+          <path d="M120 118 C140 122 162 120 178 110" fill="none" stroke="#101016" stroke-width="3" opacity="0.5"/>
+          <path d="M150 70 C156 88 152 108 140 124" fill="none" stroke="#101016" stroke-width="2" opacity="0.4"/>
+
+          <!-- open jacket front: waistcoat, shirt, tie -->
+          <path d="M126 64 C120 86 124 108 140 122 C150 110 156 92 154 70 Z" fill="url(#bdVest)"/>
+          <path d="M138 66 L150 66 C150 92 146 110 142 120 C138 110 136 90 138 66 Z" fill="#e9e0cc"/>
+          <path d="M140 68 L148 68 L146 96 L142 96 Z" fill="#5a1422"/>
+          <!-- waistcoat buttons + watch chain -->
+          <g fill="#caa64e"><circle cx="139" cy="78" r="1.7"/><circle cx="139" cy="90" r="1.7"/><circle cx="139" cy="102" r="1.7"/></g>
+          <path d="M132 82 Q122 92 128 104" fill="none" stroke="#d8b24a" stroke-width="1.3"/>
+          <circle cx="128" cy="106" r="2.4" fill="#e7c25a" stroke="#8a6420" stroke-width="0.6"/>
           <!-- lapels -->
-          <path d="M128 48 L140 50 L132 78 Z" fill="#2a2a34"/>
-          <path d="M172 50 L160 50 L168 80 Z" fill="#2a2a34"/>
-          <!-- right arm along body -->
-          <path d="M150 96 C168 110 184 116 196 112 C202 110 200 100 192 100 C178 100 164 94 154 86 Z" fill="url(#bdJacket)"/>
-          <ellipse cx="196" cy="108" rx="8" ry="6" fill="url(#bdSkin)"/>
-          <!-- head + collar -->
-          <path d="M104 60 L120 56 L118 74 L104 74 Z" fill="#e6ddc8"/>
-          <ellipse cx="92" cy="66" rx="19" ry="16" fill="url(#bdSkin)"/>
-          <path d="M76 58 C80 46 104 46 108 60 C100 56 84 56 76 64 Z" fill="#4a3a2a"/>
-          <path d="M80 50 C92 44 104 48 108 58 C98 52 88 52 80 58 Z" fill="#3a2c1e"/>
-          <!-- closed eye + moustache -->
-          <path d="M84 66 Q90 64 96 66" fill="none" stroke="#7a5a44" stroke-width="1.4"/>
-          <path d="M84 76 Q92 80 100 76" fill="none" stroke="#5a4030" stroke-width="2"/>
+          <path d="M124 60 L138 64 L128 100 C120 86 120 70 124 60 Z" fill="#23232c"/>
+          <path d="M156 62 L150 66 L156 104 C166 90 162 72 156 62 Z" fill="#23232c"/>
+
+          <!-- FAR arm, flung out past the head -->
+          <path d="M112 80 C92 68 70 58 52 56 C44 55 42 64 50 67 C70 74 92 86 108 96 Z" fill="url(#bdSleeve)"/>
+          <path d="M64 60 C80 66 96 76 106 86" fill="none" stroke="#15151c" stroke-width="2" opacity="0.4"/>
+          <!-- cuff + hand -->
+          <path d="M44 56 C40 54 36 56 36 60 C36 65 44 66 50 64 Z" fill="#e9e0cc" opacity="0.85"/>
+          <path d="M40 58 C32 56 26 60 28 66 C30 72 40 72 46 68 C50 65 46 60 40 58 Z" fill="url(#bdSkin)"/>
+          <g stroke="#9c7d62" stroke-width="0.8"><path d="M30 64 l-4 2 M32 67 l-4 3 M35 69 l-3 3"/></g>
+
+          <!-- NEAR arm, resting along the side to the hip -->
+          <path d="M150 116 C166 130 184 138 200 136 C208 135 208 124 200 124 C184 124 168 116 158 104 Z" fill="url(#bdSleeve)"/>
+          <path d="M196 126 C204 126 208 130 206 134 C200 138 192 136 188 130 Z" fill="url(#bdSkin)"/>
+          <g stroke="#9c7d62" stroke-width="0.8"><path d="M198 128 l6 1 M196 132 l7 1 M195 135 l6 1"/></g>
+
+          <!-- neck + wing collar -->
+          <path d="M96 92 L114 86 L116 104 L100 108 Z" fill="url(#bdSkin)"/>
+          <path d="M98 86 L118 82 L120 92 L102 98 Z" fill="#e9e0cc"/>
+
+          <!-- HEAD turned to the side, pallid -->
+          <ellipse cx="74" cy="92" rx="22" ry="18" fill="url(#bdSkin)"/>
+          <path d="M74 74 C90 74 96 90 92 100 C84 96 72 98 64 104 C58 92 60 76 74 74 Z" fill="#b8b2a6"/>
+          <path d="M56 86 C58 74 78 70 90 78 C78 74 66 78 58 90 Z" fill="#c8c2b6"/>
+          <!-- ear -->
+          <path d="M88 96 C94 94 96 100 92 104 C88 106 86 100 88 96 Z" fill="#c2a182"/>
+          <!-- closed eye, brow, slack mouth -->
+          <path d="M62 90 Q70 87 78 90" fill="none" stroke="#6a5038" stroke-width="1.4"/>
+          <path d="M61 84 Q69 81 78 84" fill="none" stroke="#9a9082" stroke-width="1.4"/>
+          <path d="M58 96 C56 98 56 101 59 102" fill="none" stroke="#a07a5e" stroke-width="1.4"/>
+          <path d="M62 104 Q70 107 80 104" fill="none" stroke="#7a4a44" stroke-width="2"/>
+          <!-- grey moustache -->
+          <path d="M62 100 Q70 98 80 100 Q72 103 62 100 Z" fill="#b8b2a6"/>
         </svg></div><span class="obj-label">The Body</span>
       </button>
 
